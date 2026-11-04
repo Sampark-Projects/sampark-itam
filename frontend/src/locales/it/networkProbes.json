@@ -94,7 +94,7 @@
   },
   "commands": {
     "dockerRun": "# (1) Salva probe.conf nella stessa cartella di questo comando\n# (2) Avvia la sonda (Docker)\ndocker run -d \\\n  --name {containerName} \\\n  --privileged \\\n  --network host \\\n  --cap-add NET_ADMIN \\\n  --cap-add NET_RAW \\\n  --security-opt seccomp=unconfined \\\n  -v \"$PWD/probe.conf:/app/probe.conf:ro\" \\\n  -v \"$PWD/logs:/logs\" \\\n  industrace-probe:latest\n\n# (3) Segui i log\ndocker logs -f {containerName}",
-    "hostRun": "# (1) In una cartella dove hai la directory 'probe' di Industrace\n# (2) Crea probe.conf (contenuto già mostrato nella tab Host)\n#\n#   - Copia/incolla probe.conf accanto a network_probe_client.py\n#\n# (3) Installa dipendenze e avvia\npip3 install -r requirements.probe.txt\nsudo python3 network_probe_client.py -c probe.conf"
+    "hostRun": "# (1) In una cartella dove hai la directory 'probe' di Sampark\n# (2) Crea probe.conf (contenuto già mostrato nella tab Host)\n#\n#   - Copia/incolla probe.conf accanto a network_probe_client.py\n#\n# (3) Installa dipendenze e avvia\npip3 install -r requirements.probe.txt\nsudo python3 network_probe_client.py -c probe.conf"
   },
   "actions": {
     "deauthorize": "De-autorizza sonda"

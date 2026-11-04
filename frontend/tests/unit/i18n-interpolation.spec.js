@@ -8,7 +8,7 @@ describe('i18n interpolation', () => {
 
   it('interpolates footer copyright year', () => {
     expect(i18n.global.t('footer.copyright', { year: 2026 })).toBe(
-      '© 2026 Industrace — AGPL v3 License'
+      '© 2026 Sampark — AGPL v3 License'
     )
   })
 
@@ -46,7 +46,7 @@ describe('i18n interpolation', () => {
   it('interpolates Italian locale', () => {
     i18n.global.locale.value = 'it'
     expect(i18n.global.t('footer.copyright', { year: 2026 })).toBe(
-      '© 2026 Industrace — Licenza AGPL v3'
+      '© 2026 Sampark — Licenza AGPL v3'
     )
     expect(
       i18n.global.t('assets.strings.networkInterfacesSummary', { count: 2 })

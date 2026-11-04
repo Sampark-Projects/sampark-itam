@@ -133,7 +133,7 @@ def setup_logging():
     
     # Log startup information
     logger = logging.getLogger("app")
-    logger.info(f"Industrace starting up - Environment: {settings.ENVIRONMENT}")
+    logger.info(f"Sampark starting up - Environment: {settings.ENVIRONMENT}")
     logger.info(f"Log level: {log_level}")
     logger.info(f"Database URL: {settings.DATABASE_URL.split('@')[1] if '@' in settings.DATABASE_URL else 'local'}")
     

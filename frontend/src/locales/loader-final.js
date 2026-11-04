@@ -86,26 +86,8 @@ const flattenObject = (obj, prefix = '') => {
   return flattened
 }
 
-// Detect the user's language
-const getUserLanguage = () => {
-  if (typeof localStorage !== 'undefined') {
-    const savedLang = localStorage.getItem('user-lang')
-    if (savedLang && (savedLang === 'it' || savedLang === 'en')) {
-      return savedLang
-    }
-  }
-
-  // Detect browser language
-  if (typeof navigator !== 'undefined' && navigator.language) {
-    const browserLang = navigator.language.split('-')[0]
-    if (browserLang === 'it' || browserLang === 'en') {
-      return browserLang
-    }
-  }
-
-  // Default to English
-  return 'en'
-}
+// The UI language is fixed to English (there is no language switcher)
+const getUserLanguage = () => 'en'
 
 const applyDocumentLang = (locale) => {
   if (typeof document !== 'undefined') {

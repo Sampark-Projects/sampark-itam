@@ -857,7 +857,7 @@ const getStatusClass = (marker) => {
 }
 
 .editable-marker {
-  color: #007bff;
+  color: #1d6838;
 }
 
 .editable-marker:hover {
@@ -1071,7 +1071,7 @@ const getStatusClass = (marker) => {
 }
 
 .legend-marker.editable-marker {
-  color: #007bff;
+  color: #1d6838;
 }
 
 .legend-marker.unpositioned {

@@ -360,7 +360,7 @@ const confirmImport = async () => {
 }
 
 :deep(.p-fileupload-content:hover) {
-  border-color: #3b82f6;
+  border-color: #1d6838;
 }
 
 :deep(.p-datatable) {

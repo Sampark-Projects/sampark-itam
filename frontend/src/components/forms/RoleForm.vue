@@ -483,12 +483,12 @@ onMounted(() => {
   padding: 1rem;
   background: #e3f2fd;
   border-radius: 6px;
-  border-left: 4px solid #2196f3;
+  border-left: 4px solid #1d6838;
 }
 
 .inherited-permissions h4 {
   margin: 0 0 1rem 0;
-  color: #1976d2;
+  color: #1d6838;
   font-size: 1rem;
 }
 
@@ -570,7 +570,7 @@ onMounted(() => {
 
 .inherited-badge {
   font-size: 0.8rem;
-  color: #2196f3;
+  color: #1d6838;
   font-weight: 500;
 }
 

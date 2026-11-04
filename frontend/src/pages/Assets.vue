@@ -1207,7 +1207,7 @@ function confirmEmptyTrash() {
 }
 
 .asset-link {
-  color: #007bff;
+  color: #1d6838;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s ease;

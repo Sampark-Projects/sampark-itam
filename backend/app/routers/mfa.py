@@ -377,9 +377,9 @@ def _notify_mfa_reset(db: Session, target: User) -> None:
         )
         send_email(
             to_email=target.email,
-            subject="Industrace MFA reset",
+            subject="Sampark MFA reset",
             content=(
-                "An administrator has reset multi-factor authentication on your Industrace account. "
+                "An administrator has reset multi-factor authentication on your Sampark account. "
                 "If you did not expect this, contact your administrator immediately."
             ),
             config=config,

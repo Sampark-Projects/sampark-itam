@@ -83,7 +83,7 @@ const goToLogin = () => {
 
 .back-button {
   padding: 0.75rem 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1d6838 0%, #154f2a 100%);
   border: none;
   border-radius: 12px;
   color: white;
@@ -95,7 +95,7 @@ const goToLogin = () => {
 
 .back-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 25px rgba(29, 104, 56, 0.3);
 }
 </style>
 

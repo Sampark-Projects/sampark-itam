@@ -45,13 +45,13 @@
   "clientSecretHelp": "Leave empty to keep the existing secret. Enter a new value only to change it.",
   "guide": {
     "title": "Azure AD SSO Setup Guide",
-    "intro": "Configure Single Sign-On between Industrace and Azure AD (Microsoft 365 / Entra ID).",
+    "intro": "Configure Single Sign-On between Sampark and Azure AD (Microsoft 365 / Entra ID).",
     "redirectUriLabel": "Redirect URI (backend callback)",
     "prerequisites": {
       "title": "Prerequisites",
       "items": [
         "Administrator access to Microsoft Azure Portal",
-        "Administrator access to Industrace",
+        "Administrator access to Sampark",
         "Active Microsoft 365 / Azure AD tenant"
       ]
     },
@@ -62,7 +62,7 @@
         "items": [
           "Open Azure Portal and go to Microsoft Entra ID",
           "Select App registrations → New registration",
-          "Name: Industrace SSO (or a name of your choice)",
+          "Name: Sampark SSO (or a name of your choice)",
           "Supported account types: Accounts in this organizational directory only (recommended)",
           "Redirect URI: Web platform with the callback URL shown below",
           "Click Register"
@@ -71,7 +71,7 @@
       "noteInfo": {
         "title": "Save these values",
         "items": [
-          "Application (client) ID → Client ID in Industrace",
+          "Application (client) ID → Client ID in Sampark",
           "Directory (tenant) ID or tenant name (e.g. contoso.onmicrosoft.com) → Tenant Domain"
         ]
       }
@@ -101,11 +101,11 @@
         "Go to Certificates & secrets → New client secret",
         "Add a description and choose an expiry (24 months recommended)",
         "Copy the secret Value immediately — it is shown only once",
-        "Paste it into Client Secret in Industrace"
+        "Paste it into Client Secret in Sampark"
       ]
     },
     "step4": {
-      "title": "Step 4: Configure Industrace",
+      "title": "Step 4: Configure Sampark",
       "items": [
         "Fill in the form on this page with the Azure AD values",
         "Click Test Connection, then Save",
@@ -117,7 +117,7 @@
         { "label": "Client Secret", "description": "Secret value from Certificates & secrets" },
         { "label": "Tenant Domain", "description": "Tenant ID, tenant name, or onmicrosoft.com domain" },
         { "label": "Redirect URI", "description": "Must match exactly the callback URL in Azure AD" },
-        { "label": "Auto-Provisioning", "description": "Keep disabled (recommended): only existing Industrace users can sign in" },
+        { "label": "Auto-Provisioning", "description": "Keep disabled (recommended): only existing Sampark users can sign in" },
         { "label": "Domain Restriction", "description": "Optional: limit sign-in to a specific email domain" }
       ]
     },
@@ -135,7 +135,7 @@
       "items": [
         "Log out and open the login page",
         "Click Sign in with Microsoft",
-        "Complete authentication in Microsoft and confirm redirect back to Industrace",
+        "Complete authentication in Microsoft and confirm redirect back to Sampark",
         "In Profile, verify auth_provider is azure_ad and external_id is set"
       ]
     },
@@ -146,17 +146,17 @@
       "issues": [
         {
           "title": "Invalid redirect URI",
-          "cause": "Redirect URI in Industrace does not match Azure AD.",
+          "cause": "Redirect URI in Sampark does not match Azure AD.",
           "solution": "Use the exact callback URL (protocol, domain, path). Remove extra spaces."
         },
         {
           "title": "Invalid client secret",
           "cause": "Secret expired or incorrect.",
-          "solution": "Create a new client secret in Azure AD and update Industrace."
+          "solution": "Create a new client secret in Azure AD and update Sampark."
         },
         {
           "title": "User not found during login",
-          "cause": "User does not exist in Industrace and auto-provisioning is disabled.",
+          "cause": "User does not exist in Sampark and auto-provisioning is disabled.",
           "solution": "Import the user manually or enable auto-provisioning (less secure)."
         },
         {

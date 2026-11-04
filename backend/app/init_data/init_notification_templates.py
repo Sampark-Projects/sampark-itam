@@ -29,7 +29,7 @@ def init_notification_templates(db: Session):
                     <li><strong>Days Until Review:</strong> {{days_until_review}}</li>
                 </ul>
                 <p><a href="{{asset_url}}">Review Asset</a></p>
-                <p>Best regards,<br>Industrace</p>
+                <p>Best regards,<br>Sampark</p>
             </body>
             </html>
             ''',
@@ -45,7 +45,7 @@ def init_notification_templates(db: Session):
             Review Asset: {{asset_url}}
             
             Best regards,
-            Industrace
+            Sampark
             ''',
             'variables': ['user_name', 'asset_name', 'site_name', 'last_review_date', 'days_until_review', 'asset_url']
         },
@@ -66,7 +66,7 @@ def init_notification_templates(db: Session):
                     <li><strong>Days Overdue:</strong> {{days_overdue}}</li>
                 </ul>
                 <p><a href="{{asset_url}}">Review Asset Now</a></p>
-                <p>Best regards,<br>Industrace</p>
+                <p>Best regards,<br>Sampark</p>
             </body>
             </html>
             ''',
@@ -82,7 +82,7 @@ def init_notification_templates(db: Session):
             Review Asset Now: {{asset_url}}
             
             Best regards,
-            Industrace
+            Sampark
             ''',
             'variables': ['user_name', 'asset_name', 'site_name', 'last_review_date', 'days_overdue', 'asset_url']
         },
@@ -102,7 +102,7 @@ def init_notification_templates(db: Session):
                     <li><strong>Site:</strong> {{site_name}}</li>
                 </ul>
                 <p><a href="{{asset_url}}">View Asset Details</a></p>
-                <p>Best regards,<br>Industrace</p>
+                <p>Best regards,<br>Sampark</p>
             </body>
             </html>
             ''',
@@ -117,7 +117,7 @@ def init_notification_templates(db: Session):
             View Asset Details: {{asset_url}}
             
             Best regards,
-            Industrace
+            Sampark
             ''',
             'variables': ['user_name', 'asset_name', 'risk_score', 'risk_level', 'site_name', 'asset_url']
         }

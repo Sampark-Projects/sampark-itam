@@ -234,7 +234,7 @@ def send_password_reset_email(to_email: str, temp_password: str, config: EmailCo
     """
     Invia email di reset password
     """
-    subject = "Industrace - Password Reset"
+    subject = "Sampark - Password Reset"
     content = f"""
     La tua password è stata reimpostata.
     

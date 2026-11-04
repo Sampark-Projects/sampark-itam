@@ -2,8 +2,24 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 
+// Sampark brand green (#1d6838) in place of the blue shipped with PrimeVue's saga-blue theme
+const samparkTheme = () => ({
+  name: 'sampark-primevue-theme',
+  enforce: 'pre',
+  transform(code, id) {
+    if (!id.includes('themes/saga-blue/theme.css')) return null
+    return code
+      .replace(/#2196f3/gi, '#1d6838')
+      .replace(/#0d89ec/gi, '#185a30')
+      .replace(/#0b7ad1/gi, '#154f2a')
+      .replace(/#a6d5fa/gi, '#a5c3af')
+      .replace(/#e3f2fd/gi, '#e8f0eb')
+      .replace(/rgba\(33, 150, 243,/g, 'rgba(29, 104, 56,')
+  }
+})
+
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [samparkTheme(), vue()],
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),

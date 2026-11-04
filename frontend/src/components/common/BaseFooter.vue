@@ -1,40 +1,10 @@
 <template>
   <footer class="footer" role="contentinfo" aria-label="Footer dell'applicazione">
     <div class="footer-content">
-      <div class="footer-section">
-        <div class="footer-brand">
-          <img src="@/static/logo_besafe.png" alt="BeSafe logo" class="besafe-logo" />
-          <div class="brand-info">
-            <span class="powered-by">{{ $t('footer.powered_by') }}</span>
-            <a :href="appConfig.links.website" target="_blank" rel="noopener" class="besafe-link">
-              BeSafe
-            </a>
-          </div>
-        </div>
-      </div>
-      
-      <div class="footer-section">
-        <div class="footer-info">
-          <span class="version">v{{ version }}</span>
-          <span class="separator">•</span>
-          <span class="copyright">{{ copyrightText }}</span>
-          <span class="separator">•</span>
-          <a :href="appConfig.links.license" target="_blank" rel="noopener" class="footer-link">
-            {{ $t('footer.license') }}
-          </a>
-        </div>
-      </div>
-      
-      <div class="footer-section">
-        <div class="footer-links">
-          <a :href="appConfig.links.github" target="_blank" rel="noopener" class="footer-link">
-            {{ $t('footer.github') }}
-          </a>
-          <span class="separator">•</span>
-          <a :href="appConfig.links.issues" target="_blank" rel="noopener" class="footer-link">
-            {{ $t('footer.report_bug') }}
-          </a>
-        </div>
+      <div class="footer-info">
+        <span class="version">v{{ version }}</span>
+        <span class="separator">•</span>
+        <span class="copyright">{{ copyrightText }}</span>
       </div>
     </div>
   </footer>
@@ -74,50 +44,6 @@ const copyrightText = computed(() =>
   align-items: center;
 }
 
-.footer-section {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.footer-brand {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.besafe-logo {
-  height: 24px;
-  width: auto;
-}
-
-.brand-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.powered-by {
-  font-size: 0.8rem;
-  color: #6c757d;
-  font-weight: 400;
-}
-
-.besafe-link {
-  color: #1976d2;
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 0.8rem;
-  transition: color 0.2s ease;
-}
-
-.besafe-link:hover {
-  color: #0d47a1;
-}
-
 .footer-info {
   display: flex;
   align-items: center;
@@ -137,25 +63,6 @@ const copyrightText = computed(() =>
   color: #6c757d;
 }
 
-.footer-links {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.footer-link {
-  color: #6c757d;
-  text-decoration: none;
-  font-size: 0.7rem;
-  transition: color 0.2s ease;
-}
-
-.footer-link:hover {
-  color: #495057;
-}
-
 .separator {
   color: #adb5bd;
   font-size: 0.7rem;
@@ -167,23 +74,12 @@ const copyrightText = computed(() =>
     padding: 0 1rem;
     gap: 0.5rem;
   }
-  
-  .footer-brand {
+
+  .footer-info {
     flex-direction: column;
     gap: 0.25rem;
   }
-  
-  .brand-info {
-    flex-direction: row;
-    gap: 0.25rem;
-  }
-  
-  .footer-info,
-  .footer-links {
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-  
+
   .separator {
     display: none;
   }
@@ -193,14 +89,5 @@ const copyrightText = computed(() =>
   .footer {
     padding: 0.75rem 0;
   }
-  
-  .besafe-logo {
-    height: 20px;
-  }
-  
-  .powered-by,
-  .besafe-link {
-    font-size: 0.75rem;
-  }
 }
-</style> 
+</style>

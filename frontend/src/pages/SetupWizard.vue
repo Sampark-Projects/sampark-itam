@@ -3,7 +3,7 @@
     <div class="setup-container">
       <!-- Header -->
       <div class="setup-header">
-        <img src="@/static/logo.png" alt="Industrace" class="logo" />
+        <img src="@/static/sampark_logo.png" alt="Sampark" class="logo" />
         <h1>{{ t('setup.welcome') }}</h1>
         <p>{{ t('setup.description') }}</p>
       </div>
@@ -446,7 +446,7 @@ onMounted(() => {
 <style scoped>
 .setup-wizard {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1d6838 0%, #154f2a 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -531,7 +531,7 @@ onMounted(() => {
 }
 
 .step.active .step-number {
-  background: #007bff;
+  background: #1d6838;
   color: white;
 }
 
@@ -547,7 +547,7 @@ onMounted(() => {
 }
 
 .step.active .step-label {
-  color: #007bff;
+  color: #1d6838;
   font-weight: 600;
 }
 

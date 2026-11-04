@@ -45,7 +45,7 @@ defineProps({
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1d6838 0%, #154f2a 100%);
   color: white;
   flex-shrink: 0;
 }

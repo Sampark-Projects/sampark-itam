@@ -1,7 +1,8 @@
 <template>
   <nav :class="['modern-sidebar', { collapsed }]">
     <div class="sidebar-header">
-      <img src="@/static/industrace_square.png" alt="Industrace" class="logo" v-if="!collapsed" />
+      <img src="@/static/sampark_logo_light.png" alt="Sampark" class="logo" v-if="!collapsed" />
+      <img src="@/static/sampark_icon.png" alt="Sampark" class="logo-icon" v-else />
       <button class="collapse-btn" @click="collapsed = !collapsed">
         <i :class="collapsed ? 'pi pi-angle-right' : 'pi pi-angle-left'"></i>
       </button>
@@ -15,15 +16,6 @@
           <span v-if="!collapsed">{{ item.label }}</span>
         </router-link>
       </div>
-    </div>
-    <div class="sidebar-lang" v-if="!collapsed">
-      <label for="sidebar_language_select" class="sr-only">Lingua</label>
-      <span class="lang-flag" v-if="locale === 'it'">🇮🇹</span>
-      <span class="lang-flag" v-else>🇬🇧</span>
-      <select id="sidebar_language_select" v-model="locale" @change="changeLocale" class="lang-select" aria-label="Lingua">
-        <option value="it">Italiano</option>
-        <option value="en">English</option>
-      </select>
     </div>
     <div class="sidebar-logout">
       <router-link to="/logout" class="sidebar-link logout-link" :title="t('menu.navigation.logout')">
@@ -41,9 +33,8 @@ import { useI18n } from 'vue-i18n'
 import { usePermissions } from '@/composables/usePermissions'
 import { useTenantFeatures } from '@/composables/useTenantFeatures'
 import { useAuthStore } from '@/store/auth'
-import { setLanguage } from '@/locales/loader-final.js'
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const router = useRouter()
 const collapsed = ref(false)
 const { canRead, userPermissions, accessibleSections, refreshUserPermissions } = usePermissions()
@@ -150,16 +141,17 @@ const menuSections = computed(() => {
 
   return sections
 })
-
-function changeLocale(e) {
-  setLanguage(e.target.value)
-}
 </script>
 
 <style scoped>
 .modern-sidebar {
   width: 260px;
-  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  flex-shrink: 0;
+  height: 100vh;
+  overflow: hidden;
   background: #23272f;
   color: #fff;
   display: flex;
@@ -174,13 +166,26 @@ function changeLocale(e) {
 .sidebar-header {
   display: flex;
   align-items: center;
-  padding: 1.2rem 1rem 1rem 1rem;
+  padding: 1rem 1.2rem;
   gap: 0.7rem;
   border-bottom: 1px solid #2d323c;
+  flex-shrink: 0;
 }
 .logo {
   width: 150px;
-  height: 150px;
+  height: auto;
+}
+.logo-icon {
+  width: 28px;
+  height: 28px;
+}
+.modern-sidebar.collapsed .sidebar-header {
+  flex-direction: column;
+  padding: 1rem 0;
+  gap: 0.5rem;
+}
+.modern-sidebar.collapsed .collapse-btn {
+  margin-left: 0;
 }
 .app-title {
   font-size: 1.3rem;
@@ -201,6 +206,11 @@ function changeLocale(e) {
   flex-direction: column;
   gap: 1.5rem;
   margin-top: 1.5rem;
+  padding-bottom: 1rem;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #3a4050 transparent;
 }
 .sidebar-section {
   display: flex;
@@ -235,29 +245,10 @@ function changeLocale(e) {
   min-width: 1.3rem;
   text-align: center;
 }
-.sidebar-lang {
-  padding: 0 1rem 2rem 1rem;
-  margin-top: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-}
-.lang-select {
-  width: 100%;
-  padding: 0.4rem 0.7rem;
-  border-radius: 6px;
-  border: 1px solid #2d323c;
-  background: #23272f;
-  color: #fff;
-  font-size: 1rem;
-}
-.lang-flag {
-  font-size: 1.2rem;
-  margin-right: 0.4rem;
-}
 .sidebar-logout {
-  margin-bottom: 1.5rem;
-  padding: 0 1rem;
+  flex-shrink: 0;
+  padding: 0.75rem 0;
+  border-top: 1px solid #2d323c;
 }
 .logout-link {
   color: #ff7675;

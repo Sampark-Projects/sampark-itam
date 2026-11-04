@@ -45,13 +45,13 @@
   "clientSecretHelp": "Lascia vuoto per mantenere il segreto esistente. Inserisci un nuovo valore solo per cambiarlo.",
   "guide": {
     "title": "Guida configurazione SSO Azure AD",
-    "intro": "Configura il Single Sign-On tra Industrace e Azure AD (Microsoft 365 / Entra ID).",
+    "intro": "Configura il Single Sign-On tra Sampark e Azure AD (Microsoft 365 / Entra ID).",
     "redirectUriLabel": "Redirect URI (callback backend)",
     "prerequisites": {
       "title": "Prerequisiti",
       "items": [
         "Accesso amministratore al portale Microsoft Azure",
-        "Accesso amministratore a Industrace",
+        "Accesso amministratore a Sampark",
         "Tenant Microsoft 365 / Azure AD attivo"
       ]
     },
@@ -62,7 +62,7 @@
         "items": [
           "Apri Azure Portal e vai su Microsoft Entra ID",
           "Seleziona Registrazioni app → Nuova registrazione",
-          "Nome: Industrace SSO (o un nome a scelta)",
+          "Nome: Sampark SSO (o un nome a scelta)",
           "Tipi di account supportati: Solo account in questa directory (consigliato)",
           "URI di reindirizzamento: piattaforma Web con l'URL di callback indicato sotto",
           "Clicca Registra"
@@ -71,7 +71,7 @@
       "noteInfo": {
         "title": "Salva questi valori",
         "items": [
-          "ID applicazione (client) → Client ID in Industrace",
+          "ID applicazione (client) → Client ID in Sampark",
           "ID directory (tenant) o nome tenant (es. contoso.onmicrosoft.com) → Dominio Tenant"
         ]
       }
@@ -101,11 +101,11 @@
         "Vai su Certificati e segreti → Nuovo segreto client",
         "Aggiungi una descrizione e scegli una scadenza (24 mesi consigliati)",
         "Copia subito il Valore del segreto — viene mostrato una sola volta",
-        "Incollalo in Client Secret in Industrace"
+        "Incollalo in Client Secret in Sampark"
       ]
     },
     "step4": {
-      "title": "Passo 4: Configura Industrace",
+      "title": "Passo 4: Configura Sampark",
       "items": [
         "Compila il modulo in questa pagina con i valori di Azure AD",
         "Clicca Test Connessione, poi Salva",
@@ -117,7 +117,7 @@
         { "label": "Client Secret", "description": "Valore del segreto da Certificati e segreti" },
         { "label": "Dominio Tenant", "description": "ID tenant, nome tenant o dominio onmicrosoft.com" },
         { "label": "Redirect URI", "description": "Deve corrispondere esattamente al callback in Azure AD" },
-        { "label": "Auto-Provisioning", "description": "Lascia disabilitato (consigliato): possono accedere solo utenti già presenti in Industrace" },
+        { "label": "Auto-Provisioning", "description": "Lascia disabilitato (consigliato): possono accedere solo utenti già presenti in Sampark" },
         { "label": "Restrizione Dominio", "description": "Opzionale: limita l'accesso a un dominio email specifico" }
       ]
     },
@@ -135,7 +135,7 @@
       "items": [
         "Esci e apri la pagina di login",
         "Clicca Accedi con Microsoft",
-        "Completa l'autenticazione in Microsoft e verifica il ritorno su Industrace",
+        "Completa l'autenticazione in Microsoft e verifica il ritorno su Sampark",
         "In Profilo, verifica che auth_provider sia azure_ad e external_id sia valorizzato"
       ]
     },
@@ -146,17 +146,17 @@
       "issues": [
         {
           "title": "Redirect URI non valido",
-          "cause": "Il Redirect URI in Industrace non corrisponde ad Azure AD.",
+          "cause": "Il Redirect URI in Sampark non corrisponde ad Azure AD.",
           "solution": "Usa l'URL di callback esatto (protocollo, dominio, percorso). Rimuovi spazi extra."
         },
         {
           "title": "Client secret non valido",
           "cause": "Segreto scaduto o errato.",
-          "solution": "Crea un nuovo client secret in Azure AD e aggiorna Industrace."
+          "solution": "Crea un nuovo client secret in Azure AD e aggiorna Sampark."
         },
         {
           "title": "Utente non trovato al login",
-          "cause": "L'utente non esiste in Industrace e l'auto-provisioning è disabilitato.",
+          "cause": "L'utente non esiste in Sampark e l'auto-provisioning è disabilitato.",
           "solution": "Importa l'utente manualmente o abilita l'auto-provisioning (meno sicuro)."
         },
         {

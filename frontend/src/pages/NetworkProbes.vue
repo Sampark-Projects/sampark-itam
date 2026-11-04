@@ -1031,7 +1031,7 @@ onMounted(async () => {
 }
 
 .overview-icon--total {
-  background: #3b82f6;
+  background: #1d6838;
 }
 
 .overview-icon--active {

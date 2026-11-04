@@ -202,7 +202,7 @@ from app.models import Tenant, User, Role
 setup_logging()
 
 app = FastAPI(
-    title="Industrace Multi-Tenant",
+    title="Sampark Multi-Tenant",
     description="Configuration Management Database for Industrial Control Systems",
     version="1.0.0",
     openapi_tags=[
@@ -574,7 +574,7 @@ async def custom_validation_exception_handler(
 # Root endpoint
 @app.get("/")
 def read_root():
-    return {"message": "Industrace API", "version": "2.1.1"}
+    return {"message": "Sampark API", "version": "2.1.1"}
 
 
 @app.get("/health")

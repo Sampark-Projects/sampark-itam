@@ -483,7 +483,7 @@ export default {
 
 .protocol-chip {
   background-color: #e3f2fd;
-  color: #1976d2;
+  color: #1d6838;
   padding: 0.125rem 0.5rem;
   border-radius: 0.25rem;
   font-size: 0.75rem;

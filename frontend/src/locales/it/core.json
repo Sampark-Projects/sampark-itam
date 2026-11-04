@@ -108,7 +108,7 @@
   "risk": "Rischio",
   "communication": "Comunicazione",
   "position": "Posizione",
-  "loginTitle": "Industrace",
+  "loginTitle": "Sampark",
   "loginEmail": "Email",
   "loginPassword": "Password",
   "loginSubmit": "Accedi",
@@ -135,7 +135,7 @@
   },
   "footer": {
     "powered_by": "Powered by",
-    "copyright": "© {year} Industrace — Licenza AGPL v3",
+    "copyright": "© {year} Sampark — Licenza AGPL v3",
     "github": "Repository",
     "report_bug": "Segnala un bug",
     "license": "Licenza"

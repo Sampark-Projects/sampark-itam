@@ -132,7 +132,7 @@ const formatTimeAgo = (timestamp) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #667eea;
+  background: #1d6838;
   color: white;
   font-size: 0.875rem;
   flex-shrink: 0;
@@ -152,7 +152,7 @@ const formatTimeAgo = (timestamp) => {
 }
 
 .change-link:hover {
-  color: #667eea;
+  color: #1d6838;
   text-decoration: underline;
 }
 
@@ -182,7 +182,7 @@ const formatTimeAgo = (timestamp) => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #667eea;
+  color: #1d6838;
   text-decoration: none;
   font-weight: 600;
   font-size: 0.875rem;

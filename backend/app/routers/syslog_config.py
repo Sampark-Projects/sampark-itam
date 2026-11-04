@@ -181,7 +181,7 @@ def test_syslog_config(
         protocol = (config.protocol or "udp").lower()
         facility = config.facility if config.facility is not None else 16
 
-    message = '{"test": true, "message": "Industrace syslog test", "source": "industrace-audit"}'
+    message = '{"test": true, "message": "Sampark syslog test", "source": "industrace-audit"}'
     data = _format_bsd_message(facility, "industrace-audit", message)
 
     try:

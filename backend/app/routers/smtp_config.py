@@ -142,8 +142,8 @@ def test_smtp_config(
     try:
         success = send_email(
             test_email,
-            "Test Email - Industrace",
-            "This is a test email from Industrace notification system.",
+            "Test Email - Sampark",
+            "This is a test email from Sampark notification system.",
             email_config
         )
         if success:

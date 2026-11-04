@@ -6,23 +6,23 @@ export const appConfig = {
   version: packageJson.version,
   
   // Nome dell'applicazione
-  name: 'Industrace',
+  name: 'Sampark',
   
   // Descrizione
   description: 'Configuration Management Database for Industrial Control Systems',
   
   // Informazioni sul copyright
   copyright: {
-    company: 'Industrace',
-    url: 'https://www.besafe.it'
+    company: 'Sampark',
+    url: 'https://www.samparksoftwares.com'
   },
   
   // Link utili
   links: {
-    website: 'https://www.besafe.it',
-    github: 'https://github.com/Industrace/industrace',
-    issues: 'https://github.com/Industrace/industrace/issues',
-    license: 'https://github.com/Industrace/industrace/blob/main/LICENSE'
+    website: 'https://www.samparksoftwares.com',
+    github: 'https://github.com/Sampark-Projects/sampark-itam',
+    issues: 'https://github.com/Sampark-Projects/sampark-itam/issues',
+    license: 'https://github.com/Sampark-Projects/sampark-itam/blob/main/LICENSE'
   },
   
   // Configurazione API

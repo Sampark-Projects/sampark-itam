@@ -70,7 +70,7 @@ class Settings(BaseSettings):
     MFA_MAX_ATTEMPTS: int = int(os.getenv("MFA_MAX_ATTEMPTS", "5"))
     MFA_LOCKOUT_MINUTES: int = int(os.getenv("MFA_LOCKOUT_MINUTES", "15"))
     MFA_BACKUP_CODES_COUNT: int = int(os.getenv("MFA_BACKUP_CODES_COUNT", "10"))
-    MFA_ISSUER_NAME: str = os.getenv("MFA_ISSUER_NAME", "Industrace")
+    MFA_ISSUER_NAME: str = os.getenv("MFA_ISSUER_NAME", "Sampark")
     
     # SSO/Enterprise Auth
     SSO_REDIRECT_URI: str = os.getenv("SSO_REDIRECT_URI") or "http://localhost:5173/auth/sso/callback"
@@ -85,7 +85,7 @@ class Settings(BaseSettings):
 
     # API Versioning
     API_VERSION: str = os.getenv("API_VERSION", "v1")
-    API_TITLE: str = os.getenv("API_TITLE", "Industrace API")
+    API_TITLE: str = os.getenv("API_TITLE", "Sampark API")
     API_DESCRIPTION: str = os.getenv(
         "API_DESCRIPTION",
         "Configuration Management Database for Industrial Control Systems",

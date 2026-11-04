@@ -12,7 +12,6 @@
       <router-view />
     </div>
     <GlobalSearchSpotlight />
-    <BaseFooter v-if="auth.isAuthenticated" />
   </div>
 </template>
 
@@ -23,7 +22,6 @@ import { useAuthStore } from './store/auth'
 import Toast from 'primevue/toast'
 import SidebarMenu from './components/common/SidebarMenu.vue'
 import GlobalSearchSpotlight from './components/common/GlobalSearchSpotlight.vue'
-import BaseFooter from './components/common/BaseFooter.vue'
 import SetupDetector from './components/SetupDetector.vue'
 
 const auth = useAuthStore()

@@ -95,7 +95,7 @@ const severityClass = computed(() => {
 }
 
 .severity-info .card-icon {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1d6838 0%, #154f2a 100%);
   color: white;
 }
 
@@ -115,7 +115,7 @@ const severityClass = computed(() => {
 }
 
 .severity-info {
-  border-left-color: #667eea;
+  border-left-color: #1d6838;
 }
 
 .severity-warning {

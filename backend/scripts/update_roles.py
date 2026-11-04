@@ -60,7 +60,7 @@ def update_all_roles():
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("Industrace - Role Permissions Update Script")
+    print("Sampark - Role Permissions Update Script")
     print("=" * 60)
     print()
     

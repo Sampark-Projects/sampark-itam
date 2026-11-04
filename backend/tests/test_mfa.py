@@ -32,7 +32,7 @@ def test_totp_generate_and_verify(encryption_key):
     secret = mfa_service.generate_totp_secret()
     uri = mfa_service.build_provisioning_uri("user@example.com", secret)
     assert "otpauth://totp/" in uri
-    assert "Industrace" in uri or settings.MFA_ISSUER_NAME in uri
+    assert "Sampark" in uri or settings.MFA_ISSUER_NAME in uri
     code = pyotp.TOTP(secret).now()
     assert mfa_service.verify_totp_code(secret, code)
     assert not mfa_service.verify_totp_code(secret, "000000")

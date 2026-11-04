@@ -1,6 +1,6 @@
 /* frontend/src/static/main.css */
 
-/* Palette allineata a aura-dark-indigo PrimeVue */
+/* Sampark palette (primary green #1d6838) */
 :root {
   --background-color: #f4f6fa;      /* contenuto chiaro */
   --card-bg: #fff;                  /* card bianche */
@@ -10,8 +10,8 @@
   --text-color: #23272f;
   --text-color-light: #6b7280;
   --border-color: #e5e7eb;
-  --primary-color: #6366f1;
-  --primary-color-dark: #4f46e5;
+  --primary-color: #1d6838;
+  --primary-color-dark: #154f2a;
   --success-color: #22c55e;
   --danger-color: #ef4444;
   --warning-color: #eab308;
@@ -24,6 +24,7 @@
 }
 
 body {
+  margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background: var(--background-color);
   color: var(--text-color);

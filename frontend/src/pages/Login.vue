@@ -8,14 +8,12 @@
 
     <!-- Container principale -->
     <div class="login-content">
-      <!-- Logo e titolo -->
+      <!-- Logo -->
       <div class="login-brand">
         <div class="logo-container">
-          <img src="@/static/logo_black.png" alt="Industrace" class="login-logo" />
+          <img src="@/static/sampark_logo.png" alt="Sampark" class="login-logo" />
           <div class="logo-glow"></div>
         </div>
-        <h1 class="brand-title">{{ $t('login.title') }}</h1>
-        <p class="brand-subtitle">{{ $t('login.strings.welcomeMessage') }}</p>
       </div>
 
       <!-- Form di login -->
@@ -60,10 +58,9 @@
                   v-model="password" 
                   :feedback="false" 
                   required 
-                  toggleMask 
-                  class="form-input"
+                  toggleMask
                   :placeholder="$t('login.strings.passwordPlaceholder')"
-                  :class="{ 'p-invalid': passwordError }"
+                  :inputClass="{ 'p-invalid': passwordError }"
                   inputId="password_input"
                 />
                 <div class="input-icon">
@@ -333,9 +330,9 @@ const handleSubmit = async () => {
   right: 0;
   bottom: 0;
   background-image: 
-    radial-gradient(circle at 25% 25%, rgba(102, 126, 234, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 75% 75%, rgba(118, 75, 162, 0.03) 0%, transparent 50%),
-    linear-gradient(45deg, transparent 40%, rgba(102, 126, 234, 0.02) 50%, transparent 60%);
+    radial-gradient(circle at 25% 25%, rgba(29, 104, 56, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(21, 79, 42, 0.03) 0%, transparent 50%),
+    linear-gradient(45deg, transparent 40%, rgba(29, 104, 56, 0.02) 50%, transparent 60%);
   animation: backgroundFloat 20s ease-in-out infinite;
 }
 
@@ -360,7 +357,8 @@ const handleSubmit = async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2rem;
+  justify-content: center;
+  gap: 1.5rem;
   max-width: 1200px;
   width: 100%;
   padding: 2rem;
@@ -370,17 +368,15 @@ const handleSubmit = async () => {
 .login-brand {
   text-align: center;
   color: #2c3e50;
-  margin-bottom: 1rem;
 }
 
 .logo-container {
   position: relative;
   display: inline-block;
-  margin-bottom: 1rem;
 }
 
 .login-logo {
-  width: 100px;
+  width: 180px;
   height: auto;
   filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
   transition: transform 0.3s ease;
@@ -397,7 +393,7 @@ const handleSubmit = async () => {
   transform: translate(-50%, -50%);
   width: 120px;
   height: 120px;
-  background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(29, 104, 56, 0.1) 0%, transparent 70%);
   border-radius: 50%;
   animation: logoGlow 3s ease-in-out infinite alternate;
 }
@@ -405,24 +401,6 @@ const handleSubmit = async () => {
 @keyframes logoGlow {
   0% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
   100% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-}
-
-.brand-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin: 0 0 0.5rem 0;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.brand-subtitle {
-  font-size: 1.1rem;
-  margin: 0;
-  color: #64748b;
-  font-weight: 400;
 }
 
 /* Form container */
@@ -484,7 +462,7 @@ const handleSubmit = async () => {
 }
 
 .form-label i {
-  color: #667eea;
+  color: #1d6838;
   font-size: 0.8rem;
 }
 
@@ -503,8 +481,8 @@ const handleSubmit = async () => {
 }
 
 .form-input:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #1d6838;
+  box-shadow: 0 0 0 3px rgba(29, 104, 56, 0.1);
   outline: none;
 }
 
@@ -518,7 +496,7 @@ const handleSubmit = async () => {
   left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #667eea;
+  color: #1d6838;
   z-index: 2;
 }
 
@@ -550,7 +528,7 @@ const handleSubmit = async () => {
 }
 
 .forgot-password {
-  color: #667eea;
+  color: #1d6838;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.3s ease;
@@ -564,7 +542,7 @@ const handleSubmit = async () => {
 .login-button {
   width: 100%;
   padding: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1d6838 0%, #154f2a 100%);
   border: none;
   border-radius: 12px;
   color: white;
@@ -577,7 +555,7 @@ const handleSubmit = async () => {
 
 .login-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 25px rgba(29, 104, 56, 0.3);
 }
 
 .login-button:disabled {
@@ -655,7 +633,7 @@ const handleSubmit = async () => {
 }
 
 .signup-link {
-  color: #667eea;
+  color: #1d6838;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.3s ease;
@@ -673,10 +651,6 @@ const handleSubmit = async () => {
   
   .form-card {
     padding: 2rem;
-  }
-  
-  .brand-title {
-    font-size: 2rem;
   }
   
   .form-options {
@@ -709,7 +683,7 @@ const handleSubmit = async () => {
 
 :deep(.p-password-input) {
   width: 100%;
-  padding: 1rem 1rem 1rem 3rem;
+  padding: 1rem 3rem 1rem 3rem;
   border: 2px solid #e2e8f0;
   border-radius: 12px;
   font-size: 1rem;
@@ -718,8 +692,8 @@ const handleSubmit = async () => {
 }
 
 :deep(.p-password-input:focus) {
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #1d6838;
+  box-shadow: 0 0 0 3px rgba(29, 104, 56, 0.1);
   outline: none;
 }
 
@@ -734,11 +708,11 @@ const handleSubmit = async () => {
 
 :deep(.p-checkbox .p-checkbox-box) {
   border-radius: 4px;
-  border-color: #667eea;
+  border-color: #1d6838;
 }
 
 :deep(.p-checkbox .p-checkbox-box.p-highlight) {
-  background: #667eea;
-  border-color: #667eea;
+  background: #1d6838;
+  border-color: #1d6838;
 }
 </style>

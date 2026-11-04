@@ -36,7 +36,7 @@ async def add_rate_limit_headers_middleware(
 async def get_api_info():
     """Information about the external API"""
     return {
-        "name": "Industrace External API",
+        "name": "Sampark External API",
         "version": "1.0.0",
         "description": "Secure API for external integrations",
         "authentication": "API Key (X-API-Key header)",
