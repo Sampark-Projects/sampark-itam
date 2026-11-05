@@ -1,23 +1,30 @@
-# Industrace - Industrial Asset Management System
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/readme/sampark-logo-light.png">
+    <img src="docs/images/readme/sampark-logo.png" alt="Sampark" width="240">
+  </picture>
+</p>
+
+# Sampark - Industrial Asset Management System
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%203.0-blue.svg)](https://opensource.org/licenses/AGPL-3.0)
-[![Release](https://img.shields.io/badge/Release-v2.3.3-blue.svg)](https://github.com/industrace/industrace/releases/tag/v2.3.3)
+[![Release](https://img.shields.io/badge/Release-v2.3.3-blue.svg)](https://github.com/Sampark-Projects/sampark-itam/releases)
 [![Status](https://img.shields.io/badge/Status-Pilot%20recommended-orange.svg)](#release-status)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-green.svg)](https://fastapi.tiangolo.com/)
 [![Vue.js](https://img.shields.io/badge/Vue.js-3.0-green.svg)](https://vuejs.org/)
 
-**Industrace** is an open-source Industrial Asset Management System for documenting, mapping, and assessing industrial equipment and networks. Built with FastAPI and Vue.js, it targets ICS environments — Purdue model mapping, ICS-specific risk parameters, and structured operational documentation.
+**Sampark** is an open-source Industrial Asset Management System for documenting, mapping, and assessing industrial equipment and networks. Built with FastAPI and Vue.js, it targets ICS environments — Purdue model mapping, ICS-specific risk parameters, and structured operational documentation.
 
-Most asset management tools are designed for IT. Industrace was born from the observation that industrial operations need different logic. It is meant as a practical starting point: easy to deploy, preloaded with demo data, and open to real-world feedback and contributions.
+Most asset management tools are designed for IT. Sampark is built on the observation that industrial operations need different logic. It is meant as a practical starting point: easy to deploy, preloaded with demo data, and open to real-world feedback and contributions.
 
 ## Release status
 
-Industrace **2.3.3** binds asset type/status create to the authenticated tenant, defaults the UI to English, and adds `libpcap-dev` to the probe image. **2.3.2** hardened the Print System (ReportLab-only PDFs, tenant-scoped kit download). The 2.x line remains **pilot recommended** — CSV import, deep health checks, IEC 62443 compliance, and Network Probes at *pilot-stable*. The codebase grew substantially between v1.x and v2.x; not every path is exercised in automated tests yet (CI runs backend tests with a coverage gate on critical modules).
+Sampark **2.3.3** binds asset type/status create to the authenticated tenant, defaults the UI to English, and adds `libpcap-dev` to the probe image. **2.3.2** hardened the Print System (ReportLab-only PDFs, tenant-scoped kit download). The 2.x line remains **pilot recommended** — CSV import, deep health checks, IEC 62443 compliance, and Network Probes at *pilot-stable*. The codebase grew substantially between v1.x and v2.x; not every path is exercised in automated tests yet (CI runs backend tests with a coverage gate on critical modules).
 
-We recommend a **controlled pilot** — internal network, limited users, non-critical ICS data — before relying on v2 in production OT environments. See the [Pilot Deployment Checklist](docs/PILOT_DEPLOYMENT_CHECKLIST.md). Your feedback via [GitHub Issues](https://github.com/industrace/industrace/issues) and real-world testing is how the project matures.
+We recommend a **controlled pilot** — internal network, limited users, non-critical ICS data — before relying on v2 in production OT environments. See the [Pilot Deployment Checklist](docs/PILOT_DEPLOYMENT_CHECKLIST.md). Your feedback via [GitHub Issues](https://github.com/Sampark-Projects/sampark-itam/issues) and real-world testing is how the project matures.
 
-Industrace is **free to use** under AGPL-3.0. There is no paywall; community validation and contributions are what move it forward.
+Sampark is **free to use** under AGPL-3.0. There is no paywall; community validation and contributions are what move it forward.
 
 ### Version lines
 
@@ -30,9 +37,9 @@ Industrace is **free to use** under AGPL-3.0. There is no paywall; community val
 
 Moving from 1.x to 2.x is a **new installation**, not an in-place upgrade. See [MIGRATION.md](docs/MIGRATION.md).
 
-## Built with human expertise and AI support
+## Origin and attribution
 
-Industrace combines hands-on cybersecurity expertise with AI-assisted development. AI tools helped explore solutions and speed up coding and documentation; **human validation** — pilots, code review, issues, and contributions — is the next step. Born in Italy, the project pairs European attention to industrial processes with a global open-source mindset.
+Sampark is developed and maintained by [Sampark Softwares](https://www.samparksoftwares.com). It is based on the open-source [Industrace](https://github.com/Industrace/industrace) project by Maurizio Bertaboni, supported by BeSafe S.r.l., and is distributed under the same AGPL-3.0 license. The upstream copyright and license notices are preserved — see [LICENSE](LICENSE).
 
 ## 🌟 Key Features
 
@@ -87,15 +94,14 @@ Features marked *(v2)* are not available in the frozen 1.x line. Network Probes 
 *Visual asset placement on floor plans with interactive mapping*
 
 ### 📱 Responsive Design
-![Mobile View](docs/images/readme/mobile-view.png)
-*Fully responsive interface that works on desktop, tablet, and mobile*
+![Tablet View](docs/images/readme/tablet-view.png)
+*Layout adapts to narrower screens such as tablets*
 
 ### 🔍 Global Search - Spotlight Feature
-![Global Search](docs/images/globalsearch.gif)
+![Global Search](docs/images/readme/global-search.png)
 *Powerful spotlight-style global search (Command+K / Ctrl+K) that searches across all entities - assets, locations, sites, contacts, suppliers, and more. Real-time results with instant navigation to any item in your system.*
 
 ### 📜 Asset Timeline
-![Asset Timeline](docs/images/readme/asset-details.png)
 *Complete change history and audit trail for each asset. Track every modification, view detailed change logs, and see who made what changes and when. Perfect for compliance, troubleshooting, and understanding asset evolution over time.*
 
 ## 🏗️ Architecture
@@ -122,8 +128,8 @@ Features marked *(v2)* are not available in the frozen 1.x line. Network Probes 
 #### **Quick Start** (Recommended for first time)
 ```bash
 # Clone the repository
-git clone https://github.com/industrace/industrace.git
-cd industrace
+git clone https://github.com/Sampark-Projects/sampark-itam.git
+cd sampark-itam
 
 # Start production environment with demo data
 make prod
@@ -149,7 +155,7 @@ open https://localhost
 make prod-cloud
 
 # Access the application
-open https://industrace.local
+open https://your-domain.com
 ```
 
 #### **Custom Certificates** (BETA mode - HTTPS with Nginx)
@@ -185,7 +191,7 @@ make config
 
 ### Default Credentials
 - **Production Local URL**: https://localhost
-- **Production Cloud URL**: https://industrace.local
+- **Production Cloud URL**: https://your-domain.com
 - **Email**: admin@example.com
 - **Password**: Admin@123456!
 
@@ -232,8 +238,8 @@ Full index: **[docs/README.md](docs/README.md)**.
 ### Setup Development Environment
 ```bash
 # Clone and setup
-git clone https://github.com/industrace/industrace.git
-cd industrace
+git clone https://github.com/Sampark-Projects/sampark-itam.git
+cd sampark-itam
 
 # Run tests
 make test
@@ -285,8 +291,8 @@ See the [LICENSE](LICENSE) file for details.
 ## 🆘 Support
 
 - **Documentation**: [docs/](docs/)
-- **Issues**: [GitHub Issues](https://github.com/industrace/industrace/issues) — preferred channel for bugs and pilot feedback
-- **Email**: industrace@besafe.it
+- **Issues**: [GitHub Issues](https://github.com/Sampark-Projects/sampark-itam/issues) — preferred channel for bugs and pilot feedback
+- **Website**: https://www.samparksoftwares.com
 
 ## 📋 Changelog
 
@@ -355,9 +361,8 @@ See **[CHANGELOG.md](CHANGELOG.md)** and **[Release Notes](docs/release-notes.md
 
 See our [Roadmap](docs/roadmap.md) for planned features and improvements.
 
-## Author and Support
+## About
 
-- **Author**: Maurizio Bertaboni
-- **Patronage**: The project is supported by BeSafe S.r.l.
-- **Industrace Site**: https://besafe.it/industrace
-- **Contact**: industrace@besafe.it
+- **Maintained by**: [Sampark Softwares](https://www.samparksoftwares.com)
+- **Issues**: [GitHub Issues](https://github.com/Sampark-Projects/sampark-itam/issues)
+- **Upstream project**: [Industrace](https://github.com/Industrace/industrace) — original author Maurizio Bertaboni, supported by BeSafe S.r.l. (AGPL-3.0)
