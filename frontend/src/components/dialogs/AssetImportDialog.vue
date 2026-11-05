@@ -13,17 +13,17 @@
         <div>
           <h5 class="font-semibold text-blue-700 mb-1">{{ t('assets.assetImport.requiredFields') }}</h5>
           <ul class="text-blue-600">
-            <li>• {{ t('assets.assetImport.nameRequired') }}</li>
-            <li>• {{ t('assets.assetImport.siteCodeRequired') }}</li>
-            <li>• {{ t('assets.assetImport.assetTypeRequired') }}</li>
+            <li>{{ t('assets.assetImport.nameRequired') }}</li>
+            <li>{{ t('assets.assetImport.siteCodeRequired') }}</li>
+            <li>{{ t('assets.assetImport.assetTypeRequired') }}</li>
           </ul>
         </div>
         <div>
           <h5 class="font-semibold text-blue-700 mb-1">{{ t('assets.assetImport.validFormats') }}</h5>
           <ul class="text-blue-600">
-            <li>• {{ t('assets.assetImport.ipFormat') }}</li>
-            <li>• {{ t('assets.assetImport.dateFormat') }}</li>
-            <li>• {{ t('assets.assetImport.purdueFormat') }}</li>
+            <li>{{ t('assets.assetImport.ipFormat') }}</li>
+            <li>{{ t('assets.assetImport.dateFormat') }}</li>
+            <li>{{ t('assets.assetImport.purdueFormat') }}</li>
           </ul>
         </div>
       </div>

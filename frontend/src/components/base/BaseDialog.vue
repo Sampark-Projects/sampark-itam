@@ -188,7 +188,7 @@ watch(() => props.mode, (newMode) => {
 
 <style scoped>
 .dialog-content {
-  min-height: 200px;
+  min-height: 0;
 }
 
 :deep(.p-dialog-header) {

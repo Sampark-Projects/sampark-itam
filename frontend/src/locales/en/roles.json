@@ -9,7 +9,7 @@
     "createdAt": "Data Creazione",
     "parentRole": "Parent Role",
     "selectParentRole": "Select parent role",
-    "inheritable": "Ereditabile"
+    "inheritable": "Inheritable"
   },
   "messages": {
     "fetchError": "Error loading roles",

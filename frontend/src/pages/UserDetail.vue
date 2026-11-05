@@ -82,7 +82,7 @@ function goBack() {
 
 function formatDate(dateString) {
   if (!dateString) return t('common.strings.na')
-  return new Date(dateString).toLocaleDateString('it-IT', {
+  return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -150,14 +150,14 @@ onMounted(async () => {
 
 <style scoped>
 .user-detail-page {
-  padding: 1rem;
+  padding: 0;
 }
 
 .page-header {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .page-header h1 {

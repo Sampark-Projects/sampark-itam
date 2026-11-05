@@ -2,7 +2,7 @@
   <div class="compliance-page">
     <div class="page-header">
       <h1>{{ t('isa62443.compliance.title') }}</h1>
-      <p class="text-muted">{{ t('isa62443.compliance.description') }}</p>
+      <p class="text-muted">{{ t('isa62443.compliance.pageDescription') }}</p>
     </div>
 
     <Message severity="info" class="mb-4" :closable="true">
@@ -328,11 +328,11 @@ onMounted(async () => {
 
 <style scoped>
 .compliance-page {
-  padding: 1.5rem;
+  padding: 0;
 }
 
 .page-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .text-muted {
@@ -363,6 +363,31 @@ onMounted(async () => {
 
 .zone-link:hover {
   text-decoration: underline;
+}
+
+/* Text badges must not be clipped to a single word in narrow columns */
+:deep(.p-badge) {
+  height: auto;
+  padding: 0.2rem 0.6rem;
+  white-space: nowrap;
+}
+
+
+/* Tighter card and tab-panel padding */
+:deep(.p-card .p-card-body) {
+  padding: 0.9rem 1.1rem;
+}
+
+:deep(.p-card .p-card-content) {
+  padding: 0;
+}
+
+:deep(.p-card .p-card-title) {
+  margin-bottom: 0.5rem;
+}
+
+:deep(.p-tabview .p-tabview-panels) {
+  padding: 0.75rem 0 0;
 }
 
 </style>

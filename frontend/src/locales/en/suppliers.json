@@ -76,7 +76,7 @@
         "province": "E.g. MI",
         "country": "E.g. Italy",
         "phone": "E.g. +39 02 1234567",
-        "email": "E.g. info@company.com",
+        "email": "E.g. info{'@'}company.com",
         "website": "E.g. https://www.company.com",
         "notes": "Additional notes about the supplier"
     }

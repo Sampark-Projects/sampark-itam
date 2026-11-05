@@ -38,6 +38,9 @@
         severity="help"
         @click="showAdvanced = !showAdvanced"
       />
+      <div class="filters-trailing">
+        <slot name="trailing" />
+      </div>
     </div>
 
     <!-- Filtri avanzati (espandibili) -->
@@ -81,7 +84,7 @@
               :min="0" 
               :max="10" 
               mode="decimal" 
-              style="width: 100px" 
+              class="risk-input" 
             />
             <span class="range-separator">-</span>
             <InputNumber 
@@ -91,7 +94,7 @@
               :min="0" 
               :max="10" 
               mode="decimal" 
-              style="width: 100px" 
+              class="risk-input" 
             />
           </div>
         </div>
@@ -151,7 +154,15 @@ const businessCriticalityOptions = [
 
 <style scoped>
 .filters-container {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.filters-trailing {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  white-space: nowrap;
 }
 
 .filters-base {

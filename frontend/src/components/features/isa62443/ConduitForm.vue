@@ -124,7 +124,7 @@
         />
       </div>
       <div class="field">
-        <label>{{ t('isa62443.securityZones.securityLevelTarget') }} (SL-T)</label>
+        <label>{{ t('isa62443.securityZones.securityLevelTarget') }}</label>
         <InputNumber 
           v-model="formData.security_level_target" 
           :min="1" 

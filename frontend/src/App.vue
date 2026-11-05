@@ -49,7 +49,8 @@ onMounted(async () => {
 }
 .main-content {
   flex: 1;
-  padding: 2rem;
+  min-width: 0;
+  padding: 0.75rem 1.5rem 1.5rem;
   overflow-y: auto;
 }
 </style>

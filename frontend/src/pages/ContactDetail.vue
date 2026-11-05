@@ -20,7 +20,7 @@
         </div>
       </template>
     </Card>
-    <div class="mt-5">
+    <div class="detail-card mt-4">
       <h3 class="text-lg font-semibold mb-2">{{ t('common.strings.linkedAssets') }}</h3>
       <ul>
         <li v-for="asset in assets" :key="asset.id">
@@ -115,12 +115,12 @@ onMounted(async () => {
 
 <style scoped>
 .contact-detail {
-  padding: 1rem;
+  padding: 0;
 }
 .page-header {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
 }
 </style> 

@@ -513,7 +513,7 @@ const saveSmtpConfig = async () => {
       toast.add({
         severity: 'warn',
         summary: t('common.messages.warning'),
-        detail: 'Compila tutti i campi obbligatori (Host, Porta, From Email)',
+        detail: 'Fill in all required fields (Host, Port, From Email)',
         life: 3000
       })
       savingSmtp.value = false
@@ -810,24 +810,23 @@ onMounted(() => {
 
 <style scoped>
 .setup-page {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 0;
+  width: 100%;
 }
 
 .setup-header {
-  text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: 0.75rem;
 }
 
 .setup-header h1 {
-  font-size: 2.5rem;
+  font-size: 2rem;
   color: var(--primary-color);
-  margin-bottom: 0.5rem;
+  margin: 0 0 0.25rem 0;
 }
 
 .setup-description {
-  font-size: 1.1rem;
+  font-size: 1rem;
+  margin: 0;
   color: var(--text-color-secondary);
 }
 

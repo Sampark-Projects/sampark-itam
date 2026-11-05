@@ -27,8 +27,8 @@ export function useGlobalSearch() {
     if (!auth.isAuthenticated) {
       toast.add({
         severity: 'warn',
-        summary: 'Attenzione',
-        detail: 'Devi essere autenticato per utilizzare la ricerca',
+        summary: 'Warning',
+        detail: 'You must be signed in to use search',
         life: 3000
       })
       return
@@ -46,8 +46,8 @@ export function useGlobalSearch() {
       console.error('Error response:', error.response?.data)
       toast.add({
         severity: 'error',
-        summary: 'Errore',
-        detail: error.response?.data?.detail || 'Errore durante la ricerca',
+        summary: 'Error',
+        detail: error.response?.data?.detail || 'Error while searching',
         life: 3000
       })
       searchResults.value = []

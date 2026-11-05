@@ -14,7 +14,18 @@
       :sites="sites"
       :areas="allAreas"
       :locations="locations"
-    />
+    >
+      <template #trailing>
+        <div class="text-sm text-600">
+          <i class="pi pi-info-circle mr-2"></i>
+          {{ $t('assets.strings.totalAssets') }} <strong>{{ totalAssetsCount }}</strong>
+        </div>
+        <div class="text-sm text-600" v-if="assets.length !== totalAssetsCount">
+          <i class="pi pi-filter mr-2"></i>
+          {{ t('assets.strings.filteredAssets', { filtered: assets.length, total: totalAssetsCount }) }}
+        </div>
+      </template>
+    </AssetsFilters>
 
     <!-- Active Filters Display -->
     <div v-if="activeFiltersCount > 0" class="active-filters mb-3">
@@ -116,18 +127,6 @@
           @click="clearAllFilters"
           class="p-button-text"
         />
-      </div>
-    </div>
-
-    <!-- Indicatore conteggio totale -->
-    <div class="flex justify-content-between align-items-center mb-3">
-      <div class="text-sm text-600">
-        <i class="pi pi-info-circle mr-2"></i>
-        {{ $t('assets.strings.totalAssets') }} {{ totalAssetsCount }}
-      </div>
-      <div class="text-sm text-600" v-if="assets.length !== totalAssetsCount">
-        <i class="pi pi-filter mr-2"></i>
-        {{ t('assets.strings.filteredAssets', { filtered: assets.length, total: totalAssetsCount }) }}
       </div>
     </div>
 
@@ -263,6 +262,7 @@
       :mode="dialogMode"
       :data="editingAsset"
       :showFooter="false"
+      width="min(780px, 94vw)"
       @cancel="close"
     >
       <template #default="{ data }">
@@ -1190,14 +1190,14 @@ function confirmEmptyTrash() {
 
 <style scoped>
 .assets-page {
-  padding: 1rem;
+  padding: 0;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .filters {

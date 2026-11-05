@@ -180,7 +180,7 @@
   },
   "compliance": {
     "title": "Compliance ISA/IEC 62443",
-    "description": "Dashboard per la gestione e monitoraggio della compliance ISA/IEC 62443",
+    "pageDescription": "Dashboard per la gestione e monitoraggio della compliance ISA/IEC 62443",
     "scopeBanner": "Sampark supporta la valutazione IEC 62443-3-3 (zone, condotti, asset). Lo stato zona deriva da SL-A vs SL-T; le % FR indicano il punteggio delle valutazioni, non una certificazione.",
     "status": "Stato Compliance",
     "compliant": "Compliant",

@@ -169,5 +169,13 @@ function fetchLogs() {
 .w-12rem {
   width: 12rem;
 }
+
+.logs-filters .field {
+  margin-bottom: 0;
+}
+
+.logs-filters .field > label {
+  margin-bottom: 0.35rem;
+}
 </style>
 

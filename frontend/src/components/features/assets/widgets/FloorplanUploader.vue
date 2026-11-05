@@ -71,7 +71,7 @@ async function uploadFloorplan({ files }) {
 
     <div v-if="floorplanUrl" class="mb-3">
       <p>{{ t('locations.floorplan.currentFloorplan') }}:</p>
-      <img :src="floorplanUrl" alt="Planimetria" style="max-width: 100%; max-height: 300px;" />
+      <img :src="floorplanUrl" alt="Floorplan" style="max-width: 100%; max-height: 300px;" />
     </div>
 
 <FileUpload

@@ -1,6 +1,6 @@
 <template>
   <div class="vulnerabilities-page">
-    <div class="page-header mb-4">
+    <div class="page-header">
       <h1>{{ t('vulnerabilities.title') }}</h1>
       <p class="page-description">
         {{ t('vulnerabilities.pageDescription') }}
@@ -8,7 +8,7 @@
     </div>
 
     <!-- Filters -->
-    <Card class="mb-4">
+    <Card class="mb-3">
       <template #content>
         <div class="filters-grid">
           <div class="filter-item">
@@ -78,8 +78,7 @@
               class="w-full"
             />
           </div>
-        </div>
-        <div class="filter-actions mt-3">
+          <div class="filter-actions">
           <Button 
             :label="t('common.actions.search')" 
             icon="pi pi-search" 
@@ -91,12 +90,13 @@
             @click="clearFilters"
             class="p-button-text"
           />
+          </div>
         </div>
       </template>
     </Card>
 
     <!-- Statistics Cards -->
-    <div class="stats-grid mb-4">
+    <div class="stats-grid mb-3">
       <Card>
         <template #content>
           <div class="stat-card">
@@ -533,13 +533,16 @@ watch(() => route.query, () => {
 
 <style scoped>
 .vulnerabilities-page {
-  padding: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
+  padding: 0;
+  width: 100%;
+}
+
+.page-header {
+  margin-bottom: 0.75rem;
 }
 
 .page-header h1 {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.25rem 0;
 }
 
 .page-description {
@@ -549,8 +552,15 @@ watch(() => route.query, () => {
 
 .filters-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) auto;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+@media (max-width: 1100px) {
+  .filters-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .filter-item {
@@ -566,7 +576,16 @@ watch(() => route.query, () => {
 
 .filter-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.vulnerabilities-page :deep(.p-card .p-card-body) {
+  padding: 0.9rem 1.1rem;
+}
+
+.vulnerabilities-page :deep(.p-card .p-card-content) {
+  padding: 0;
 }
 
 .stats-grid {

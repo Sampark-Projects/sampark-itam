@@ -620,14 +620,14 @@ onMounted(async () => {
 
 <style scoped>
 .asset-reviews-page {
-  padding: 1.5rem;
+  padding: 0;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .stats-grid {
@@ -690,12 +690,14 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1.5rem;
-  align-items: end;
+  align-items: start;
 }
 
 .settings-actions {
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
+  /* line up the button with the inputs, below the labels */
+  padding-top: 1.5rem;
 }
 
 .bulk-bar {
@@ -707,4 +709,39 @@ onMounted(async () => {
   border-radius: 8px;
   border: 1px solid var(--surface-border);
 }
+
+/* Tighter card and tab-panel padding */
+:deep(.p-card .p-card-body) {
+  padding: 0.9rem 1.1rem;
+}
+
+:deep(.p-card .p-card-content) {
+  padding: 0;
+}
+
+:deep(.p-card .p-card-title) {
+  margin-bottom: 0.5rem;
+}
+
+:deep(.p-tabview .p-tabview-panels) {
+  padding: 0.75rem 0 0;
+}
+
+.stats-grid {
+  margin-bottom: 1rem;
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+}
+
+.settings-grid {
+  gap: 1rem;
+}
+
+.settings-actions {
+  padding-top: 0;
+}
+
 </style>

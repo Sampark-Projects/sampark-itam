@@ -26,12 +26,12 @@
       <Column field="name" :header="t('common.fields.name')" sortable />
       <Column field="description" :header="t('common.fields.description')" />
       <Column field="area" :header="t('common.fields.area')" />
-<Column header="Planimetria">
+<Column :header="t('locations.fields.floorplan')">
   <template #body="{ data }">
     <div v-if="data.floorplan">
       <Image
         :src="getFloorplanThumbnailUrl(data.floorplan)"
-        alt="Planimetria"
+        :alt="t('locations.fields.floorplan')"
         width="150"
         preview
       />
@@ -245,7 +245,7 @@ function goBack() {
 .site-detail-page {
   background: var(--background-color);
   color: var(--text-color);
-  padding: 1rem;
+  padding: 0;
 }
 :deep(.p-card) {
   background: var(--card-bg) !important;

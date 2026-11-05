@@ -72,7 +72,7 @@ onMounted(() => {
 
 <style scoped>
 .asset-communications-page {
-  padding: 1rem;
+  padding: 0;
 }
 .mb-3 { margin-bottom: 1.5em; }
 </style> 

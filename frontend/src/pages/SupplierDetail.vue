@@ -4,11 +4,11 @@
   - Utilizza i componenti PrimeVue per la gestione del form
 -->
 <template>
-  <div class="p-4">
+  <div>
     <Button icon="pi pi-arrow-left" :label="t('common.actions.back')" class="mb-3" @click="goBack" />
     <h2 class="text-xl mb-4">{{ t('suppliers.title') }}</h2>
     
-    <div class="mb-4">
+    <div class="detail-card mb-4">
       <h3 class="text-lg font-semibold">{{ t('common.strings.info') }}</h3>
       <p><strong>{{ t('common.fields.name') }}:</strong> {{ supplier.name }}</p>
       <p><strong>{{ t('common.fields.description') }}:</strong> {{ supplier.description }}</p>
@@ -26,7 +26,7 @@
     </div>
 
     <!-- Sezione Contatti associati -->
-    <div class="mb-4">
+    <div class="detail-card mb-4">
       <h3 class="text-lg font-semibold">{{ t('contacts.title') }}</h3>
       <div v-if="canWrite('suppliers')" class="flex align-items-center gap-2 mb-2">
         <MultiSelect v-model="selectedContactIds" :options="allContacts" optionLabel="fullName" optionValue="id" :placeholder="t('common.actions.add')" display="chip" class="mr-2" style="min-width:250px" />
@@ -49,7 +49,7 @@
       </Dialog>
     </div>
 
-    <div>
+    <div class="detail-card">
       <h3 class="text-lg font-semibold mb-2">{{ t('documents.title') }}</h3>
       <FileUpload
         v-if="canWrite('suppliers')"

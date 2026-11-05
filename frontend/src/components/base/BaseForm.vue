@@ -125,7 +125,7 @@ const handleCancel = () => {
 }
 
 :deep(.p-field) {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 :deep(.p-field label) {

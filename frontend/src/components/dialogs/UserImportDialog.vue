@@ -8,9 +8,9 @@
     <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
       <h4 class="text-blue-800 mb-2">{{ t('users.userImport.importantInfo') }}</h4>
       <ul class="text-blue-600 text-sm">
-        <li>• {{ t('users.userImport.nameRequired') }}</li>
-        <li>• {{ t('users.userImport.emailRequired') }}</li>
-        <li>• {{ t('users.userImport.roleRequired') }}</li>
+        <li>{{ t('users.userImport.nameRequired') }}</li>
+        <li>{{ t('users.userImport.emailRequired') }}</li>
+        <li>{{ t('users.userImport.roleRequired') }}</li>
       </ul>
       <p class="text-blue-600 text-sm mt-2">{{ t('users.userImport.tipText') }}</p>
     </div>

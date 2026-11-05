@@ -214,14 +214,14 @@ onMounted(async () => {
 
 <style scoped>
 .security-zones-page {
-  padding: 1.5rem;
+  padding: 0;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .zone-link {

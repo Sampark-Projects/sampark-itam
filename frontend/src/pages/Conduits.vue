@@ -185,14 +185,14 @@ onMounted(async () => {
 
 <style scoped>
 .conduits-page {
-  padding: 1.5rem;
+  padding: 0;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
 }
 </style>
 

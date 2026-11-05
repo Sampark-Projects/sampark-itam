@@ -13,15 +13,15 @@
         <div>
           <h5 class="font-semibold text-blue-700 mb-1">{{ t('manufacturers.manufacturerImport.requiredFields') }}</h5>
           <ul class="text-blue-600">
-            <li>• {{ t('manufacturers.manufacturerImport.nameRequired') }}</li>
+            <li>{{ t('manufacturers.manufacturerImport.nameRequired') }}</li>
           </ul>
         </div>
         <div>
           <h5 class="font-semibold text-blue-700 mb-1">{{ t('manufacturers.manufacturerImport.validFormats') }}</h5>
           <ul class="text-blue-600">
-            <li>• {{ t('manufacturers.manufacturerImport.emailFormat') }}</li>
-            <li>• {{ t('manufacturers.manufacturerImport.websiteFormat') }}</li>
-            <li>• {{ t('manufacturers.manufacturerImport.phoneFormat') }}</li>
+            <li>{{ t('manufacturers.manufacturerImport.emailFormat') }}</li>
+            <li>{{ t('manufacturers.manufacturerImport.websiteFormat') }}</li>
+            <li>{{ t('manufacturers.manufacturerImport.phoneFormat') }}</li>
           </ul>
         </div>
       </div>

@@ -301,7 +301,7 @@ const recalculateRiskScores = async () => {
     toast.add({
       severity: 'error',
       summary: t('common.messages.error'),
-      detail: 'Errore durante il ricalcolo dei risk score',
+      detail: 'Error recalculating risk scores',
       life: 3000
     })
   } finally {
@@ -354,26 +354,24 @@ onMounted(async () => {
 
 <style scoped>
 .dashboard {
-  padding: 2rem;
-  background: #f8f9fa;
-  min-height: 100vh;
+  padding: 0;
 }
 
 .dashboard-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 2rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
   background: white;
-  padding: 2rem;
+  padding: 1.25rem 1.5rem;
   border-radius: 1rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .header-content h1 {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.25rem 0;
   color: #2c3e50;
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 700;
 }
 
@@ -389,19 +387,20 @@ onMounted(async () => {
 }
 
 .dashboard-section {
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
 }
 
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .change-section {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  gap: 1.5rem;
+  gap: 1.25rem;
+  align-items: start;
 }
 
 .change-card {
@@ -425,7 +424,7 @@ onMounted(async () => {
 }
 
 .action-center {
-  margin-top: 3rem;
+  margin-top: 2rem;
 }
 
 .action-center-card {

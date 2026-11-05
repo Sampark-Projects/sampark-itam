@@ -69,6 +69,7 @@ import itDiscoveredDevices from './it/discoveredDevices.json'
 import enDiscoveredDevices from './en/discoveredDevices.json'
 import itCore from './it/core.json'
 import enCore from './en/core.json'
+import enSupplemental from './en/supplemental.json'
 
 // Flatten nested objects
 const flattenObject = (obj, prefix = '') => {
@@ -132,7 +133,10 @@ const messages = {
     discoveredDevices: itDiscoveredDevices,
     core: itCore
   }),
-  en: flattenObject({
+  en: {
+    // Strings used by the UI that the main locale files do not define (never overrides existing keys)
+    ...flattenObject(enSupplemental),
+    ...flattenObject({
     common: enCommon,
     dashboard: enDashboard,
     assets: enAssets,
@@ -167,6 +171,7 @@ const messages = {
     discoveredDevices: enDiscoveredDevices,
     core: enCore
   })
+  }
 }
 
 // i18n configuration

@@ -215,7 +215,7 @@
     "noRequirements": "No requirements found",
     "requirementId": "Requirement ID",
     "category": "Category",
-    "description": "Dashboard for managing and monitoring ISA/IEC 62443 compliance",
+    "pageDescription": "Dashboard for managing and monitoring ISA/IEC 62443 compliance",
     "scopeBanner": "Sampark supports IEC 62443-3-3 assessment support (zones, conduits, assets). Zone status reflects SL-A vs SL-T; FR percentages show assessment scoring, not certification.",
     "totalZones": "Total Zones",
     "compliantZones": "Compliant Zones",

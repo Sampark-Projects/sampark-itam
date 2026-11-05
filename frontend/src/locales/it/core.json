@@ -129,7 +129,7 @@
     "province": "Es. MI",
     "country": "Es. Italia",
     "phone": "Es. +39 02 1234567",
-    "email": "Es. info@azienda.it",
+    "email": "Es. info{'@'}azienda.it",
     "website": "Es. https://www.azienda.it",
     "notes": "Note aggiuntive sul fornitore"
   },

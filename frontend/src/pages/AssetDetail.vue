@@ -516,7 +516,7 @@ const sanitizedDescription = computed(() => asset.value?.description ? DOMPurify
 
 <style scoped>
 .asset-detail {
-  padding: 1rem;
+  padding: 0;
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -525,7 +525,7 @@ const sanitizedDescription = computed(() => asset.value?.description ? DOMPurify
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
   gap: 1rem;
 }
 

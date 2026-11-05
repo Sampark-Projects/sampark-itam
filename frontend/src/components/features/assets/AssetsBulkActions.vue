@@ -67,9 +67,9 @@
         <InputText id="bulk_generic" v-model="bulkValue" />
       </div>
       
-      <div class="p-field">
-        <Button :label="t('common.actions.confirm')" icon="pi pi-check" class="p-button-success" :disabled="!bulkField || bulkValue === null || bulkValue === ''" @click="onBulkUpdate" />
+      <div class="flex justify-content-end gap-2 mt-4">
         <Button :label="t('common.actions.cancel')" icon="pi pi-times" class="p-button-text" @click="close" />
+        <Button :label="t('common.actions.confirm')" icon="pi pi-check" class="p-button-success" :disabled="!bulkField || bulkValue === null || bulkValue === ''" @click="onBulkUpdate" />
       </div>
     </div>
   </Dialog>

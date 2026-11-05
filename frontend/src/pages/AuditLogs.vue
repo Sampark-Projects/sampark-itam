@@ -24,8 +24,8 @@
     </div>
 
     <!-- Filtri Avanzati -->
-    <div class="filters-section mb-4">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="filters-section mb-3">
+      <div class="filters-row">
         <div class="field">
           <label class="block text-sm font-medium mb-2">{{ t('auditlog.strings.dateRange') }}</label>
           <Calendar 
@@ -76,9 +76,8 @@
             class="w-full"
           />
         </div>
-      </div>
-      
-      <div class="flex gap-2 mt-4">
+
+        <div class="filters-actions">
         <Button 
           :label="t('common.actions.search')" 
           icon="pi pi-search" 
@@ -90,6 +89,7 @@
           severity="secondary"
           @click="clearFilters" 
         />
+        </div>
       </div>
     </div>
 
@@ -449,19 +449,47 @@ async function exportAuditLogs() {
 
 <style scoped>
 .audit-logs-page {
-  padding: 1rem;
+  padding: 0;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.filters-row .field {
+  flex: 0 1 11.5rem;
+  min-width: 8.5rem;
+  margin-bottom: 0;
+}
+
+.filters-row .field:first-child {
+  flex-basis: 13rem;
+}
+
+.filters-row .field > label {
+  margin-bottom: 0.35rem;
+}
+
+.filters-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+  flex-wrap: nowrap;
 }
 
 .filters-section {
   background: #f8f9fa;
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   border-radius: 8px;
   border: 1px solid #e9ecef;
 }

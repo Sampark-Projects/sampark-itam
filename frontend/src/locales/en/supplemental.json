@@ -1,0 +1,335 @@
+{
+  "assetCommunications": {
+    "import": "Import",
+    "importPcap": "Import PCAP",
+    "importPcapDesc": "Import communications from a PCAP capture",
+    "logicalDependencies": "Logical dependencies",
+    "noGraphData": "No communication data to display",
+    "physicalLinks": "Physical links",
+    "title": "Asset communications"
+  },
+  "assetConnections": {
+    "add": "Add",
+    "addConnection": "Add connection",
+    "addConnectionError": "Failed to add the connection",
+    "addConnectionSuccess": "Connection added",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteConnectionError": "Failed to delete the connection",
+    "deleteConnectionSuccess": "Connection deleted",
+    "fetchAssetsError": "Failed to load assets",
+    "fetchError": "Failed to load connections",
+    "localInterface": "Local interface",
+    "noConnections": "No connections",
+    "ports": "Ports",
+    "remoteAsset": "Remote asset",
+    "remoteInterface": "Remote interface",
+    "searchAssetByName": "Search asset by name",
+    "title": "Connections"
+  },
+  "assetDetail": {
+    "noFloorplan": "No floorplan available for this location",
+    "positionSaveError": "Failed to save the position",
+    "positionSaved": "Position saved"
+  },
+  "assetImport": {
+    "fileInput": "Select a file"
+  },
+  "assetStatuses": {
+    "deleteConfirm": "Are you sure you want to delete this asset status?",
+    "messages": {
+      "createError": "Error creating asset status",
+      "created": "Asset status created successfully",
+      "deleteError": "Failed to delete the asset status",
+      "deleted": "Asset status deleted",
+      "fetchError": "Error loading asset statuses",
+      "updateError": "Error updating asset status",
+      "updated": "Asset status updated successfully"
+    }
+  },
+  "assetSuppliersTab": {
+    "suppliersUpdated": "Suppliers updated",
+    "updateError": "Failed to update suppliers"
+  },
+  "assetTypes": {
+    "deleteConfirm": "Are you sure you want to delete this asset type?",
+    "messages": {
+      "deleteError": "Failed to delete the asset type",
+      "deleted": "Asset type deleted",
+      "updateError": "Error updating asset type",
+      "updated": "Asset type updated successfully"
+    }
+  },
+  "assets": {
+    "assetForm": {
+      "tag": "Tag"
+    },
+    "assetImport": {
+      "confirm": "Confirm import",
+      "differences": "Differences",
+      "errors": "Errors",
+      "readError": "Unable to read the file",
+      "row": "Row",
+      "toCreate": "To create",
+      "toUpdate": "To update"
+    },
+    "documents": {
+      "downloadError": "Failed to download the document"
+    },
+    "fields": {
+      "macAddress": "MAC address",
+      "name": "Name"
+    },
+    "filters": {
+      "hasCriticalVulns": "Has critical vulnerabilities"
+    },
+    "messages": {
+      "assetUpdated": "Asset updated",
+      "bulkSoftDeleteError": "Failed to move the assets to trash",
+      "bulkSoftDeleteErrors": "Some assets could not be moved to trash",
+      "bulkSoftDeleted": "Assets moved to trash",
+      "bulkUpdateError": "Bulk update failed",
+      "bulkUpdated": "Assets updated",
+      "confirmBulkSoftDelete": "Move to trash",
+      "confirmBulkSoftDeleteMessage": "Move the selected assets to trash?",
+      "deleteSuccess": "Asset deleted",
+      "errorLoadingAsset": "Failed to load the asset",
+      "errorUpdatingAsset": "Failed to update the asset",
+      "fetchAreasError": "Failed to load areas",
+      "fetchAssetTypesError": "Failed to load asset types",
+      "fetchLocationsError": "Failed to load locations",
+      "fetchManufacturersError": "Failed to load manufacturers",
+      "hardDeleteError": "Failed to delete the asset permanently",
+      "hardDeleted": "Asset deleted permanently",
+      "importErrors": "Import completed with errors",
+      "importedInfo": "Assets imported",
+      "restoreError": "Failed to restore the asset",
+      "restored": "Asset restored",
+      "saveError": "Failed to save the asset",
+      "trashEmptied": "Trash emptied",
+      "trashEmptyError": "Failed to empty the trash"
+    },
+    "strings": {
+      "filteredAssets": "Filtered assets"
+    },
+    "value": "Value"
+  },
+  "assettypes": {
+    "level": "Level"
+  },
+  "common": {
+    "actions": {
+      "clearTrash": "Empty trash"
+    },
+    "bulkUpdateError": "Bulk update failed",
+    "bulkUpdated": "Bulk update completed",
+    "cancel": "Cancel",
+    "copy": "Copy",
+    "delete": "Delete",
+    "description": "Description",
+    "enter": "Enter",
+    "error": "Error",
+    "errors": {
+      "error": "Error",
+      "warning": "Warning"
+    },
+    "fields": {
+      "nameRequired": "Name is required"
+    },
+    "loading": "Loading...",
+    "messages": {
+      "bulkUpdated": "Bulk update completed successfully",
+      "confirm": "Confirm",
+      "requiredFieldsMissing": "Please fill in all required fields"
+    },
+    "new": "New",
+    "ok": "OK",
+    "optional": "Optional",
+    "placeholders": {
+      "contactEmail": "contact{'@'}company.com",
+      "contactName": "Contact name"
+    },
+    "saved": "Saved",
+    "selectArea": "Select area",
+    "selectStatus": "Select status",
+    "strings": {
+      "confirm": "Confirm",
+      "error": "Error",
+      "hours": "hours"
+    },
+    "success": "Success"
+  },
+  "contacts": {
+    "contactImport": {
+      "differences": "Differences",
+      "tip": "Tip",
+      "tipText": "Existing contacts with the same email will be updated."
+    },
+    "messages": {
+      "noContacts": "No contacts found"
+    }
+  },
+  "documents": {
+    "title": "Documents"
+  },
+  "floorplanWithMarkers": {
+    "assetNotPositioned": "This asset is not positioned on the floorplan",
+    "clickHereToPosition": "Click on the floorplan to position it",
+    "clickToPosition": "Click on the floorplan to set the position",
+    "coordinates": "Coordinates",
+    "currentAsset": "Current asset",
+    "fitToView": "Fit to view",
+    "hideGrid": "Hide grid",
+    "info": "Info",
+    "longPressPositioned": "Long-press to reposition",
+    "notPositioned": "Not positioned",
+    "otherAssets": "Other assets",
+    "positionChanged": "Position changed",
+    "positioned": "Positioned",
+    "resetView": "Reset view",
+    "savePosition": "Save position",
+    "saveStatus": "Save status",
+    "showGrid": "Show grid",
+    "status": "Status",
+    "unpositioned": "Unpositioned",
+    "unsavedChanges": "Unsaved changes",
+    "viewMode": "View mode",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "zoomToAsset": "Zoom to asset"
+  },
+  "form": {
+    "validationError": "Please check the form for errors"
+  },
+  "locations": {
+    "floorplan": {
+      "saveError": "Failed to save the floorplan position"
+    }
+  },
+  "login": {
+    "messages": {
+      "emailRequired": "Email is required",
+      "ssoError": "Single sign-on failed"
+    }
+  },
+  "manufacturerImport": {
+    "readError": "Unable to read the file"
+  },
+  "manufacturers": {
+    "manufacturerForm": {
+      "name": "Name"
+    },
+    "manufacturerImport": {
+      "differences": "Differences",
+      "tip": "Tip",
+      "tipText": "Existing manufacturers with the same name will be updated.",
+      "websiteFormat": "Website (https://...)"
+    }
+  },
+  "roles": {
+    "fetchError": "Failed to load the role",
+    "sections": {
+      "inheritedPermissions": "Inherited permissions"
+    },
+    "strings": {
+      "inherited": "Inherited"
+    }
+  },
+  "setup": {
+    "admin": {
+      "description": "Create the administrator account.",
+      "email": "Email",
+      "emailPlaceholder": "admin{'@'}company.com",
+      "name": "Full name",
+      "namePlaceholder": "Enter the full name",
+      "password": "Password",
+      "passwordPlaceholder": "Enter a password",
+      "title": "Administrator"
+    },
+    "back": "Back",
+    "description": "Complete the steps below to set up your installation.",
+    "errors": {
+      "installationFailed": "Installation failed",
+      "invalidEmail": "Enter a valid email address",
+      "invalidSlug": "The identifier can only contain lowercase letters, numbers and hyphens",
+      "passwordTooShort": "The password is too short",
+      "required": "This field is required"
+    },
+    "goToLogin": "Go to login",
+    "install": "Install",
+    "next": "Next",
+    "organization": {
+      "description": "Enter the details of your organization.",
+      "language": "Language",
+      "languagePlaceholder": "Select a language",
+      "name": "Organization name",
+      "namePlaceholder": "Enter the organization name",
+      "slug": "Organization identifier",
+      "slugPlaceholder": "my-organization",
+      "title": "Organization"
+    },
+    "refresh": "Refresh",
+    "review": {
+      "admin": "Administrator",
+      "description": "Review the details before installing.",
+      "organization": "Organization",
+      "title": "Review"
+    },
+    "steps": {
+      "admin": "Administrator",
+      "complete": "Complete",
+      "organization": "Organization",
+      "review": "Review",
+      "systemCheck": "System check"
+    },
+    "success": {
+      "credentials": "Sign in with the administrator credentials you just created.",
+      "description": "Your administrator account has been created.",
+      "installed": "Sampark has been installed successfully.",
+      "title": "Installation complete",
+      "warning": "Keep your credentials in a safe place."
+    },
+    "systemCheck": {
+      "database": "Database connection",
+      "description": "Checking that the system is ready to be installed.",
+      "freshInstall": "Fresh installation",
+      "title": "System check"
+    },
+    "welcome": "Welcome to Sampark"
+  },
+  "sso": {
+    "clientSecretDecryptError": "Unable to decrypt the client secret"
+  },
+  "supplierImport": {
+    "readError": "Unable to read the file",
+    "row": "Row"
+  },
+  "suppliers": {
+    "contacts": {
+      "new": "New contact"
+    },
+    "fields": {
+      "email": "Email",
+      "notes": "Notes",
+      "phone": "Phone",
+      "website": "Website"
+    },
+    "supplierForm": {
+      "vat_number": "VAT number"
+    }
+  },
+  "users": {
+    "copyError": "Failed to copy",
+    "messages": {
+      "resetPasswordError": "Failed to reset the password",
+      "resetPasswordSuccess": "Password reset successfully"
+    },
+    "passwordSecurityWarning": "Share this password securely. It will not be shown again.",
+    "resetPassword": "Reset password",
+    "resetPasswordSuccess": "Password reset successfully",
+    "temporaryPassword": "Temporary password",
+    "temporaryPasswordInfo": "The user must change this password at the next login.",
+    "userEmail": "User email",
+    "warning": "Warning"
+  }
+}

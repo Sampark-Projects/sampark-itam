@@ -7,7 +7,7 @@ export function useDateFormatter() {
     if (!dateString) return t('common.strings.na')
     try {
       const date = new Date(dateString)
-      return date.toLocaleDateString('it-IT')
+      return date.toLocaleDateString('en-GB')
     } catch (e) {
       return t('common.strings.na')
     }
@@ -17,7 +17,7 @@ export function useDateFormatter() {
     if (!dateString) return t('common.strings.na')
     try {
       const date = new Date(dateString)
-      return date.toLocaleString('it-IT')
+      return date.toLocaleString('en-GB')
     } catch (e) {
       return t('common.strings.na')
     }

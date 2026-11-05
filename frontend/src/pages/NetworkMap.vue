@@ -506,14 +506,12 @@ onMounted(() => {
 
 <style scoped>
 .network-map-page {
-  padding: 1rem;
-  max-width: 1400px;
-  margin: 0 auto;
+  padding: 0;
+  width: 100%;
 }
 
 .page-header {
-  margin-bottom: 2rem;
-  text-align: center;
+  margin-bottom: 0.75rem;
 }
 
 .page-header h1 {

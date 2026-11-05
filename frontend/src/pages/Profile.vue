@@ -24,7 +24,7 @@
               <div class="col-12">
                 <div class="field">
                   <label class="block text-sm font-medium mb-2">{{ t('profile.fields.fullName') }}</label>
-                  <div class="p-3 bg-gray-50 border-round">
+                  <div class="info-value">
                     {{ user.full_name || t('common.strings.na') }}
                   </div>
                 </div>
@@ -32,7 +32,7 @@
               <div class="col-12">
                 <div class="field">
                   <label class="block text-sm font-medium mb-2">{{ t('common.fields.email') }}</label>
-                  <div class="p-3 bg-gray-50 border-round">
+                  <div class="info-value">
                     {{ user.email }}
                   </div>
                 </div>
@@ -40,7 +40,7 @@
               <div class="col-12">
                 <div class="field">
                   <label class="block text-sm font-medium mb-2">{{ t('profile.fields.role') }}</label>
-                  <div class="p-3 bg-gray-50 border-round">
+                  <div class="info-value">
                     {{ user.role?.name || t('common.strings.na') }}
                   </div>
                 </div>
@@ -48,7 +48,7 @@
               <div class="col-12">
                 <div class="field">
                   <label class="block text-sm font-medium mb-2">{{ t('profile.fields.tenant') }}</label>
-                  <div class="p-3 bg-gray-50 border-round">
+                  <div class="info-value">
                     {{ user.tenant?.name || t('common.strings.na') }}
                   </div>
                 </div>
@@ -56,7 +56,7 @@
               <div class="col-12">
                 <div class="field">
                   <label class="block text-sm font-medium mb-2">{{ t('profile.fields.lastLogin') }}</label>
-                  <div class="p-3 bg-gray-50 border-round">
+                  <div class="info-value">
                     {{ formatDate(user.last_login) }}
                   </div>
                 </div>
@@ -148,7 +148,7 @@
       </div>
 
       <!-- Impostazioni -->
-      <div class="col-12">
+      <div class="col-12 lg:col-6">
         <Card>
           <template #title>
             <div class="flex align-items-center gap-2">
@@ -177,7 +177,7 @@
       </div>
 
       <!-- MFA -->
-      <div class="col-12">
+      <div class="col-12 lg:col-6">
         <Card>
           <template #title>
             <div class="flex align-items-center gap-2">
@@ -496,14 +496,58 @@ onMounted(async () => {
 
 <style scoped>
 .profile-page {
-  padding: 1rem;
+  padding: 0;
 }
 
 .page-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .space-y-4 > * + * {
   margin-top: 1rem;
+}
+
+/* Tighter rows inside the profile cards */
+:deep(.p-card .grid) {
+  gap: 0.75rem;
+}
+
+.info-value {
+  display: flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0 0.75rem;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  word-break: break-word;
+}
+
+:deep(.field) {
+  margin-bottom: 0.75rem;
+}
+
+/* Label sits close to its field; cards in a row share height */
+:deep(.field > label) {
+  margin-bottom: 0.25rem !important;
+  line-height: 1.25;
+}
+
+:deep(.p-card) {
+  height: 100%;
+}
+
+:deep(.field .justify-content-between) {
+  gap: 1rem;
+}
+
+:deep(.field .justify-content-between > .flex-column) {
+  flex: 1;
+  min-width: 0;
+}
+
+:deep(.p-inputswitch) {
+  flex-shrink: 0;
+  width: 3rem;
 }
 </style> 

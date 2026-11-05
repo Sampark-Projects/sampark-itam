@@ -298,7 +298,7 @@ function cancel() {
 
 <style scoped>
 .role-details-page {
-  padding: 1rem;
+  padding: 0;
   max-width: 1000px;
   margin: 0 auto;
 }

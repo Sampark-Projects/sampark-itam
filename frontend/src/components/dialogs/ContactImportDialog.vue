@@ -13,15 +13,15 @@
         <div>
           <h5 class="font-semibold text-blue-700 mb-1">{{ t('contacts.contactImport.requiredFields') }}</h5>
           <ul class="text-blue-600">
-            <li>• {{ t('contacts.contactImport.nameRequired') }}</li>
-            <li>• {{ t('contacts.contactImport.surnameRequired') }}</li>
+            <li>{{ t('contacts.contactImport.nameRequired') }}</li>
+            <li>{{ t('contacts.contactImport.surnameRequired') }}</li>
           </ul>
         </div>
         <div>
           <h5 class="font-semibold text-blue-700 mb-1">{{ t('contacts.contactImport.validFormats') }}</h5>
           <ul class="text-blue-600">
-            <li>• {{ t('contacts.contactImport.emailFormat') }}</li>
-            <li>• {{ t('contacts.contactImport.phoneFormat') }}</li>
+            <li>{{ t('contacts.contactImport.emailFormat') }}</li>
+            <li>{{ t('contacts.contactImport.phoneFormat') }}</li>
           </ul>
         </div>
       </div>

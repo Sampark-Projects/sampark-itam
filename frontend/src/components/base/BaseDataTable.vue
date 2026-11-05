@@ -4,9 +4,10 @@
   - Fornisce funzionalità comuni: filtri, ordinamento, paginazione, esportazione
 -->
 <template>
-  <div class="base-data-table" :class="{ 
+  <div class="base-data-table" :class="{
     'auto-height': autoHeight,
-    'needs-scroll': needsScroll 
+    'needs-scroll': needsScroll,
+    'wrap-cells': visibleColumns.length <= 9
   }">
     <DataTable 
       :value="dataWithOriginal" 
@@ -61,7 +62,7 @@
               icon="pi pi-sliders-h" 
               class="p-button-sm" 
               @click="toggleColumnPanel" 
-              v-tooltip="t('common.actions.chooseColumns')" 
+              v-tooltip.left="t('common.actions.chooseColumns')"
             />
             
             <!-- Azioni personalizzate -->
@@ -123,9 +124,9 @@
     </DataTable>
 
     <!-- Panel per selezione colonne -->
-    <OverlayPanel ref="columnPanel" v-if="showColumnSelector">
-      <div style="min-width: 250px">
-        <h4 class="mb-3">{{ t('common.actions.chooseColumns') }}</h4>
+    <OverlayPanel ref="columnPanel" v-if="showColumnSelector" class="column-chooser-panel">
+      <div class="column-chooser">
+        <h4 class="column-chooser-title">{{ t('common.actions.chooseColumns') }}</h4>
         <MultiSelect 
           v-model="selectedColumns" 
           :options="allColumns" 
@@ -410,15 +411,7 @@ defineExpose({
   font-size: 0.875rem;
 }
 
-/* Rimuove la limitazione di altezza di PrimeVue quando autoHeight è abilitato */
-.auto-height :deep(.p-datatable-wrapper) {
-  max-height: none !important;
-}
-
-/* Quando autoHeight è abilitato e non serve scroll, rimuovi overflow */
-.auto-height:not(.needs-scroll) :deep(.p-datatable-wrapper) {
-  overflow: visible !important;
-}
+/* Table body height (~10 rows, rest scrolls) is set globally in static/main.css */
 
 :deep(.p-datatable .p-datatable-header) {
   background: var(--surface-card);
@@ -427,16 +420,16 @@ defineExpose({
   padding: 1rem;
 }
 
-:deep(.p-datatable .p-datatable-thead > tr > th) {
-  background: var(--surface-section);
-  border: 1px solid var(--surface-border);
-  font-weight: 600;
-  padding: 0.75rem;
-}
-
 :deep(.p-datatable .p-datatable-tbody > tr > td) {
   border: 1px solid var(--surface-border);
-  padding: 0.75rem;
+  padding: 0.6rem 0.75rem;
+}
+
+/* Resizable mode forces nowrap: let long text wrap so narrow tables fit the page
+   (wide tables keep nowrap and scroll horizontally instead of cramping cells) */
+.wrap-cells :deep(.p-datatable-resizable .p-datatable-tbody > tr > td) {
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 :deep(.p-datatable .p-datatable-tbody > tr:hover) {

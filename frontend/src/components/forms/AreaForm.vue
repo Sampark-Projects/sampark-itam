@@ -178,7 +178,12 @@ function validateAreaData(areaData) {
 }
 
 .field {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+/* The field margin already provides the row spacing */
+.grid {
+  gap: 0 1rem;
 }
 
 .field label {

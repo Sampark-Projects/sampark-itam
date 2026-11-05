@@ -413,7 +413,7 @@
     "province": "E.g. MI",
     "country": "E.g. Italy",
     "phone": "E.g. +39 02 1234567",
-    "email": "E.g. info@company.com",
+    "email": "E.g. info{'@'}company.com",
     "website": "E.g. https://www.company.com",
     "notes": "Additional notes about the supplier"
   },
@@ -479,7 +479,7 @@
   "import": "Import",
   "createdAt": "Created at",
   "purdueLevel": "Purdue level",
-  "selectPurdueLevel": "Seleziona livello Purdue",
+  "selectPurdueLevel": "Select Purdue level",
   "order": "Ordine",
   "active": "Active",
   "inactive": "Inactive",

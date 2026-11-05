@@ -309,9 +309,8 @@ const confirmImport = async () => {
 
 <style scoped>
 .utility-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem;
+  width: 100%;
+  padding: 0;
 }
 
 .pcap-upload-section {
@@ -350,6 +349,18 @@ const confirmImport = async () => {
 
 :deep(.p-fileupload) {
   width: 100%;
+}
+
+:deep(.p-fileupload-buttonbar) {
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0 0.75rem;
+  background: transparent;
+  border: none;
+}
+
+:deep(.p-fileupload-buttonbar .p-button) {
+  margin: 0;
 }
 
 :deep(.p-fileupload-content) {

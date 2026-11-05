@@ -254,7 +254,7 @@ async function fetchRemoteAssets() {
     toast.add({ 
       severity: 'error', 
       summary: t('common.strings.error'), 
-      detail: e.response?.data?.detail || e.message || 'Errore nel caricamento degli asset remoti' 
+      detail: e.response?.data?.detail || e.message || 'Failed to load remote assets' 
     })
   }
 }

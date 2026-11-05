@@ -496,7 +496,7 @@ async function exportCsv() {
     link.remove();
     window.URL.revokeObjectURL(url);
   } catch (e) {
-    alert('Errore durante l\'esportazione CSV');
+    alert('Error exporting CSV');
   }
 }
 
@@ -509,13 +509,13 @@ function onContactImportResult(result) {
 
 <style scoped>
 .contacts-page {
-  padding: 1rem;
+  padding: 0;
 }
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
 }
 .filters {
   display: flex;

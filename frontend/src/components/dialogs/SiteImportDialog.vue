@@ -8,8 +8,8 @@
     <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
       <h4 class="text-blue-800 mb-2">{{ t('sites.siteImport.importantInfo') }}</h4>
       <ul class="text-blue-600 text-sm">
-        <li>• {{ t('sites.siteImport.nameRequired') }}</li>
-        <li>• {{ t('sites.siteImport.codeRequired') }}</li>
+        <li>{{ t('sites.siteImport.nameRequired') }}</li>
+        <li>{{ t('sites.siteImport.codeRequired') }}</li>
       </ul>
       <p class="text-blue-600 text-sm mt-2">{{ t('sites.siteImport.tipText') }}</p>
     </div>

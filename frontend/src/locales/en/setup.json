@@ -3,8 +3,8 @@
   "checking": "Checking...",
   "fields": {
     "smtp": {
-      "host": "Host SMTP",
-      "port": "Porta",
+      "host": "SMTP host",
+      "port": "Port",
       "username": "Username",
       "password": "Password",
       "fromEmail": "From Email",

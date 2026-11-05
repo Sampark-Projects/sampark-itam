@@ -399,7 +399,7 @@ watch(() => route.params.id, async (newId) => {
 }
 
 .asset-detail-new {
-  padding: 1rem;
+  padding: 0;
   max-width: 1600px;
   margin: 0 auto;
 }

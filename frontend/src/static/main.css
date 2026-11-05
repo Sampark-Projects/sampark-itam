@@ -72,6 +72,84 @@ a:hover {
 .p-4 { padding: 1.5rem; }
 .p-5 { padding: 2rem; }
 .flex { display: flex; }
+
+/* PrimeFlex-style helpers referenced by templates */
+.block { display: block; }
+.relative { position: relative; }
+.flex-wrap { flex-wrap: wrap; }
+.flex-column { flex-direction: column; }
+.align-items-center { align-items: center; }
+.align-items-end { align-items: flex-end; }
+.justify-content-center { justify-content: center; }
+.justify-content-end { justify-content: flex-end; }
+.justify-content-between { justify-content: space-between; }
+.w-full { width: 100%; }
+.w-8rem { width: 8rem; }
+.w-12rem { width: 12rem; }
+.w-16rem { width: 16rem; }
+.text-xs { font-size: 0.75rem; }
+.text-sm { font-size: 0.875rem; }
+.text-lg { font-size: 1.125rem; }
+.font-medium { font-weight: 500; }
+.font-bold { font-weight: 700; }
+.text-color-secondary { color: var(--text-color-light); }
+.flex-1 { flex: 1 1 0%; }
+.justify-end { justify-content: flex-end; }
+.cursor-pointer { cursor: pointer; }
+.font-semibold { font-weight: 600; }
+.text-md { font-size: 1rem; }
+.text-xl { font-size: 1.25rem; }
+.text-2xl { font-size: 1.5rem; }
+.text-4xl { font-size: 2.25rem; }
+
+/* spacing */
+.m-0 { margin: 0; }
+.mt-0 { margin-top: 0; }
+.mt-6 { margin-top: 2.5rem; }
+.mb-6 { margin-bottom: 2.5rem; }
+.ml-1 { margin-left: 0.25rem; }
+.ml-2 { margin-left: 0.5rem; }
+.mr-1 { margin-right: 0.25rem; }
+.mr-2 { margin-right: 0.5rem; }
+.mx-2 { margin-left: 0.5rem; margin-right: 0.5rem; }
+.py-4 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+
+/* text colors */
+.text-primary { color: var(--primary-color); }
+.text-muted { color: #6b7280; }
+.text-300 { color: #d1d5db; }
+.text-500 { color: #6b7280; }
+.text-600 { color: #4b5563; }
+.text-900 { color: #111827; }
+.text-gray-400 { color: #9ca3af; }
+.text-gray-500 { color: #6b7280; }
+.text-gray-600 { color: #4b5563; }
+.text-blue-500 { color: #3b82f6; }
+.text-blue-600 { color: #2563eb; }
+.text-blue-700 { color: #1d4ed8; }
+.text-blue-800 { color: #1e40af; }
+.text-red-500 { color: #ef4444; }
+.text-red-600 { color: #dc2626; }
+.text-orange-500 { color: #f97316; }
+.text-green-500 { color: #22c55e; }
+.text-green-600 { color: #16a34a; }
+.text-yellow-600 { color: #ca8a04; }
+.text-yellow-800 { color: #854d0e; }
+
+/* surfaces and borders */
+.bg-gray-50 { background-color: #f9fafb; }
+.bg-gray-300 { background-color: #d1d5db; }
+.bg-blue-50 { background-color: #eff6ff; }
+.border { border: 1px solid var(--border-color); }
+.border-blue-200 { border-color: #bfdbfe; }
+.border-round { border-radius: 6px; }
+.rounded { border-radius: 0.375rem; }
+
+/* PrimeVue Password: let the input fill the field so the reveal icon sits inside it */
+.p-password.w-full > .p-password-input,
+.p-password.w-full > .p-inputtext {
+  width: 100%;
+}
 .justify-between { justify-content: space-between; }
 .items-center { align-items: center; }
 .gap-1 { gap: 0.25rem; }
@@ -216,6 +294,24 @@ a:hover {
   gap: 1.5rem;
 }
 
+/* Column-count helpers used by templates (override the 12-column default above) */
+.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+.grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+@media (min-width: 768px) {
+  .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1024px) {
+  .lg\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
 .col-12 { grid-column: span 12; }
 .col-6 { grid-column: span 6; }
 .col-4 { grid-column: span 4; }
@@ -269,3 +365,187 @@ a:hover {
   background: #23272f !important;
   color: #fff !important;
 }
+
+/* Tables: consistent, compact-but-comfortable cell padding (PrimeVue default is 1rem) */
+.p-datatable .p-datatable-thead > tr > th {
+  padding: 0.75rem;
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+  padding: 0.6rem 0.75rem;
+}
+
+/* Form rows: consistent spacing for forms that use p-field without the shared BaseForm wrapper */
+.p-field {
+  margin-bottom: 1.25rem;
+}
+
+.p-field > label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+/* Textareas fill their container instead of the 20-column browser default */
+.p-inputtextarea {
+  width: 100%;
+}
+
+/* Detail pages: group information sections in a card like the rest of the app */
+.detail-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.detail-card h3 {
+  margin: 0 0 0.75rem;
+}
+
+.detail-card p {
+  margin: 0 0 0.5rem;
+}
+
+/* sizing helpers used for visual separators */
+.w-px { width: 1px; }
+.h-8 { height: 2rem; }
+
+/* PrimeFlex-style form rows used by many forms and dialogs */
+.field {
+  margin-bottom: 1.25rem;
+}
+
+.field > label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.field-checkbox {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+/* Space between a checkbox/radio/switch and its label */
+.p-checkbox + label,
+.p-radiobutton + label,
+.p-inputswitch + label {
+  margin-left: 0.5rem;
+}
+
+/* Password inputs fill their form field */
+.form-field .p-password,
+.p-field .p-password,
+.field .p-password {
+  display: block;
+  width: 100%;
+}
+.form-field .p-password > .p-password-input,
+.p-field .p-password > .p-password-input,
+.field .p-password > .p-password-input {
+  width: 100%;
+}
+
+/* Right-aligned action rows inside p-fluid forms keep natural button width */
+.p-fluid .justify-content-end > .p-button,
+.p-fluid .justify-content-end > button.p-button {
+  width: auto;
+}
+
+/* ---------- Search inputs with icon (PrimeVue icon-field helpers) ---------- */
+.p-input-icon-left,
+.p-input-icon-right {
+  position: relative;
+  display: inline-block;
+}
+.p-input-icon-left > i:first-of-type,
+.p-input-icon-right > i:last-of-type {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5rem;
+  line-height: 1;
+  color: var(--text-color-secondary, #6b7280);
+  pointer-events: none;
+}
+.p-input-icon-left > i:first-of-type { left: 0.75rem; }
+.p-input-icon-right > i:last-of-type { right: 0.75rem; }
+.p-input-icon-left > .p-inputtext { padding-left: 2.25rem; }
+.p-input-icon-right > .p-inputtext { padding-right: 2.25rem; }
+
+/* ---------- Column chooser popover ---------- */
+.p-overlaypanel.column-chooser-panel {
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  border: 1px solid var(--surface-border, #e5e7eb);
+}
+.p-overlaypanel.column-chooser-panel:before,
+.p-overlaypanel.column-chooser-panel:after { display: none; }
+.p-overlaypanel.column-chooser-panel .p-overlaypanel-content { padding: 1rem 1.1rem 1.1rem; }
+.column-chooser { width: min(680px, 88vw); }
+.column-chooser-title { margin: 0 0 0.75rem; font-size: 0.95rem; font-weight: 600; }
+.column-chooser .p-multiselect { width: 100%; }
+
+/* ---------- Tree (site hierarchy): no phantom indent for leaf nodes ---------- */
+.p-tree { padding: 0.75rem 1rem; }
+.p-tree .p-treenode-leaf > .p-treenode-content > .p-tree-toggler { display: none; }
+.p-tree .p-tree-filter-container { margin-bottom: 0.5rem; }
+
+/* ---------- Data tables: grey bold fixed header + ~10 visible rows, rest scrolls ---------- */
+.p-datatable .p-datatable-thead > tr > th {
+  background: #eceff3;
+  color: #374151;
+  border: 1px solid #d9dde3;
+  font-weight: 700;
+}
+.p-datatable .p-datatable-thead > tr > th .p-column-title,
+.p-datatable .p-datatable-thead > tr > th .p-sortable-column-icon,
+.p-datatable .p-datatable-thead > tr > th .p-column-filter-menu-button { color: #374151; font-weight: 700; }
+.p-datatable .p-datatable-thead > tr > th.p-sortable-column:not(.p-highlight):hover {
+  background: #e1e5ea;
+  color: #1f2937;
+}
+.p-datatable .p-datatable-thead > tr > th.p-sortable-column.p-highlight {
+  background: #d6dbe1;
+  color: #1f2937;
+}
+.p-datatable .p-datatable-thead > tr > th.p-sortable-column:focus-visible {
+  outline: 2px solid var(--primary-color, #1d6838);
+  outline-offset: -2px;
+}
+
+.p-datatable > .p-datatable-wrapper {
+  max-height: min(31rem, max(18rem, calc(100vh - 17rem))) !important;
+  overflow: auto !important;
+}
+/* Header always paints above body cells, checkboxes and action buttons */
+.p-datatable .p-datatable-thead {
+  position: sticky !important;
+  top: 0;
+  z-index: 5 !important;
+}
+.p-datatable .p-datatable-thead > tr > th {
+  position: sticky !important;
+  top: 0;
+  z-index: 5;
+}
+.p-datatable .p-datatable-tbody { position: relative; z-index: 0; isolation: isolate; }
+.p-datatable .p-datatable-tbody .p-checkbox-input { z-index: 0; }
+.p-datatable .p-datatable-tbody > tr:nth-child(even):not(.p-highlight) { background: #f8faf9; }
+.column-chooser .p-multiselect { height: auto; align-items: flex-start; }
+.column-chooser .p-multiselect-label-container { overflow: visible; }
+.column-chooser .p-multiselect .p-multiselect-label {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  padding: 0.5rem 0.6rem;
+}
+.column-chooser .p-multiselect .p-multiselect-trigger { align-self: stretch; }
+
+/* Tooltips stay on a single line */
+.p-tooltip { max-width: none; }
+.p-tooltip .p-tooltip-text { white-space: nowrap; }
