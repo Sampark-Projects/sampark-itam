@@ -818,8 +818,8 @@ export default {
   updateContact(id, data) {
     return api.put(`/contacts/${id}`, data)
   },
-  getAssetsTrash() {
-    return api.get('/assets/trash')
+  getAssetsTrash(params = {}) {
+    return api.get('/assets/trash', { params })
   },
   emptyAssetsTrash() {
     return api.delete('/assets/trash/empty')

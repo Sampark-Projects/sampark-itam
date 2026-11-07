@@ -1,5 +1,5 @@
 # backend/models/manufacturer.py
-from sqlalchemy import Column, String, Text, DateTime
+from sqlalchemy import Column, String, Text, DateTime, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -9,6 +9,9 @@ from app.database import Base
 
 class Manufacturer(Base):
     __tablename__ = "manufacturers"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "name", name="uq_manufacturers_tenant_name"),
+    )
 
     id = Column(
         UUID(as_uuid=True),
@@ -18,7 +21,7 @@ class Manufacturer(Base):
         nullable=False,
     )
     tenant_id = Column(UUID(as_uuid=True), nullable=False, index=True)
-    name = Column(String(255), nullable=False, unique=True)
+    name = Column(String(255), nullable=False)
     description = Column(Text)
     website = Column(String(255), nullable=True)
     email = Column(String(255), nullable=True)

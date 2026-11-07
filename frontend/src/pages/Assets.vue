@@ -138,6 +138,7 @@
       :globalFilterFields="['name','site.name','location.name','status.name','manufacturer.name','asset_type.name']"
       :selectionMode="canWrite('assets') ? 'multiple' : null"
       :storageKey="'assets'"
+      :rowsPerPageOptions="[15, 25, 50, 100, 250, 500]"
       :showExport="false"
       :autoHeight="true"
       :heightOffsetTop="300"
@@ -783,27 +784,29 @@ async function fetchAssets() {
     if (filters.value.has_critical_vulns?.value) {
       params.has_critical_vulns = true
     }
+    // The table filters/sorts/pages client-side, so it needs every asset. The API caps a
+    // request at 500 rows (default 100), so load page by page until everything is in.
+    const PAGE_SIZE = 500
+    const MAX_PAGES = 100 // safety net: 50,000 assets
+    const all = []
+    let total = null
     let response
-    if (trashMode.value) {
-      response = await api.getAssetsTrash(params)
-    } else {
-      response = await api.getAssets(params)
-    }
-    // Gestisci la nuova struttura della risposta con paginazione
-    if (response.data && response.data.data) {
-      assets.value = response.data.data
-      // Aggiungi informazioni di paginazione se disponibili
-      if (response.data.total !== undefined && response.data.total !== null) {
-        totalAssets.value = response.data.total
-      } else {
-        // Fallback: usa il conteggio degli asset caricati
-        totalAssets.value = response.data.data.length
+    for (let page = 0; page < MAX_PAGES; page++) {
+      const pageParams = { ...params, skip: page * PAGE_SIZE, limit: PAGE_SIZE }
+      response = trashMode.value
+        ? await api.getAssetsTrash(pageParams)
+        : await api.getAssets(pageParams)
+      const body = response.data
+      // Paginated response ({ data, total }) or legacy plain array (trash)
+      const rows = body && Array.isArray(body.data) ? body.data : (Array.isArray(body) ? body : [])
+      if (body && body.total !== undefined && body.total !== null) {
+        total = body.total
       }
-    } else {
-      // Fallback per la vecchia struttura
-      assets.value = response.data || []
-      totalAssets.value = assets.value.length
+      all.push(...rows)
+      if (rows.length < PAGE_SIZE || (total !== null && all.length >= total)) break
     }
+    assets.value = all
+    totalAssets.value = total !== null ? total : all.length
     return response
   }, {
     errorContext: t('assets.messages.fetchError'),

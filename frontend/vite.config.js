@@ -31,6 +31,9 @@ export default defineConfig({
     port: 5173,
     allowedHosts: ['industrace.local', 'www.industrace.local', 'localhost'],
     hmr: false,
+    // Bind mounts from Windows/OneDrive do not deliver file-change events into the
+    // container, so Vite kept serving stale modules. Poll for changes instead.
+    watch: { usePolling: true, interval: 1000 },
     proxy: {
       '/api': {
         target: 'http://backend:8000',

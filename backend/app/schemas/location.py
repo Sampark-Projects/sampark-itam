@@ -49,6 +49,7 @@ class LocationUpdate(BaseModel):
 
 
 class Location(LocationCreate):
+    description: Optional[str] = Field(None, max_length=10000, description="Location description")
     id: uuid.UUID
     tenant_id: uuid.UUID
     updated_at: Optional[datetime] = None
@@ -58,6 +59,9 @@ class Location(LocationCreate):
 
 
 class LocationRead(LocationCreate):
+    # The DB column is nullable (imports and the API update schema leave it empty),
+    # so reading must not fail when it is missing.
+    description: Optional[str] = Field(None, max_length=10000, description="Location description")
     id: uuid.UUID
     tenant_id: uuid.UUID
     updated_at: Optional[datetime] = None
