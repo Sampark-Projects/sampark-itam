@@ -9,7 +9,7 @@ from alembic import context
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "app")))
 
 # Importa Base e DATABASE_URL da app.database
-from app.database import Base, DATABASE_URL
+from app.database import Base, DATABASE_URL, _connect_args
 
 # Importa tutti i modelli per caricarli (esegue __init__.py dentro models)
 import app.models
@@ -44,6 +44,7 @@ def run_migrations_online() -> None:
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        connect_args=_connect_args,  # keeps DB_SCHEMA search_path for migrations too
     )
 
     with connectable.connect() as connection:

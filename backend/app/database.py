@@ -12,11 +12,17 @@ DATABASE_URL = os.getenv(
     "DATABASE_URL", "postgresql+psycopg2://cmdb_user:secure_password_123@localhost:5432/cmdb_ics"
 )
 
+# Optional PostgreSQL schema to use instead of "public" (e.g. DB_SCHEMA=assets).
+DB_SCHEMA = os.getenv("DB_SCHEMA", "").strip()
+
 _connect_args: dict = {}
 if DATABASE_URL.startswith("postgresql"):
+    _options = "-c statement_timeout=30000"
+    if DB_SCHEMA:
+        _options += f" -c search_path={DB_SCHEMA}"
     _connect_args = {
         "connect_timeout": 10,
-        "options": "-c statement_timeout=30000",
+        "options": _options,
     }
 
 # Configure engine with connection pool settings for better reliability

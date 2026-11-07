@@ -32,6 +32,9 @@ services:
       - "traefik.http.services.traefik.loadbalancer.server.port=8080"
 
   db:
+    # Not used by default: the app connects to the remote Postgres from .env
+    # (DATABASE_URL / DB_SCHEMA). Start only with: --profile local-db
+    profiles: ["local-db"]
     image: postgres:15
     environment:
       POSTGRES_USER: industrace_user
@@ -54,13 +57,15 @@ services:
 
   backend:
     build: ./backend
+    # Shared remote database settings (DATABASE_URL, DB_SCHEMA) - same file on local and server
+    env_file:
+      - .env.db
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
       - ./backend:/app
       - ./uploads:/app/uploads
       - ./logs:/app/logs
     environment:
-      - DATABASE_URL=postgresql://industrace_user:${DB_PASSWORD:-changeme}@db:5432/industrace
       - SECRET_KEY=${SECRET_KEY:-changeme}
       - ACCESS_TOKEN_EXPIRE_MINUTES=30
       - CORS_ORIGINS=http://industrace.local,https://industrace.local,http://localhost,https://localhost
@@ -71,9 +76,6 @@ services:
       # For production, set this to a persistent value:
       # Generate with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
       # - ENCRYPTION_KEY=your-encryption-key-here
-    depends_on:
-      db:
-        condition: service_healthy
     networks:
       - industrace-network
     labels:

@@ -71,6 +71,7 @@ probe/probe_state.json
 test-certs/
 
 # Temporary environment files
+.env.db
 .env.dev
 .env.prod
 .env.prod-cloud
