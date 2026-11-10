@@ -16,7 +16,10 @@
       :globalFilterFields="[]"
       :sortField="sortField"
       :sortOrder="sortOrder"
-      paginator 
+      paginator
+      :lazy="lazy"
+      :totalRecords="lazy ? totalRecords : undefined"
+      :first="lazy ? first : undefined"
       :rows="rows"
       :rowsPerPageOptions="rowsPerPageOptions"
       :resizableColumns="resizableColumns"
@@ -29,6 +32,7 @@
       v-model:selection="selection"
       :selectionMode="selectionMode"
       @sort="onSort"
+      @page="onPage"
     >
       <template #header>
         <div class="flex justify-content-between align-items-center gap-2">
@@ -246,11 +250,26 @@ const props = defineProps({
   forceScroll: {
     type: Boolean,
     default: false
+  },
+  // Server-side paging: the parent loads one page at a time. The table then shows the
+  // rows it is given as-is, uses totalRecords for the paginator, and emits "page" on
+  // every page / rows-per-page change.
+  lazy: {
+    type: Boolean,
+    default: false
+  },
+  totalRecords: {
+    type: Number,
+    default: 0
+  },
+  first: {
+    type: Number,
+    default: 0
   }
 })
 
 // Emits
-const emit = defineEmits(['sort', 'selection-change'])
+const emit = defineEmits(['sort', 'page', 'selection-change'])
 
 // Refs
 const tableRef = ref()
@@ -345,6 +364,10 @@ const toggleColumnPanel = (event) => {
 
 const onSort = (event) => {
   emit('sort', event)
+}
+
+const onPage = (event) => {
+  emit('page', event)
 }
 
 // Load saved columns

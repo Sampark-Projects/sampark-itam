@@ -95,13 +95,20 @@ def list_assets(
     risk_score_min: Optional[float] = None,
     risk_score_max: Optional[float] = None,
     has_critical_vulns: Optional[bool] = Query(None, description="Filter assets with critical/high vulnerabilities"),
+    sort_by: Optional[str] = Query(None, description="Column to sort by (e.g. name, site.name, risk_score)"),
+    sort_order: str = Query("asc", pattern="^(asc|desc)$"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     from sqlalchemy.orm import selectinload
     from app.models.area import Area
+    from app.models.location import Location
+    from app.models.site import Site
+    from app.models.asset_status import AssetStatus
+    from app.models.asset_type import AssetType
+    from app.models.manufacturer import Manufacturer
     from sqlalchemy import func, or_
-    
+
     # PERFORMANCE: Usa un limite ragionevole per la paginazione
     # Massimo 500 record per richiesta invece di caricare tutti gli asset
     limit = min(limit, 500)
@@ -113,11 +120,19 @@ def list_assets(
         .options(
             selectinload(Asset.interfaces),  # Carica interfacce in una query separata
             selectinload(Asset.site),
-            selectinload(Asset.location),
+            # Location is serialized with its floorplan and site: load them in the
+            # same batch, otherwise each distinct location costs extra round trips
+            # (very slow with a remote database).
+            selectinload(Asset.location).selectinload(Location.floorplan),
+            selectinload(Asset.location).selectinload(Location.site),
             selectinload(Asset.status),
             selectinload(Asset.manufacturer),
             selectinload(Asset.asset_type),
             selectinload(Asset.area),  # PERFORMANCE: Carica area qui per evitare N+1
+            # Serialized by the Asset schema: one batched query each instead of one per asset
+            selectinload(Asset.documents),
+            selectinload(Asset.photos),
+            selectinload(Asset.contacts),
         )
         .filter(Asset.tenant_id == current_user.tenant_id, Asset.deleted_at == None)
     )
@@ -175,6 +190,33 @@ def list_assets(
     # Esegue COUNT(*) invece di caricare tutti i record
     total_count = query.with_entities(func.count(Asset.id)).scalar()
     
+    # Server-side sorting (the UI pages through the API, so sorting must happen here).
+    # Allow-list only; related names need a join. Always add Asset.id as a tie-breaker so
+    # pages never overlap or skip rows.
+    own_columns = {
+        "name": Asset.name, "tag": Asset.tag, "model": Asset.model,
+        "business_criticality": Asset.business_criticality,
+        "risk_score": Asset.risk_score, "created_at": Asset.created_at,
+    }
+    joined_columns = {
+        "site.name": (Site, Asset.site_id, Site.name),
+        "area_name": (Area, Asset.area_id, Area.name),
+        "location.name": (Location, Asset.location_id, Location.name),
+        "status.name": (AssetStatus, Asset.status_id, AssetStatus.name),
+        "manufacturer.name": (Manufacturer, Asset.manufacturer_id, Manufacturer.name),
+        "asset_type.name": (AssetType, Asset.asset_type_id, AssetType.name),
+    }
+    sort_col = None
+    if sort_by in own_columns:
+        sort_col = own_columns[sort_by]
+    elif sort_by in joined_columns:
+        join_model, fk, sort_col = joined_columns[sort_by]
+        query = query.outerjoin(join_model, fk == join_model.id)
+    if sort_col is None:
+        sort_col, sort_order = Asset.name, "asc"
+    ordered = sort_col.desc() if sort_order == "desc" else sort_col.asc()
+    query = query.order_by(ordered.nulls_last(), Asset.id)
+
     # PERFORMANCE: Applica paginazione prima di caricare i dati
     assets = query.offset(skip).limit(limit).all()
     

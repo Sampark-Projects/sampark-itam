@@ -20,10 +20,6 @@
           <i class="pi pi-info-circle mr-2"></i>
           {{ $t('assets.strings.totalAssets') }} <strong>{{ totalAssetsCount }}</strong>
         </div>
-        <div class="text-sm text-600" v-if="assets.length !== totalAssetsCount">
-          <i class="pi pi-filter mr-2"></i>
-          {{ t('assets.strings.filteredAssets', { filtered: assets.length, total: totalAssetsCount }) }}
-        </div>
       </template>
     </AssetsFilters>
 
@@ -138,13 +134,18 @@
       :globalFilterFields="['name','site.name','location.name','status.name','manufacturer.name','asset_type.name']"
       :selectionMode="canWrite('assets') ? 'multiple' : null"
       :storageKey="'assets'"
-      :rowsPerPageOptions="[15, 25, 50, 100, 250, 500]"
+      :rowsPerPageOptions="[15, 25, 50, 100, 250]"
+      :lazy="!trashMode"
+      :totalRecords="totalAssets"
+      :first="pageFirst"
+      :rows="pageRows"
       :showExport="false"
       :autoHeight="true"
       :heightOffsetTop="300"
       :heightOffsetBottom="120"
       @selection-change="selectedAssets = $event"
       @sort="onSort"
+      @page="onPage"
     >
 
 
@@ -344,9 +345,10 @@ const toast = useToast()
 // Definizione delle colonne PRIMA di useFilters
 const allColumns = [
   { field: 'name', header: t('common.fields.name') },
-  { field: 'ip_address', header: t('assets.fields.ipAddress') },
-  { field: 'vlan', header: t('assets.fields.vlan') },
-  { field: 'logical_port', header: t('assets.fields.logicalPort') },
+  // ip_address / vlan / logical_port come from the interfaces, so the server cannot sort by them
+  { field: 'ip_address', header: t('assets.fields.ipAddress'), sortable: false },
+  { field: 'vlan', header: t('assets.fields.vlan'), sortable: false },
+  { field: 'logical_port', header: t('assets.fields.logicalPort'), sortable: false },
   { field: 'site.name', header: t('common.fields.site') },
   { field: 'area_name', header: t('areas.fields.name') },
   { field: 'location.name', header: t('locations.fields.name') },
@@ -433,8 +435,23 @@ function onEditCancel() {
   close()
 }
 
+// Server-side paging state: one API call per page / page-size change
+const pageFirst = ref(0)
+const pageRows = ref(15)
+
 function onSort(event) {
-  // Gestione ordinamento se necessario
+  // Sorting is done by the API (the table only holds the current page).
+  // Trash is still sorted locally by the table.
+  if (trashMode.value) return
+  if (typeof event.sortField === 'string' && event.sortField) {
+    setSort(event.sortField, event.sortOrder || 1)
+  }
+}
+
+function onPage(event) {
+  pageFirst.value = event.first
+  pageRows.value = event.rows
+  fetchAssets()
 }
 
 
@@ -583,6 +600,8 @@ watch(
   ],
   () => {
     if (!isInitializing.value) {
+      // A new filter / sort / search always starts again from the first page
+      pageFirst.value = 0
       syncFiltersToUrl()
       debouncedFetchAssets()
     }
@@ -773,6 +792,8 @@ onMounted(async () => {
   isInitializing.value = false
 })
 
+let fetchRequestId = 0
+
 async function fetchAssets() {
   await execute(async () => {
     const params = getApiParams()
@@ -784,29 +805,45 @@ async function fetchAssets() {
     if (filters.value.has_critical_vulns?.value) {
       params.has_critical_vulns = true
     }
-    // The table filters/sorts/pages client-side, so it needs every asset. The API caps a
-    // request at 500 rows (default 100), so load page by page until everything is in.
-    const PAGE_SIZE = 500
-    const MAX_PAGES = 100 // safety net: 50,000 assets
-    const all = []
-    let total = null
-    let response
-    for (let page = 0; page < MAX_PAGES; page++) {
-      const pageParams = { ...params, skip: page * PAGE_SIZE, limit: PAGE_SIZE }
-      response = trashMode.value
-        ? await api.getAssetsTrash(pageParams)
-        : await api.getAssets(pageParams)
-      const body = response.data
-      // Paginated response ({ data, total }) or legacy plain array (trash)
-      const rows = body && Array.isArray(body.data) ? body.data : (Array.isArray(body) ? body : [])
-      if (body && body.total !== undefined && body.total !== null) {
-        total = body.total
+    // Ignore responses of requests that were superseded by a newer page / filter change
+    const requestId = ++fetchRequestId
+
+    if (trashMode.value) {
+      // Trash: the endpoint returns a plain list without a total, so load it all and let
+      // the table page it locally (trash is normally small).
+      const TRASH_PAGE = 500
+      const MAX_PAGES = 100
+      let all = []
+      let response
+      for (let page = 0; page < MAX_PAGES; page++) {
+        response = await api.getAssetsTrash({ ...params, skip: page * TRASH_PAGE, limit: TRASH_PAGE })
+        const rows = Array.isArray(response.data) ? response.data : []
+        all = all.concat(rows)
+        if (rows.length < TRASH_PAGE) break
       }
-      all.push(...rows)
-      if (rows.length < PAGE_SIZE || (total !== null && all.length >= total)) break
+      if (requestId !== fetchRequestId) return response
+      assets.value = all
+      totalAssets.value = all.length
+      return response
     }
-    assets.value = all
-    totalAssets.value = total !== null ? total : all.length
+
+    // Normal list: ask the API for just the page that is on screen (live data)
+    const response = await api.getAssets({ ...params, skip: pageFirst.value, limit: pageRows.value })
+    if (requestId !== fetchRequestId) return response
+    const body = response.data
+    const rows = body && Array.isArray(body.data) ? body.data : []
+    const total = body && body.total !== undefined && body.total !== null ? body.total : rows.length
+
+    // Current page no longer exists (e.g. last row of the last page was deleted): go back
+    if (rows.length === 0 && total > 0 && pageFirst.value > 0) {
+      pageFirst.value = Math.floor((total - 1) / pageRows.value) * pageRows.value
+      totalAssets.value = total
+      fetchAssets()
+      return response
+    }
+
+    assets.value = rows
+    totalAssets.value = total
     return response
   }, {
     errorContext: t('assets.messages.fetchError'),
