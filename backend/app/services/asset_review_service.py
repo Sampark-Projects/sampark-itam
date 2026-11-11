@@ -10,9 +10,32 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def review_load_options():
+    """Eager-load everything the asset schema serializes, in batched queries.
+
+    Without this, serializing a list of assets runs several extra queries *per asset*,
+    which is minutes for a few thousand assets when the database is remote."""
+    from sqlalchemy.orm import selectinload
+    from app.models.location import Location
+
+    return [
+        selectinload(Asset.interfaces),
+        selectinload(Asset.site),
+        selectinload(Asset.location).selectinload(Location.floorplan),
+        selectinload(Asset.location).selectinload(Location.site),
+        selectinload(Asset.status),
+        selectinload(Asset.manufacturer),
+        selectinload(Asset.asset_type),
+        selectinload(Asset.area),
+        selectinload(Asset.documents),
+        selectinload(Asset.photos),
+        selectinload(Asset.contacts),
+    ]
+
+
 class AssetReviewService:
     """Service for managing asset review and maintenance reminders"""
-    
+
     @staticmethod
     def get_review_interval_months(asset: Asset, db: Session) -> int:
         """
@@ -141,15 +164,16 @@ class AssetReviewService:
         # Get all assets for tenant
         assets = (
             db.query(Asset)
+            .options(*review_load_options())
             .filter(
                 Asset.tenant_id == tenant_id,
                 Asset.deleted_at.is_(None)
             )
             .all()
         )
-        
+
         logger.info(f"Found {len(assets)} total assets for tenant {tenant_id}")
-        
+
         due_assets = []
         needs_commit = False
         for asset in assets:
@@ -192,15 +216,16 @@ class AssetReviewService:
         # Get all assets for tenant
         assets = (
             db.query(Asset)
+            .options(*review_load_options())
             .filter(
                 Asset.tenant_id == tenant_id,
                 Asset.deleted_at.is_(None)
             )
             .all()
         )
-        
+
         logger.info(f"Found {len(assets)} total assets for tenant {tenant_id}")
-        
+
         overdue = []
         needs_commit = False
         for asset in assets:

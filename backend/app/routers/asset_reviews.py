@@ -272,59 +272,39 @@ def get_upcoming_reviews(
         days = tenant.review_upcoming_days_ahead if tenant and tenant.review_upcoming_days_ahead else 30
     
     logger.info(f"Getting upcoming reviews: days={days}, tenant_id={current_user.tenant_id}")
-    
-    # Get all assets for tenant
-    assets = (
-        db.query(Asset)
-        .filter(
-            Asset.tenant_id == current_user.tenant_id,
-            Asset.deleted_at.is_(None)
-        )
-        .all()
-    )
-    
-    logger.info(f"Found {len(assets)} total assets")
-    
-    # Calculate next_review_date if not set and filter upcoming
+
+    from sqlalchemy import or_
+    from app.services.asset_review_service import review_load_options
+
+    tenant_assets = [Asset.tenant_id == current_user.tenant_id, Asset.deleted_at.is_(None)]
+
+    # 1) Only assets that have no next_review_date yet need it calculated (normally none)
+    missing = db.query(Asset).filter(*tenant_assets, Asset.next_review_date.is_(None)).all()
+    for asset in missing:
+        calculated_date = AssetReviewService.calculate_next_review_date(asset, db)
+        if calculated_date:
+            asset.next_review_date = calculated_date
+            AssetReviewService.update_review_status(asset, db)
+    if missing:
+        db.commit()
+
+    # 2) Let the database pick the assets whose review falls in the window (skipped ones excluded),
+    #    and load their related records in batches instead of one query per asset
     today = datetime.utcnow()
     future_date = today + timedelta(days=days)
-    upcoming = []
-    needs_commit = False
-    
-    for asset in assets:
-        # Calculate next_review_date if not set
-        if not asset.next_review_date:
-            calculated_date = AssetReviewService.calculate_next_review_date(asset, db)
-            logger.info(f"Asset {asset.id} ({asset.name}): calculated next_review_date = {calculated_date}")
-            if calculated_date:
-                asset.next_review_date = calculated_date
-                AssetReviewService.update_review_status(asset, db)
-                needs_commit = True
-            else:
-                logger.warning(f"Asset {asset.id} ({asset.name}): could not calculate next_review_date")
-        
-        # Include if upcoming (not overdue)
-        # Note: We include assets regardless of review_status for upcoming reviews
-        # Only exclude 'reviewed' status if the review date has already passed
-        if asset.next_review_date:
-            logger.info(f"Asset {asset.id} ({asset.name}): next_review_date = {asset.next_review_date}, status = {asset.review_status}, today = {today}, future_date = {future_date}")
-            if asset.next_review_date >= today and asset.next_review_date <= future_date:
-                # Include all assets with upcoming review dates, regardless of status
-                # (except 'skipped' which should be excluded)
-                if asset.review_status != 'skipped':
-                    logger.info(f"Asset {asset.id} ({asset.name}): ADDED to upcoming list")
-                    upcoming.append(asset)
-                else:
-                    logger.info(f"Asset {asset.id} ({asset.name}): NOT added (status = skipped)")
-            else:
-                logger.info(f"Asset {asset.id} ({asset.name}): NOT in date range")
-        else:
-            logger.warning(f"Asset {asset.id} ({asset.name}): no next_review_date after calculation")
-    
-    # Commit all changes at once
-    if needs_commit:
-        db.commit()
-    
+    upcoming = (
+        db.query(Asset)
+        .options(*review_load_options())
+        .filter(
+            *tenant_assets,
+            Asset.next_review_date >= today,
+            Asset.next_review_date <= future_date,
+            or_(Asset.review_status.is_(None), Asset.review_status != "skipped"),
+        )
+        .order_by(Asset.next_review_date, Asset.name)
+        .all()
+    )
+
     logger.info(f"Returning {len(upcoming)} upcoming assets")
     return [AssetSchema.model_validate(asset) for asset in upcoming]
 
