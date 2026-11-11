@@ -5,6 +5,7 @@ import { createPinia } from 'pinia'
 import piniaPersistedState from 'pinia-plugin-persistedstate'
 import PrimeVue from 'primevue/config'
 import ToastService from 'primevue/toastservice'
+import ToastEventBus from 'primevue/toasteventbus'
 
 import ConfirmDialog from 'primevue/confirmdialog'
 import ConfirmationService from 'primevue/confirmationservice'
@@ -25,6 +26,17 @@ import './static/main.css'
 import './static/theme.css'
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import i18n from './locales/loader-final.js'
+
+// PrimeVue keeps a toast on screen forever unless the message has a `life`. Many calls in the
+// app omit it, so give every toast a default lifetime (messages that set `life` or `sticky: true` keep theirs).
+const DEFAULT_TOAST_LIFE = 5000
+const emitToastEvent = ToastEventBus.emit.bind(ToastEventBus)
+ToastEventBus.emit = (type, message) => {
+  if (type === 'add' && message && message.life == null && !message.sticky) {
+    return emitToastEvent(type, { ...message, life: DEFAULT_TOAST_LIFE })
+  }
+  return emitToastEvent(type, message)
+}
 
 const app = createApp(App)
 const pinia = createPinia()
