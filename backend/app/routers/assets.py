@@ -653,8 +653,32 @@ def recalculate_all_risk_scores(
     risk_engine = CompositeRiskScoringEngine()
     updated_count = 0
 
+    # Load everything the engine needs in bulk (a few queries instead of several per asset)
+    from collections import defaultdict
+    from sqlalchemy.orm import joinedload
+    from app.models.vulnerability import AssetVulnerability
+    from app.services.tenant_features import is_iec62443_enabled_for_tenant_id
+
+    links_by_asset = defaultdict(list)
+    for link in (
+        db.query(AssetVulnerability)
+        .options(joinedload(AssetVulnerability.vulnerability))
+        .filter(
+            AssetVulnerability.tenant_id == current_user.tenant_id,
+            AssetVulnerability.status.in_(["unreviewed", "acknowledged"]),
+        )
+        .all()
+    ):
+        links_by_asset[link.asset_id].append(link)
+    iec_enabled = is_iec62443_enabled_for_tenant_id(db, current_user.tenant_id)
+
     for asset in assets:
-        breakdown = risk_engine.calculate(asset, db=db)
+        breakdown = risk_engine.calculate(
+            asset,
+            db=db,
+            vuln_links=links_by_asset.get(asset.id, []),
+            iec_enabled=iec_enabled,
+        )
         new_score = breakdown["final_score"]
         old_score = asset.risk_score
         if new_score is not None and old_score != new_score:

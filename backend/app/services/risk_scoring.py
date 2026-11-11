@@ -90,7 +90,16 @@ class CompositeRiskScoringEngine:
         },
     }
 
-    def calculate(self, asset, language="en", db: Optional[Session] = None) -> Dict[str, Any]:
+    def calculate(
+        self,
+        asset,
+        language="en",
+        db: Optional[Session] = None,
+        vuln_links: Optional[List[Any]] = None,
+        iec_enabled: Optional[bool] = None,
+    ) -> Dict[str, Any]:
+        """vuln_links / iec_enabled can be passed in by bulk callers that have
+        already loaded them, which avoids a few database round trips per asset."""
         translations = self.TRANSLATIONS.get(language, self.TRANSLATIONS["en"])
         crit_trans = self.CRIT_TRANSLATIONS.get(language, self.CRIT_TRANSLATIONS["en"])
         missing = []
@@ -158,11 +167,15 @@ class CompositeRiskScoringEngine:
             try:
                 from app.crud import vulnerabilities as crud_vulns
                 from app.database import SessionLocal
-                db = SessionLocal()
-                try:
+                own_session = None
+                if vuln_links is not None:
+                    unpatched_vulns = vuln_links
+                else:
+                    own_session = SessionLocal()
                     unpatched_vulns = crud_vulns.get_unpatched_vulnerabilities(
-                        db, asset.id, asset.tenant_id
+                        own_session, asset.id, asset.tenant_id
                     )
+                try:
                     # Additional safety check: explicitly filter out any vulnerabilities that shouldn't be considered
                     # The function should already filter, but we double-check here for safety
                     # Only include: unreviewed, acknowledged
@@ -236,7 +249,8 @@ class CompositeRiskScoringEngine:
                         vuln_score += vulnerability_adjustment
                         vuln_break.extend(vulnerability_break)
                 finally:
-                    db.close()
+                    if own_session is not None:
+                        own_session.close()
             except Exception:
                 # Silently fail if vulnerabilities not available
                 pass
@@ -248,7 +262,9 @@ class CompositeRiskScoringEngine:
         compliance_status = getattr(asset, "isa62443_compliance_status", None)
 
         iec62443_enabled = True
-        if db is not None and getattr(asset, "tenant_id", None):
+        if iec_enabled is not None:
+            iec62443_enabled = iec_enabled
+        elif db is not None and getattr(asset, "tenant_id", None):
             from app.services.tenant_features import is_iec62443_enabled_for_tenant_id
 
             iec62443_enabled = is_iec62443_enabled_for_tenant_id(db, asset.tenant_id)
