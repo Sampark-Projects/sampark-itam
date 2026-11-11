@@ -81,6 +81,124 @@ class PaginatedAssetsResponse(BaseModel):
     skip: int
     limit: int
 
+def _apply_asset_filters(
+    query, db, tenant_id, *, status_id=None, site_id=None, area_id=None, location_id=None,
+    asset_type_id=None, global_search=None, business_criticality=None,
+    risk_score_min=None, risk_score_max=None, has_critical_vulns=None,
+):
+    """Filters shared by the asset list and the asset export, so an export of a filtered
+    view always contains exactly the assets the list shows."""
+    from sqlalchemy import or_
+
+    # Filtri specifici con indici database
+    if status_id:
+        query = query.filter(Asset.status_id == status_id)
+    if site_id:
+        query = query.filter(Asset.site_id == site_id)
+    if area_id:
+        query = query.filter(Asset.area_id == area_id)
+    if location_id:
+        query = query.filter(Asset.location_id == location_id)
+    if asset_type_id:
+        query = query.filter(Asset.asset_type_id == asset_type_id)
+    if business_criticality:
+        # Supporta valori multipli separati da virgola (es: "critical,high")
+        criticality_values = [v.strip().lower() for v in business_criticality.split(',') if v.strip()]
+        if criticality_values:
+            query = query.filter(Asset.business_criticality.in_(criticality_values))
+    if risk_score_min is not None:
+        query = query.filter(Asset.risk_score >= risk_score_min)
+    if risk_score_max is not None:
+        query = query.filter(Asset.risk_score <= risk_score_max)
+
+    if has_critical_vulns:
+        from app.models.vulnerability import AssetVulnerability, Vulnerability
+        from sqlalchemy import and_
+        # Subquery to find assets with critical/high unpatched vulnerabilities
+        assets_with_vulns_subquery = (
+            db.query(AssetVulnerability.asset_id)
+            .join(Vulnerability, AssetVulnerability.vulnerability_id == Vulnerability.id)
+            .filter(
+                and_(
+                    AssetVulnerability.tenant_id == tenant_id,
+                    AssetVulnerability.status.in_(["unreviewed", "acknowledged"]),
+                    Vulnerability.severity.in_(["critical", "high"])
+                )
+            )
+            .distinct()
+            .subquery()
+        )
+        query = query.filter(Asset.id.in_(db.query(assets_with_vulns_subquery.c.asset_id)))
+
+    # Ricerca globale ottimizzata
+    if global_search:
+        search_term = f"%{global_search}%"
+        query = query.filter(
+            or_(
+                Asset.name.ilike(search_term),
+                Asset.tag.ilike(search_term),
+                Asset.serial_number.ilike(search_term)
+            )
+        )
+    return query
+
+
+def _apply_asset_sort(query, sort_by, sort_order):
+    """Server-side sorting (the UI pages through the API, so sorting must happen here).
+    Allow-list only; related names need a join. Always add Asset.id as a tie-breaker so
+    pages never overlap or skip rows."""
+    from app.models.area import Area
+    from app.models.location import Location
+    from app.models.site import Site
+    from app.models.asset_status import AssetStatus
+    from app.models.asset_type import AssetType
+    from app.models.manufacturer import Manufacturer
+
+    own_columns = {
+        "name": Asset.name, "tag": Asset.tag, "model": Asset.model,
+        "business_criticality": Asset.business_criticality,
+        "risk_score": Asset.risk_score, "created_at": Asset.created_at,
+    }
+    joined_columns = {
+        "site.name": (Site, Asset.site_id, Site.name),
+        "area_name": (Area, Asset.area_id, Area.name),
+        "location.name": (Location, Asset.location_id, Location.name),
+        "status.name": (AssetStatus, Asset.status_id, AssetStatus.name),
+        "manufacturer.name": (Manufacturer, Asset.manufacturer_id, Manufacturer.name),
+        "asset_type.name": (AssetType, Asset.asset_type_id, AssetType.name),
+    }
+    sort_col = None
+    if sort_by in own_columns:
+        sort_col = own_columns[sort_by]
+    elif sort_by in joined_columns:
+        join_model, fk, sort_col = joined_columns[sort_by]
+        query = query.outerjoin(join_model, fk == join_model.id)
+    if sort_col is None:
+        sort_col, sort_order = Asset.name, "asc"
+    ordered = sort_col.desc() if sort_order == "desc" else sort_col.asc()
+    return query.order_by(ordered.nulls_last(), Asset.id)
+
+
+# Columns of the asset export (same snake_case style as the other exports / the import file)
+ASSET_EXPORT_COLUMNS = [
+    "name", "tag", "serial_number", "model", "manufacturer", "asset_type", "status",
+    "site", "site_code", "area", "location", "business_criticality", "risk_score",
+    "ip_address", "mac_address", "description",
+]
+
+
+def _export_cell(value):
+    """Plain text for a spreadsheet cell; neutralise values that Excel would run as a formula."""
+    if value is None:
+        return ""
+    if isinstance(value, float):
+        value = round(value, 2)
+    text = str(value)
+    if text and text[0] in ("=", "+", "-", "@", "\t", "\r"):
+        return "'" + text
+    return text
+
+
 # List assets (with optional filters)
 @router.get("", response_model=PaginatedAssetsResponse)
 def list_assets(
@@ -90,6 +208,7 @@ def list_assets(
     site_id: Optional[uuid.UUID] = None,
     area_id: Optional[uuid.UUID] = None,
     location_id: Optional[uuid.UUID] = None,
+    asset_type_id: Optional[uuid.UUID] = None,
     global_search: Optional[str] = None,
     business_criticality: Optional[str] = None,
     risk_score_min: Optional[float] = None,
@@ -137,85 +256,19 @@ def list_assets(
         .filter(Asset.tenant_id == current_user.tenant_id, Asset.deleted_at == None)
     )
 
-    # Filtri specifici con indici database
-    if status_id:
-        query = query.filter(Asset.status_id == status_id)
-    if site_id:
-        query = query.filter(Asset.site_id == site_id)
-    if area_id:
-        query = query.filter(Asset.area_id == area_id)
-    if location_id:
-        query = query.filter(Asset.location_id == location_id)
-    if business_criticality:
-        # Supporta valori multipli separati da virgola (es: "critical,high")
-        criticality_values = [v.strip().lower() for v in business_criticality.split(',') if v.strip()]
-        if criticality_values:
-            query = query.filter(Asset.business_criticality.in_(criticality_values))
-    if risk_score_min is not None:
-        query = query.filter(Asset.risk_score >= risk_score_min)
-    if risk_score_max is not None:
-        query = query.filter(Asset.risk_score <= risk_score_max)
-    
-    if has_critical_vulns:
-        from app.models.vulnerability import AssetVulnerability, Vulnerability
-        from sqlalchemy import and_
-        # Subquery to find assets with critical/high unpatched vulnerabilities
-        assets_with_vulns_subquery = (
-            db.query(AssetVulnerability.asset_id)
-            .join(Vulnerability, AssetVulnerability.vulnerability_id == Vulnerability.id)
-            .filter(
-                and_(
-                    AssetVulnerability.tenant_id == current_user.tenant_id,
-                    AssetVulnerability.status.in_(["unreviewed", "acknowledged"]),
-                    Vulnerability.severity.in_(["critical", "high"])
-                )
-            )
-            .distinct()
-            .subquery()
-        )
-        query = query.filter(Asset.id.in_(db.query(assets_with_vulns_subquery.c.asset_id)))
-
-    # Ricerca globale ottimizzata
-    if global_search:
-        search_term = f"%{global_search}%"
-        query = query.filter(
-            or_(
-                Asset.name.ilike(search_term),
-                Asset.tag.ilike(search_term),
-                Asset.serial_number.ilike(search_term)
-            )
-        )
+    query = _apply_asset_filters(
+        query, db, current_user.tenant_id,
+        status_id=status_id, site_id=site_id, area_id=area_id, location_id=location_id,
+        asset_type_id=asset_type_id, global_search=global_search,
+        business_criticality=business_criticality, risk_score_min=risk_score_min,
+        risk_score_max=risk_score_max, has_critical_vulns=has_critical_vulns,
+    )
 
     # PERFORMANCE: Usa count ottimizzato con func.count()
     # Esegue COUNT(*) invece di caricare tutti i record
     total_count = query.with_entities(func.count(Asset.id)).scalar()
-    
-    # Server-side sorting (the UI pages through the API, so sorting must happen here).
-    # Allow-list only; related names need a join. Always add Asset.id as a tie-breaker so
-    # pages never overlap or skip rows.
-    own_columns = {
-        "name": Asset.name, "tag": Asset.tag, "model": Asset.model,
-        "business_criticality": Asset.business_criticality,
-        "risk_score": Asset.risk_score, "created_at": Asset.created_at,
-    }
-    joined_columns = {
-        "site.name": (Site, Asset.site_id, Site.name),
-        "area_name": (Area, Asset.area_id, Area.name),
-        "location.name": (Location, Asset.location_id, Location.name),
-        "status.name": (AssetStatus, Asset.status_id, AssetStatus.name),
-        "manufacturer.name": (Manufacturer, Asset.manufacturer_id, Manufacturer.name),
-        "asset_type.name": (AssetType, Asset.asset_type_id, AssetType.name),
-    }
-    sort_col = None
-    if sort_by in own_columns:
-        sort_col = own_columns[sort_by]
-    elif sort_by in joined_columns:
-        join_model, fk, sort_col = joined_columns[sort_by]
-        query = query.outerjoin(join_model, fk == join_model.id)
-    if sort_col is None:
-        sort_col, sort_order = Asset.name, "asc"
-    ordered = sort_col.desc() if sort_order == "desc" else sort_col.asc()
-    query = query.order_by(ordered.nulls_last(), Asset.id)
+
+    query = _apply_asset_sort(query, sort_by, sort_order)
 
     # PERFORMANCE: Applica paginazione prima di caricare i dati
     assets = query.offset(skip).limit(limit).all()
@@ -267,6 +320,101 @@ def list_assets(
         "skip": skip,
         "limit": limit
     }
+
+
+# Export assets (CSV or Excel). No filters = every asset; filters = same rows as the list.
+@router.get("/export")
+def export_assets(
+    format: str = Query("csv", pattern="^(csv|xlsx)$"),
+    status_id: Optional[uuid.UUID] = None,
+    site_id: Optional[uuid.UUID] = None,
+    area_id: Optional[uuid.UUID] = None,
+    location_id: Optional[uuid.UUID] = None,
+    asset_type_id: Optional[uuid.UUID] = None,
+    global_search: Optional[str] = None,
+    business_criticality: Optional[str] = None,
+    risk_score_min: Optional[float] = None,
+    risk_score_max: Optional[float] = None,
+    has_critical_vulns: Optional[bool] = None,
+    sort_by: Optional[str] = None,
+    sort_order: str = Query("asc", pattern="^(asc|desc)$"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    import csv
+    from fastapi.responses import StreamingResponse
+    from sqlalchemy.orm import selectinload
+
+    query = (
+        db.query(Asset)
+        .options(
+            selectinload(Asset.interfaces),
+            selectinload(Asset.site),
+            selectinload(Asset.location),
+            selectinload(Asset.status),
+            selectinload(Asset.manufacturer),
+            selectinload(Asset.asset_type),
+            selectinload(Asset.area),
+        )
+        .filter(Asset.tenant_id == current_user.tenant_id, Asset.deleted_at == None)
+    )
+    query = _apply_asset_filters(
+        query, db, current_user.tenant_id,
+        status_id=status_id, site_id=site_id, area_id=area_id, location_id=location_id,
+        asset_type_id=asset_type_id, global_search=global_search,
+        business_criticality=business_criticality, risk_score_min=risk_score_min,
+        risk_score_max=risk_score_max, has_critical_vulns=has_critical_vulns,
+    )
+    assets = _apply_asset_sort(query, sort_by, sort_order).all()
+
+    rows = []
+    for a in assets:
+        ifaces = a.interfaces or []
+        rows.append([
+            _export_cell(v) for v in (
+                a.name, a.tag, a.serial_number, a.model,
+                a.manufacturer.name if a.manufacturer else None,
+                a.asset_type.name if a.asset_type else None,
+                a.status.name if a.status else None,
+                a.site.name if a.site else None,
+                a.site.code if a.site else None,
+                a.area.name if a.area else None,
+                a.location.name if a.location else None,
+                a.business_criticality, a.risk_score,
+                ", ".join(i.ip_address for i in ifaces if i.ip_address),
+                ", ".join(i.mac_address for i in ifaces if i.mac_address),
+                a.description,
+            )
+        ])
+
+    stamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    if format == "xlsx":
+        from openpyxl import Workbook
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Assets"
+        ws.append(ASSET_EXPORT_COLUMNS)
+        for r in rows:
+            ws.append(r)
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+        return StreamingResponse(
+            buf,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": f"attachment; filename=assets_{stamp}.xlsx"},
+        )
+
+    out = io.StringIO()
+    out.write("﻿")  # BOM so Excel opens the UTF-8 file with the right characters
+    writer = csv.writer(out)
+    writer.writerow(ASSET_EXPORT_COLUMNS)
+    writer.writerows(rows)
+    return StreamingResponse(
+        iter([out.getvalue()]),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f"attachment; filename=assets_{stamp}.csv"},
+    )
 
 
 # Trash: lista asset eliminati
@@ -325,21 +473,26 @@ def get_assets_for_network_map(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
     skip: int = 0,
-    limit: int = 1000,  # Limite ragionevole per la network map
+    # The map page loads everything in one call and filters client-side, so the default
+    # must be well above the number of assets (it used to be 1000 and silently cut the rest).
+    limit: int = Query(20000, ge=1, le=50000),
 ):
     """Get assets for network map visualization with pagination"""
+    from sqlalchemy.orm import selectinload
+    # Only load what the response below actually uses (interfaces and security zone were
+    # loaded but never serialized), and batch the area lookup instead of one query per asset.
     query = (
         db.query(Asset)
         .options(
-            joinedload(Asset.interfaces),
             joinedload(Asset.site),
             joinedload(Asset.location),
             joinedload(Asset.status),
             joinedload(Asset.manufacturer),
             joinedload(Asset.asset_type),
-            joinedload(Asset.security_zone),
+            selectinload(Asset.area),
         )
         .filter(Asset.tenant_id == current_user.tenant_id, Asset.deleted_at == None)
+        .order_by(Asset.id)  # stable order so skip/limit never overlap
         .offset(skip)
         .limit(limit)
     )
@@ -405,14 +558,11 @@ def get_assets_for_network_map(
             } if asset.status else None,
         }
         
-        # Add area info if present
-        if asset.area_id:
-            from app.models.area import Area
-            area = db.query(Area).filter(Area.id == asset.area_id).first()
-            if area:
-                asset_dict["area_name"] = area.name
-                asset_dict["area_code"] = area.code
-        
+        # Add area info if present (already loaded in one batch via selectinload)
+        if asset.area:
+            asset_dict["area_name"] = asset.area.name
+            asset_dict["area_code"] = asset.area.code
+
         result.append(asset_dict)
     
     return result

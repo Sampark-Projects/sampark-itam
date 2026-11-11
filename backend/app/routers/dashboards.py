@@ -1,5 +1,5 @@
 import math
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
@@ -34,13 +34,47 @@ router = APIRouter(
 # Dashboard endpoints
 @router.get("/stats")
 def get_dashboard_stats(
+    new_assets_days: int = Query(7, ge=1, le=365, description="Window (days) for the newly added assets count"),
     current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
 ):
     """Ottimizzato con caching e query unificate"""
+    from datetime import datetime, timedelta
     from app.services.dashboard_cache import get_dashboard_stats_cached
-    
+    from sqlalchemy import func
+    from app.models import Site, AssetType
+
     # Usa il servizio di cache per le statistiche
-    return get_dashboard_stats_cached(str(current_user.tenant_id), db)
+    stats = get_dashboard_stats_cached(str(current_user.tenant_id), db)
+
+    # Site / asset-type totals are cheap and not covered by the cache invalidation,
+    # so count them live (copy the cached dict instead of mutating the shared one).
+    total_sites = (
+        db.query(func.count(Site.id))
+        .filter(Site.tenant_id == current_user.tenant_id, Site.deleted_at.is_(None))
+        .scalar()
+    )
+    total_asset_types = (
+        db.query(func.count(AssetType.id))
+        .filter(AssetType.tenant_id == current_user.tenant_id)
+        .scalar()
+    )
+    # Assets created inside the requested window (live, because the window is a parameter)
+    newly_added_assets = (
+        db.query(func.count(Asset.id))
+        .filter(
+            Asset.tenant_id == current_user.tenant_id,
+            Asset.deleted_at.is_(None),
+            Asset.created_at >= datetime.utcnow() - timedelta(days=new_assets_days),
+        )
+        .scalar()
+    )
+    return {
+        **stats,
+        "total_sites": total_sites or 0,
+        "total_asset_types": total_asset_types or 0,
+        "newly_added_assets": newly_added_assets or 0,
+        "newly_added_days": new_assets_days,
+    }
 
 
 @router.get("/risky-assets")
