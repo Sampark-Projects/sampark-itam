@@ -12,7 +12,6 @@
       <div class="login-brand">
         <div class="logo-container">
           <img src="@/static/sampark_logo.png" alt="Sampark" class="login-logo" />
-          <div class="logo-glow"></div>
         </div>
       </div>
 
@@ -27,7 +26,6 @@
           <form @submit.prevent="handleSubmit" class="login-form">
             <div class="form-group">
               <label for="email" class="form-label">
-                <i class="pi pi-envelope"></i>
                 {{ $t('login.strings.email') }}
               </label>
               <div class="input-wrapper">
@@ -49,7 +47,6 @@
 
             <div class="form-group">
               <label for="password_input" class="form-label">
-                <i class="pi pi-lock"></i>
                 {{ $t('login.strings.password') }}
               </label>
               <div class="input-wrapper">
@@ -303,6 +300,7 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
+/* Login: same look as the app (sage page, white rounded card, themed fields and buttons) */
 .login-container {
   min-height: 100vh;
   display: flex;
@@ -310,44 +308,28 @@ const handleSubmit = async () => {
   justify-content: center;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: #eef2ef;
 }
 
-/* Background con pattern */
+/* Soft background decoration */
 .login-background {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   z-index: 1;
 }
 
 .background-pattern {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    radial-gradient(circle at 25% 25%, rgba(29, 104, 56, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 75% 75%, rgba(21, 79, 42, 0.03) 0%, transparent 50%),
-    linear-gradient(45deg, transparent 40%, rgba(29, 104, 56, 0.02) 50%, transparent 60%);
-  animation: backgroundFloat 20s ease-in-out infinite;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(29, 104, 56, 0.10) 0%, transparent 38%),
+    radial-gradient(circle at 88% 82%, rgba(29, 104, 56, 0.12) 0%, transparent 42%);
 }
 
 .background-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-@keyframes backgroundFloat {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(1deg); }
+  inset: 0;
+  background: transparent;
 }
 
 /* Container principale */
@@ -367,103 +349,61 @@ const handleSubmit = async () => {
 /* Brand section */
 .login-brand {
   text-align: center;
-  color: #2c3e50;
 }
 
 .logo-container {
-  position: relative;
   display: inline-block;
 }
 
 .login-logo {
-  width: 180px;
+  width: 170px;
   height: auto;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-  transition: transform 0.3s ease;
-}
-
-.login-logo:hover {
-  transform: scale(1.05);
-}
-
-.logo-glow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 120px;
-  height: 120px;
-  background: radial-gradient(circle, rgba(29, 104, 56, 0.1) 0%, transparent 70%);
-  border-radius: 50%;
-  animation: logoGlow 3s ease-in-out infinite alternate;
-}
-
-@keyframes logoGlow {
-  0% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
-  100% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
 }
 
 /* Form container */
 .login-form-container {
   width: 100%;
-  max-width: 450px;
+  max-width: 420px;
 }
 
 .form-card {
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  padding: 2.5rem;
-  box-shadow: 
-    0 20px 40px rgba(0,0,0,0.08),
-    0 0 0 1px rgba(255,255,255,0.8);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.form-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 
-    0 25px 50px rgba(0,0,0,0.12),
-    0 0 0 1px rgba(255,255,255,0.9);
+  background: #fff;
+  border-radius: 14px;
+  padding: 2rem 2.25rem 2.25rem;
+  box-shadow: 0 8px 30px rgba(24, 54, 36, 0.10);
+  border: 1px solid #e1e7e3;
+  animation: fadeInUp 0.4s ease-out;
 }
 
 .form-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.75rem;
 }
 
 .form-header h2 {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   font-weight: 600;
-  color: #2c3e50;
-  margin: 0 0 0.5rem 0;
+  color: #174d2d;
+  margin: 0 0 0.35rem 0;
 }
 
 .form-header p {
-  color: #64748b;
+  color: #6b7a71;
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
 }
 
 /* Form groups */
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.15rem;
 }
 
 .form-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  display: block;
   font-weight: 500;
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-}
-
-.form-label i {
-  color: #1d6838;
-  font-size: 0.8rem;
+  color: #25332b;
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
 }
 
 .input-wrapper {
@@ -472,38 +412,25 @@ const handleSubmit = async () => {
 
 .form-input {
   width: 100%;
-  padding: 1rem 1rem 1rem 3rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  background: rgba(255,255,255,0.95);
-}
-
-.form-input:focus {
-  border-color: #1d6838;
-  box-shadow: 0 0 0 3px rgba(29, 104, 56, 0.1);
-  outline: none;
-}
-
-.form-input.p-invalid {
-  border-color: #e74c3c;
-  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+  padding: 0.7rem 0.9rem 0.7rem 2.6rem;
+  font-size: 0.9rem;
 }
 
 .input-icon {
   position: absolute;
-  left: 1rem;
+  left: 0.9rem;
   top: 50%;
   transform: translateY(-50%);
   color: #1d6838;
+  font-size: 0.95rem;
   z-index: 2;
+  pointer-events: none;
 }
 
 .error-message {
-  color: #e74c3c;
-  font-size: 0.8rem;
-  margin-top: 0.25rem;
+  color: #d92d20;
+  font-size: 0.78rem;
+  margin-top: 0.3rem;
   display: block;
 }
 
@@ -512,8 +439,8 @@ const handleSubmit = async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  font-size: 0.9rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.85rem;
 }
 
 .remember-me {
@@ -523,50 +450,40 @@ const handleSubmit = async () => {
 }
 
 .checkbox-label {
-  color: #64748b;
+  color: #6b7a71;
   cursor: pointer;
-}
-
-.forgot-password {
-  color: #1d6838;
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.3s ease;
-}
-
-.forgot-password:hover {
-  color: #5a6fd8;
 }
 
 /* Buttons */
 .login-button {
   width: 100%;
-  padding: 1rem;
-  background: linear-gradient(135deg, #1d6838 0%, #154f2a 100%);
-  border: none;
-  border-radius: 12px;
-  color: white;
-  font-size: 1rem;
+  padding: 0.75rem;
+  background: #1d6838;
+  border: 1px solid #1d6838;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  margin-bottom: 1rem;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+  justify-content: center;
 }
 
 .login-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(29, 104, 56, 0.3);
+  background: #154f2a;
+  border-color: #154f2a;
+  box-shadow: 0 4px 14px rgba(29, 104, 56, 0.28);
 }
 
 .login-button:disabled {
-  opacity: 0.6;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
 /* Divider */
 .divider {
   text-align: center;
-  margin: 1.5rem 0;
+  margin: 1.4rem 0 1.1rem;
   position: relative;
 }
 
@@ -577,32 +494,33 @@ const handleSubmit = async () => {
   left: 0;
   right: 0;
   height: 1px;
-  background: #e1e8ed;
+  background: #e1e7e3;
 }
 
 .divider span {
-  background: rgba(255,255,255,0.98);
-  padding: 0 1rem;
-  color: #64748b;
-  font-size: 0.9rem;
+  position: relative;
+  background: #fff;
+  padding: 0 0.9rem;
+  color: #6b7a71;
+  font-size: 0.82rem;
 }
 
-/* SSO Section */
+/* SSO button: outlined, like the other secondary buttons in the app */
 .sso-section {
-  margin-top: 1.5rem;
+  margin-top: 0.25rem;
 }
 
 .sso-button {
   width: 100%;
-  padding: 1rem;
-  background: #0078d4;
-  border: none;
-  border-radius: 12px;
-  color: white;
-  font-size: 1rem;
+  padding: 0.7rem;
+  background: #fff;
+  border: 1px solid #1d6838;
+  border-radius: 6px;
+  color: #1d6838;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background 0.2s ease, color 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -610,37 +528,13 @@ const handleSubmit = async () => {
 }
 
 .sso-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 120, 212, 0.3);
-  background: #106ebe;
+  background: #e8f0eb;
+  color: #154f2a;
 }
 
 .sso-button:disabled {
-  opacity: 0.6;
+  opacity: 0.55;
   cursor: not-allowed;
-}
-
-
-
-/* Form footer */
-.form-footer {
-  text-align: center;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e2e8f0;
-  color: #64748b;
-  font-size: 0.9rem;
-}
-
-.signup-link {
-  color: #1d6838;
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.3s ease;
-}
-
-.signup-link:hover {
-  color: #5a6fd8;
 }
 
 /* Responsive */
@@ -648,27 +542,16 @@ const handleSubmit = async () => {
   .login-content {
     padding: 1rem;
   }
-  
+
   .form-card {
-    padding: 2rem;
-  }
-  
-  .form-options {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: flex-start;
+    padding: 1.5rem;
   }
 }
 
-/* Animazioni di entrata */
-.form-card {
-  animation: slideInUp 0.6s ease-out;
-}
-
-@keyframes slideInUp {
+@keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
@@ -676,30 +559,26 @@ const handleSubmit = async () => {
   }
 }
 
-/* Stili per PrimeVue components */
+/* PrimeVue components */
 :deep(.p-password) {
   width: 100%;
 }
 
 :deep(.p-password-input) {
   width: 100%;
-  padding: 1rem 3rem 1rem 3rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  background: rgba(255,255,255,0.95);
+  padding: 0.7rem 2.6rem 0.7rem 2.6rem;
+  font-size: 0.9rem;
 }
 
-:deep(.p-password-input:focus) {
-  border-color: #1d6838;
-  box-shadow: 0 0 0 3px rgba(29, 104, 56, 0.1);
-  outline: none;
+:deep(.p-password .p-icon),
+:deep(.p-password i) {
+  color: #6b7a71;
 }
 
+:deep(.form-input.p-invalid),
 :deep(.p-password-input.p-invalid) {
-  border-color: #e74c3c;
-  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+  border-color: #d92d20;
+  box-shadow: 0 0 0 2px rgba(217, 45, 32, 0.12);
 }
 
 :deep(.p-checkbox) {
