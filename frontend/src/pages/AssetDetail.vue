@@ -32,6 +32,8 @@
       </div>
     </div>
 
+    <AssetDetailInterfaces :asset="asset" class="asset-interfaces" />
+
     <!-- TABS: Rischio, Documenti, Contatti, Timeline -->
     <TabView class="modern-tabs">
       <TabPanel>
@@ -197,6 +199,7 @@ import { usePrint } from '../composables/usePrint'
 import AssetSuppliersTab from '../components/features/assets/components/AssetSuppliersTab.vue'
 import AssetDetailHeader from '../components/features/assets/AssetDetailHeader.vue'
 import AssetDetailMainInfo from '../components/features/assets/AssetDetailMainInfo.vue'
+import AssetDetailInterfaces from '../components/features/assets/AssetDetailInterfaces.vue'
 import AssetDetailTechnicalInfo from '../components/features/assets/AssetDetailTechnicalInfo.vue'
 import AssetDetailRiskTab from '../components/features/assets/tabs/AssetDetailRiskTab.vue'
 import AssetDetailDocumentsTab from '../components/features/assets/tabs/AssetDetailDocumentsTab.vue'
@@ -517,8 +520,9 @@ const sanitizedDescription = computed(() => asset.value?.description ? DOMPurify
 <style scoped>
 .asset-detail {
   padding: 0;
-  max-width: 1400px;
-  margin: 0 auto;
+  max-width: none;
+  /* cancel the layout's horizontal padding so the page spans the full width */
+  margin: 0 -0.75rem;
 }
 
 .page-header {
@@ -690,22 +694,43 @@ const sanitizedDescription = computed(() => asset.value?.description ? DOMPurify
   padding: 2rem;
   margin-bottom: 2rem;
 }
+.modern-tabs {
+  border: 1px solid var(--sk-border);
+  border-radius: var(--sk-radius-card);
+  box-shadow: var(--sk-shadow);
+  background: var(--sk-surface);
+  overflow: hidden;
+}
+.modern-tabs :deep(.p-tabview-nav-content) { background: var(--sk-table-head); }
 .modern-tabs :deep(.p-tabview-nav) {
-  background: #f4f6fa;
-  border-radius: 8px 8px 0 0;
-  border-bottom: 2px solid #b0b8c1;
-  box-shadow: 0 2px 6px rgba(180, 190, 200, 0.07);
+  background: var(--sk-table-head);
+  border: 0;
+  border-bottom: 1px solid var(--sk-border);
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0 0.5rem;
 }
 .modern-tabs :deep(.p-tabview-nav-link) {
-  font-weight: 500;
-  font-size: 1rem;
-  padding: 0.5rem 1rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.85rem 1rem;
+  background: transparent;
+  color: var(--sk-text-muted);
+  border-width: 0 0 2px 0;
+  border-color: transparent;
+  margin: 0;
+}
+.modern-tabs :deep(.p-highlight .p-tabview-nav-link) {
+  color: var(--sk-primary);
+  border-color: var(--sk-primary);
+  background: transparent;
 }
 .modern-tabs :deep(.p-tabview-panels) {
-  background: #fff;
-  border-radius: 0 0 8px 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-  padding: 2rem;
+  background: var(--sk-surface);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 1.5rem;
 }
 .info-grid {
   display: grid;
@@ -774,13 +799,17 @@ const sanitizedDescription = computed(() => asset.value?.description ? DOMPurify
   flex-shrink: 0;
 }
 .asset-main-sections {
-  display: flex;
-  gap: 2rem;
-  margin-bottom: 2rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  align-items: start;
+  margin-bottom: 1.5rem;
 }
 .asset-col {
-  flex: 1;
-  min-width: 250px;
+  min-width: 0;
+}
+.asset-interfaces {
+  margin-bottom: 1.5rem;
 }
 .section-title {
   font-weight: 600;
@@ -803,7 +832,7 @@ const sanitizedDescription = computed(() => asset.value?.description ? DOMPurify
   margin-left: 0.5rem;
 }
 @media (max-width: 900px) {
-  .asset-main-sections { flex-direction: column; gap: 1rem; }
+  .asset-main-sections { grid-template-columns: 1fr; gap: 1rem; }
 }
 .criticality-badge {
   font-weight: 600;

@@ -1,23 +1,23 @@
 <template>
-  <div class="asset-header-flex-modern">
+  <div class="asset-header-flex-modern dcard">
     <div class="asset-header-main">
       <div class="asset-header-top">
-        <Button 
-          :label="t('common.actions.back')" 
-          icon="pi pi-arrow-left" 
-          class="p-button-text p-button-secondary back-btn"
+        <Button
+          :label="t('common.actions.back')"
+          icon="pi pi-arrow-left"
+          class="p-button-secondary back-btn"
           @click="$emit('back')"
         />
+        <h1 class="asset-title">{{ asset.name }}</h1>
       </div>
-      <h1 class="asset-title">{{ asset.name }}</h1>
       <div class="asset-meta">
-        <Tag v-if="asset.status?.name" :value="asset.status.name" :style="{ background: asset.status?.color, color: '#fff' }" />
-        <span class="type">{{ asset.asset_type?.name || t('common.strings.na') }}</span>
-        <span class="purdue-level" v-if="purdueLevelDisplay">
+        <Tag v-if="asset.status?.name" :value="asset.status.name" :style="{ background: asset.status?.color || 'var(--sk-primary)', color: '#fff' }" />
+        <span class="chip"><i class="pi pi-tag"></i>{{ asset.asset_type?.name || t('common.strings.na') }}</span>
+        <span class="chip purdue-level" v-if="purdueLevelDisplay">
           {{ t('assets.fields.purdueLevel') }}: <strong>{{ purdueLevelDisplay }}</strong>
         </span>
-        <span class="site">{{ asset.site?.name || t('common.strings.na') }}</span>
-        <span class="area" v-if="asset.area_name">{{ asset.area_name }}</span>
+        <span class="chip"><i class="pi pi-building"></i>{{ asset.site?.name || t('common.strings.na') }}</span>
+        <span class="chip" v-if="asset.area_name"><i class="pi pi-map-marker"></i>{{ asset.area_name }}</span>
         <CriticalityBadge
           v-if="asset.business_criticality"
           :value="asset.business_criticality"
@@ -122,19 +122,38 @@ function onAssetPositionSaved({ id, map_x, map_y }) {
   align-items: flex-end;
   flex-wrap: wrap;
   gap: 1.5rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
+  padding: 1.1rem 1.25rem;
+  align-items: center;
 }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--sk-text);
+  background: var(--sk-table-head);
+  border: 1px solid var(--sk-border);
+}
+.chip i { font-size: 0.8rem; color: var(--sk-primary); }
 .asset-header-main {
   flex: 1;
   min-width: 0;
 }
 .asset-header-top {
-  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
 }
 .asset-title {
   margin: 0;
-  font-size: 2rem;
-  line-height: 1.1;
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--sk-heading);
   word-break: break-word;
 }
 .asset-meta {
@@ -142,11 +161,10 @@ function onAssetPositionSaved({ id, map_x, map_y }) {
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
-  margin-top: 0.5rem;
+  margin: 0.75rem 0 0;
 }
 .purdue-level {
-  font-size: 0.9em;
-  color: var(--p-text-muted-color, #6c757d);
+  color: var(--sk-text-muted);
 }
 .purdue-level strong {
   color: var(--p-text-color, inherit);
@@ -162,7 +180,7 @@ function onAssetPositionSaved({ id, map_x, map_y }) {
   flex-wrap: wrap;
 }
 .back-btn {
-  margin-bottom: 0.5rem;
+  flex: 0 0 auto;
 }
 @media (max-width: 700px) {
   .asset-header-flex-modern {

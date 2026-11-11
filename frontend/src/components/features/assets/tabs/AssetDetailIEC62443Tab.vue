@@ -1313,7 +1313,8 @@ onMounted(async () => {
 
 <style scoped>
 .asset-iec62443-tab {
-  max-width: 1200px;
+  max-width: none;
+  width: 100%;
 }
 
 .zone-link {
