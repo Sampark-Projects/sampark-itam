@@ -40,10 +40,6 @@
       </div>
     </div>
 
-    <div v-if="!trashMode" class="mb-4">
-      <Tree :value="siteTree" :selectionMode="null" :filter="true" :filterPlaceholder="t('sites.messages.filterTree')" />
-    </div>
-    
     <BaseDataTable
       :data="filteredSites"
       :loading="loading"
@@ -208,7 +204,6 @@ import BaseDataTable from '../components/base/BaseDataTable.vue'
 import BaseDialog from '../components/base/BaseDialog.vue'
 import BaseConfirmDialog from '../components/base/BaseConfirmDialog.vue'
 import SiteForm from '../components/forms/SiteForm.vue'
-import Tree from 'primevue/tree'
 import Button from 'primevue/button'
 import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
@@ -268,8 +263,6 @@ const columnOptions = computed(() => {
   
   return columns
 })
-
-const siteTree = computed(() => buildSiteTree(sites.value))
 
 const parentSiteOptions = computed(() => {
   return sites.value.map(site => ({
@@ -491,20 +484,6 @@ function onSiteImport() {
 
 function updateFilter(newFilters) {
   Object.assign(filters, newFilters)
-}
-
-function buildSiteTree(sites) {
-  const map = new Map()
-  sites.forEach(site => map.set(site.id, { key: site.id, label: site.name, data: site, children: [] }))
-  const tree = []
-  map.forEach(node => {
-    if (node.data.parent_id && map.has(node.data.parent_id)) {
-      map.get(node.data.parent_id).children.push(node)
-    } else {
-      tree.push(node)
-    }
-  })
-  return tree
 }
 </script>
 

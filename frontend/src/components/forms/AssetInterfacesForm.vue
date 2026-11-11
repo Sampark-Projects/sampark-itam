@@ -34,8 +34,11 @@
         </DataTable>
       </div>
     </transition>
-    <Button v-if="editable" :label="t('assets.interfaces.addInterface')" icon="pi pi-plus" class="p-button-sm mt-2" @click="addInterface" />
-    <Button v-if="editable" :label="t('assets.interfaces.addMultiple')" icon="pi pi-plus" class="p-button-sm mt-2 ml-2" @click="showBulkDialog = true" />
+    <!-- Side by side (the surrounding p-fluid form would otherwise stretch each button to full width) -->
+    <div v-if="editable" class="interface-actions">
+      <Button :label="t('assets.interfaces.addInterface')" icon="pi pi-plus" class="p-button-sm" @click="addInterface" />
+      <Button :label="t('assets.interfaces.addMultiple')" icon="pi pi-plus" class="p-button-sm" @click="showBulkDialog = true" />
+    </div>
 
     <Dialog v-model:visible="showDialog" :header="dialogIndex === null ? t('assets.interfaces.addInterface') : t('assets.interfaces.editInterface')" :modal="true" :closable="false" :style="{width: '500px'}">
       <form @submit.prevent="saveDialog">
@@ -126,7 +129,7 @@
         <div class="p-fluid">
           <div class="p-field">
             <label for="bulk_count">{{ t('assets.interfaces.bulkCount') }}*</label>
-            <InputText id="bulk_count" v-model.number="bulkCount" type="number" min="1" required />
+            <InputNumber id="bulk_count" v-model="bulkCount" :min="1" showButtons required />
           </div>
           <div class="p-field">
             <label for="bulk_prefix">{{ t('assets.interfaces.bulkPrefix') }}*</label>
@@ -159,6 +162,7 @@ import Column from 'primevue/column';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 import InputText from 'primevue/inputtext';
+import InputNumber from 'primevue/inputnumber';
 import Dropdown from 'primevue/dropdown';
 import MultiSelect from 'primevue/multiselect';
 import api from '@/api/api'
@@ -468,6 +472,18 @@ export default {
 </script>
 
 <style scoped>
+.interface-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.interface-actions .p-button {
+  width: auto;
+}
+
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.3s;
 }

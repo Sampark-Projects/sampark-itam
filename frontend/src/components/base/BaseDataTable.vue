@@ -9,9 +9,15 @@
     'needs-scroll': needsScroll,
     'wrap-cells': visibleColumns.length <= 9
   }">
-    <DataTable 
-      :value="dataWithOriginal" 
-      :loading="loading"
+    <!-- Loading: a light full-page overlay (not just the table); the sidebar stays usable -->
+    <Teleport to="body">
+      <div v-if="loading" class="page-loader" role="status" aria-live="polite">
+        <i class="pi pi-spin pi-spinner page-loader-spinner"></i>
+      </div>
+    </Teleport>
+
+    <DataTable
+      :value="dataWithOriginal"
       :filters="{}"
       :globalFilterFields="[]"
       :sortField="sortField"
@@ -426,26 +432,32 @@ defineExpose({
 </script>
 
 <style scoped>
+/* The table sits in a white rounded panel (search + filters on top, table below) */
 .base-data-table {
   width: 100%;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 1px 8px rgba(24, 54, 36, 0.08);
+  padding: 1rem 1rem 0.5rem;
 }
 
 :deep(.p-datatable) {
-  font-size: 0.875rem;
+  font-size: 0.85rem;
 }
 
-/* Table body height (~10 rows, rest scrolls) is set globally in static/main.css */
+/* Table body height (~10 rows, rest scrolls) is set globally in static/main.css;
+   header / row / border look comes from static/theme.css */
 
 :deep(.p-datatable .p-datatable-header) {
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
-  border-bottom: none;
-  padding: 1rem;
+  background: transparent;
+  border: 0;
+  padding: 0 0 1rem;
 }
 
 :deep(.p-datatable .p-datatable-tbody > tr > td) {
-  border: 1px solid var(--surface-border);
-  padding: 0.6rem 0.75rem;
+  border: 0;
+  border-bottom: 1px solid var(--sk-border, #e1e7e3);
+  padding: 0.7rem 0.75rem;
 }
 
 /* Resizable mode forces nowrap: let long text wrap so narrow tables fit the page
@@ -456,6 +468,6 @@ defineExpose({
 }
 
 :deep(.p-datatable .p-datatable-tbody > tr:hover) {
-  background: var(--surface-hover);
+  background: var(--sk-row-hover, #f7faf8);
 }
 </style> 

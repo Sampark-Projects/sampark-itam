@@ -10,8 +10,13 @@
     "activeAssets": "Active Assets",
     "inactiveAssets": "Inactive Assets"
   },
+  "totals": {
+    "totalAssets": "Total Assets",
+    "assetTypes": "Total Asset Types",
+    "totalSites": "Total Sites"
+  },
   "exposure": {
-    "title": "Where am I exposed",
+    "title": "Risk Exposure Overview",
     "description": "Systemic risk summary",
     "overallExposure": "Overall Exposure",
     "overallExposureSubtitle": "Overall exposure score",
@@ -43,6 +48,7 @@
     "recentChangesSubtitle": "Latest asset modifications",
     "newlyAddedAssets": "Newly Added Assets",
     "newlyAddedAssetsSubtitle": "Assets added or updated",
+    "addedInLast": "Added in the last {days} days",
     "noRecentChanges": "No recent changes",
     "created": "Created",
     "updated": "Updated",

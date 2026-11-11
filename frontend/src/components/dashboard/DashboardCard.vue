@@ -1,15 +1,15 @@
 <template>
   <router-link :to="clickAction" class="dashboard-card" :class="severityClass">
-    <div class="card-icon">
-      <i :class="icon"></i>
+    <div class="card-head">
+      <i :class="['card-icon', icon]"></i>
+      <span class="card-label">{{ label }}</span>
     </div>
-    <div class="card-content">
-      <div class="card-value">{{ formattedValue }}</div>
-      <div class="card-label">{{ label }}</div>
-      <div v-if="subtitle" class="card-subtitle">{{ subtitle }}</div>
-    </div>
-    <div class="card-arrow">
-      <i class="pi pi-arrow-right"></i>
+    <div class="card-body">
+      <div class="card-main">
+        <div class="card-value">{{ formattedValue }}</div>
+        <div v-if="subtitle" class="card-subtitle">{{ subtitle }}</div>
+      </div>
+      <i class="pi pi-arrow-right card-arrow"></i>
     </div>
   </router-link>
 </template>
@@ -62,125 +62,94 @@ const severityClass = computed(() => {
 </script>
 
 <style scoped>
+/* Stat card: tinted header band (icon + title) over a white body with the number */
 .dashboard-card {
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.5rem;
-  background: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  flex-direction: column;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 1px 8px rgba(24, 54, 36, 0.08);
   text-decoration: none;
   color: inherit;
-  transition: all 0.2s ease;
-  border-left: 4px solid transparent;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .dashboard-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 18px rgba(24, 54, 36, 0.14);
   text-decoration: none;
   color: inherit;
 }
 
-.card-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 0.5rem;
+.card-head {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  flex-shrink: 0;
+  gap: 0.65rem;
+  padding: 0.85rem 1.1rem;
+  background: var(--head-bg);
 }
 
-.severity-info .card-icon {
-  background: linear-gradient(135deg, #1d6838 0%, #154f2a 100%);
-  color: white;
+.card-icon {
+  font-size: 1.15rem;
+  color: var(--head-icon);
 }
 
-.severity-warning .card-icon {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  color: white;
+.card-label {
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: #25332b;
+  line-height: 1.3;
 }
 
-.severity-danger .card-icon {
-  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-  color: white;
-}
-
-.severity-success .card-icon {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  color: white;
-}
-
-.severity-info {
-  border-left-color: #1d6838;
-}
-
-.severity-warning {
-  border-left-color: #f5576c;
-}
-
-.severity-danger {
-  border-left-color: #fa709a;
-}
-
-.severity-success {
-  border-left-color: #43e97b;
-}
-
-.card-content {
+.card-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem 1.15rem;
   flex: 1;
+}
+
+.card-main {
   min-width: 0;
 }
 
 .card-value {
   font-size: 2rem;
-  font-weight: 700;
-  color: #2c3e50;
-  line-height: 1;
-  margin-bottom: 0.25rem;
-}
-
-.card-label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 0.25rem;
+  font-weight: 500;
+  color: #1f2d25;
+  line-height: 1.1;
 }
 
 .card-subtitle {
+  margin-top: 0.4rem;
   font-size: 0.75rem;
-  color: #6c757d;
+  color: #6b7a71;
   line-height: 1.4;
 }
 
 .card-arrow {
-  color: #6c757d;
-  font-size: 1.25rem;
+  color: #8a988f;
+  font-size: 1.05rem;
   flex-shrink: 0;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .dashboard-card:hover .card-arrow {
   transform: translateX(4px);
+  color: #1d6838;
 }
 
+/* Pastel header tints (lavender / mint / yellow / peach) */
+.severity-info    { --head-bg: #f1f0fb; --head-icon: #5b5bd6; }
+.severity-success { --head-bg: #edf9f2; --head-icon: #23a26d; }
+.severity-warning { --head-bg: #fbf8e3; --head-icon: #d19a00; }
+.severity-danger  { --head-bg: #fdf0ec; --head-icon: #e5484d; }
+
 @media (max-width: 768px) {
-  .dashboard-card {
-    padding: 1rem;
-  }
-  
   .card-value {
-    font-size: 1.5rem;
-  }
-  
-  .card-icon {
-    width: 40px;
-    height: 40px;
-    font-size: 1.25rem;
+    font-size: 1.6rem;
   }
 }
 </style>
-

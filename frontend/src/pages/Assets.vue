@@ -12,7 +12,7 @@
       :filters="filters"
       :assetStatusOptions="assetStatusOptions"
       :sites="sites"
-      :areas="allAreas"
+      :assetTypes="assetTypes"
       :locations="locations"
     >
       <template #trailing>
@@ -48,13 +48,13 @@
           <i class="pi pi-times ml-2" style="font-size: 0.75rem"></i>
         </span>
         
-        <!-- Area Filter -->
-        <span 
-          v-if="filters.area_id.value" 
+        <!-- Asset Type Filter -->
+        <span
+          v-if="filters.asset_type_id.value"
           class="p-tag p-tag-info active-filter-tag"
-          @click="clearFilter('area_id')"
+          @click="clearFilter('asset_type_id')"
         >
-          {{ getAreaFilterLabel() }}
+          {{ getAssetTypeFilterLabel() }}
           <i class="pi pi-times ml-2" style="font-size: 0.75rem"></i>
         </span>
         
@@ -150,9 +150,25 @@
 
 
       <template #actions>
-        <Button 
+        <!-- One button with the arrow attached: clicking anywhere on it opens the export options -->
+        <Button
+          v-if="!trashMode"
+          type="button"
+          class="export-menu-button p-button-outlined"
+          :disabled="exporting"
+          :title="exportHint"
+          aria-haspopup="true"
+          aria-controls="export_menu"
+          @click="toggleExportMenu"
+        >
+          <i :class="exporting ? 'pi pi-spin pi-spinner' : 'pi pi-download'"></i>
+          <span>{{ t('common.actions.export') }}</span>
+          <i class="pi pi-chevron-down export-chevron"></i>
+        </Button>
+        <Menu id="export_menu" ref="exportMenu" :model="exportMenuItems" :popup="true" />
+        <Button
           v-if="!trashMode && canWrite('assets')"
-          :label="t('common.actions.bulkEdit')" 
+          :label="t('common.actions.bulkEdit')"
           icon="pi pi-pencil" 
           severity="warning"
           :disabled="!selectedAssets.length" 
@@ -325,6 +341,7 @@ import { useStatus } from '../composables/useStatus'
 import api from '../api/api'
 
 import Tag from 'primevue/tag'
+import Menu from 'primevue/menu'
 import AssetForm from '../components/forms/AssetForm.vue'
 import BaseDataTable from '../components/base/BaseDataTable.vue'
 import BaseDialog from '../components/base/BaseDialog.vue'
@@ -366,13 +383,17 @@ const { filters, globalSearch, selectedColumns, filterData, getApiParams, clearF
   global: { value: null, matchMode: 'contains' },
   status_id: { value: null, matchMode: 'equals' },
   site_id: { value: null, matchMode: 'equals' },
-  area_id: { value: null, matchMode: 'equals' },
+  asset_type_id: { value: null, matchMode: 'equals' },
   location_id: { value: null, matchMode: 'equals' },
   business_criticality: { value: null, matchMode: 'equals' },
   risk_score_min: { value: null, matchMode: 'gte' },
   risk_score_max: { value: null, matchMode: 'lte' },
   has_critical_vulns: { value: false, matchMode: 'equals' }
 }, 'assets')
+
+// The area filter was removed from this view: drop one that an older version saved in the
+// browser's localStorage, otherwise it would keep filtering with no control to clear it.
+delete filters.value.area_id
 
 const { isVisible: showDialog, data: editingAsset, openCreate, openEdit, close } = useDialog()
 // Importa il composable useConfirm e rinomina la funzione per evitare conflitti
@@ -517,8 +538,8 @@ function syncFiltersToUrl() {
     query.site_id = filters.value.site_id.value
   }
   
-  if (filters.value.area_id?.value) {
-    query.area_id = filters.value.area_id.value
+  if (filters.value.asset_type_id?.value) {
+    query.asset_type_id = filters.value.asset_type_id.value
   }
   
   if (filters.value.location_id?.value) {
@@ -587,7 +608,7 @@ watch(
   () => [
     filters.value.status_id?.value,
     filters.value.site_id?.value,
-    filters.value.area_id?.value,
+    filters.value.asset_type_id?.value,
     filters.value.location_id?.value,
     filters.value.business_criticality?.value,
     filters.value.risk_score_min?.value,
@@ -627,8 +648,8 @@ watch(
         filtersChanged = true
       }
       
-      if (newQuery.area_id !== filters.value.area_id?.value) {
-        filters.value.area_id.value = newQuery.area_id || null
+      if (newQuery.asset_type_id !== filters.value.asset_type_id?.value) {
+        filters.value.asset_type_id.value = newQuery.asset_type_id || null
         filtersChanged = true
       }
       
@@ -714,9 +735,9 @@ function initializeFiltersFromQuery() {
     filters.value.site_id.value = query.site_id
   }
   
-  // Parse area_id
-  if (query.area_id) {
-    filters.value.area_id.value = query.area_id
+  // Parse asset_type_id
+  if (query.asset_type_id) {
+    filters.value.asset_type_id.value = query.asset_type_id
   }
   
   // Parse location_id
@@ -794,17 +815,67 @@ onMounted(async () => {
 
 let fetchRequestId = 0
 
+// Filter + sort query params for the current view (used by the list and by the export)
+function buildFilterParams() {
+  const params = getApiParams()
+  // Sovrascrivi business_criticality se c'è un _originalValue
+  if (filters.value.business_criticality?._originalValue) {
+    params.business_criticality = filters.value.business_criticality._originalValue
+  }
+  // Aggiungi has_critical_vulns se è true
+  if (filters.value.has_critical_vulns?.value) {
+    params.has_critical_vulns = true
+  }
+  return params
+}
+
+// Export: everything by default, or only what matches the active filters / search.
+// Paging is ignored on purpose: the export covers all matching assets, not just this page.
+const exporting = ref(false)
+const exportMenu = ref()
+const toggleExportMenu = (event) => exportMenu.value.toggle(event)
+const exportMenuItems = computed(() => [
+  { label: t('common.actions.exportCsv'), icon: 'pi pi-file', command: () => exportAssets('csv') },
+  { label: t('common.actions.exportExcel'), icon: 'pi pi-file-excel', command: () => exportAssets('xlsx') }
+])
+const exportHint = computed(() =>
+  activeFiltersCount.value > 0
+    ? t('assets.strings.exportFilteredHint', { count: totalAssets.value })
+    : t('assets.strings.exportAllHint')
+)
+
+async function exportAssets(format = 'csv') {
+  if (exporting.value) return
+  exporting.value = true
+  try {
+    const response = await api.exportAssets({ ...buildFilterParams(), format })
+    const disposition = response.headers?.['content-disposition'] || ''
+    const match = /filename="?([^";]+)"?/i.exec(disposition)
+    const filename = match ? match[1] : `assets.${format}`
+    const blob = new Blob([response.data], { type: response.headers?.['content-type'] || 'application/octet-stream' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', filename)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
+  } catch (e) {
+    toast.add({
+      severity: 'error',
+      summary: t('common.messages.error'),
+      detail: t('common.messages.exportError'),
+      life: 4000
+    })
+  } finally {
+    exporting.value = false
+  }
+}
+
 async function fetchAssets() {
   await execute(async () => {
-    const params = getApiParams()
-    // Sovrascrivi business_criticality se c'è un _originalValue
-    if (filters.value.business_criticality?._originalValue) {
-      params.business_criticality = filters.value.business_criticality._originalValue
-    }
-    // Aggiungi has_critical_vulns se è true
-    if (filters.value.has_critical_vulns?.value) {
-      params.has_critical_vulns = true
-    }
+    const params = buildFilterParams()
     // Ignore responses of requests that were superseded by a newer page / filter change
     const requestId = ++fetchRequestId
 
@@ -1157,7 +1228,7 @@ const activeFiltersCount = computed(() => {
   let count = 0
   if (filters.value.status_id?.value) count++
   if (filters.value.site_id?.value) count++
-  if (filters.value.area_id?.value) count++
+  if (filters.value.asset_type_id?.value) count++
   if (filters.value.location_id?.value) count++
   if (filters.value.business_criticality?.value) count++
   if (filters.value.risk_score_min?.value !== null && filters.value.risk_score_min?.value !== undefined) count++
@@ -1179,10 +1250,10 @@ function getSiteFilterLabel() {
   return site ? site.name : ''
 }
 
-function getAreaFilterLabel() {
-  if (!filters.value.area_id?.value) return ''
-  const area = allAreas.value.find(a => a.id === filters.value.area_id.value)
-  return area ? area.name : ''
+function getAssetTypeFilterLabel() {
+  if (!filters.value.asset_type_id?.value) return ''
+  const assetType = assetTypes.value.find(a => a.id === filters.value.asset_type_id.value)
+  return assetType ? assetType.name : ''
 }
 
 function getLocationFilterLabel() {
@@ -1206,7 +1277,7 @@ function clearFilter(filterName) {
 function clearAllFilters() {
   filters.value.status_id.value = null
   filters.value.site_id.value = null
-  filters.value.area_id.value = null
+  filters.value.asset_type_id.value = null
   filters.value.location_id.value = null
   filters.value.business_criticality.value = null
   filters.value.risk_score_min.value = null
@@ -1254,15 +1325,26 @@ function confirmEmptyTrash() {
 }
 
 .asset-link:hover {
-  color: #0056b3;
+  color: #154f2a;
   text-decoration: underline;
 }
 
 .active-filters {
-  padding: 0.75rem;
-  background: #f8f9fa;
-  border-radius: 0.5rem;
-  border: 1px solid #dee2e6;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #e1e7e3;
+}
+
+.export-menu-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.export-chevron {
+  font-size: 0.7rem;
+  margin-left: 0.15rem;
 }
 
 .active-filter-tag {

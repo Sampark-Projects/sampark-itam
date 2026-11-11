@@ -22,6 +22,7 @@ import 'primevue/resources/themes/saga-blue/theme.css'
 import 'primevue/resources/primevue.min.css'
 import 'primeicons/primeicons.css'
 import './static/main.css'
+import './static/theme.css'
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import i18n from './locales/loader-final.js'
 

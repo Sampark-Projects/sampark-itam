@@ -22,15 +22,16 @@
         showClear 
         style="min-width: 150px" 
       />
-      <Dropdown 
-        id="filter_area"
-        v-model="filters.area_id.value" 
-        :options="areas" 
-        optionLabel="name" 
-        optionValue="id" 
-        :placeholder="t('assets.strings.filterbyArea')" 
-        showClear 
-        style="min-width: 150px" 
+      <Dropdown
+        id="filter_asset_type"
+        v-model="filters.asset_type_id.value"
+        :options="assetTypes"
+        optionLabel="name"
+        optionValue="id"
+        :placeholder="t('assets.strings.filterbyAssetType')"
+        showClear
+        filter
+        style="min-width: 150px"
       />
       <Button 
         icon="pi pi-filter" 
@@ -128,7 +129,7 @@ const props = defineProps({
   filters: { type: Object, required: true },
   assetStatusOptions: { type: Array, default: () => [] },
   sites: { type: Array, default: () => [] },
-  areas: { type: Array, default: () => [] },
+  assetTypes: { type: Array, default: () => [] },
   locations: { type: Array, default: () => [] }
 })
 
@@ -174,10 +175,11 @@ const businessCriticalityOptions = [
 
 .filters-advanced {
   margin-top: 1rem;
-  padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 0.5rem;
-  border: 1px solid #dee2e6;
+  padding: 1rem 1.25rem;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e1e7e3;
+  box-shadow: 0 1px 8px rgba(24, 54, 36, 0.06);
 }
 
 .advanced-filters-content {
@@ -194,9 +196,9 @@ const businessCriticalityOptions = [
 }
 
 .filter-group label {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   font-weight: 500;
-  color: #495057;
+  color: #6b7a71;
 }
 
 .risk-score-range {

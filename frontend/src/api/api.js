@@ -181,8 +181,8 @@ export default {
   getAssetTypes() {
     return api.get('/asset-types')
   },
-  getDashboardStats() {
-    return api.get('/dashboard/stats')
+  getDashboardStats(params = {}) {
+    return api.get('/dashboard/stats', { params })
   },
   getRiskyAssets(limit = 10) {
     return api.get('/dashboard/risky-assets', { params: { limit } })
@@ -817,6 +817,10 @@ export default {
   },
   updateContact(id, data) {
     return api.put(`/contacts/${id}`, data)
+  },
+  // Export assets as CSV/Excel; params = the list filters + format ('csv' | 'xlsx')
+  exportAssets(params = {}) {
+    return api.get('/assets/export', { params, responseType: 'blob' })
   },
   getAssetsTrash(params = {}) {
     return api.get('/assets/trash', { params })

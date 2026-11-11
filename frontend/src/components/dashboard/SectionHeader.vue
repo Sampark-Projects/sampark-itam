@@ -28,25 +28,28 @@ defineProps({
 </script>
 
 <style scoped>
+/* Section heading like "Recent Activity": dark-green title over a thin divider */
 .section-header {
   display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid #f0f0f0;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid #dde4df;
 }
 
+/* Solid brand-green disc with a white icon so it stands out on the pale page background */
 .header-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 0.5rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
-  background: linear-gradient(135deg, #1d6838 0%, #154f2a 100%);
-  color: white;
+  font-size: 1.1rem;
+  background: #1d6838;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(29, 104, 56, 0.35);
   flex-shrink: 0;
 }
 
@@ -55,16 +58,16 @@ defineProps({
 }
 
 .header-title {
-  margin: 0 0 0.25rem 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #2c3e50;
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #174d2d;
 }
 
 .header-description {
-  margin: 0;
-  font-size: 0.9rem;
-  color: #6c757d;
+  margin: 0.1rem 0 0;
+  font-size: 0.82rem;
+  color: #6b7a71;
   line-height: 1.5;
 }
 

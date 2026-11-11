@@ -23,6 +23,39 @@
       </div>
     </div>
 
+    <!-- Inventory totals: assets, asset types, sites -->
+    <div class="dashboard-totals cards-grid">
+      <DashboardCard
+        :value="formatTotal(totals.total_assets)"
+        :label="t('dashboard.totals.totalAssets')"
+        icon="pi pi-box"
+        severity="info"
+        click-action="/assets"
+      />
+      <DashboardCard
+        :value="formatTotal(totals.total_asset_types)"
+        :label="t('dashboard.totals.assetTypes')"
+        icon="pi pi-tags"
+        severity="info"
+        click-action="/asset-types"
+      />
+      <DashboardCard
+        :value="formatTotal(totals.total_sites)"
+        :label="t('dashboard.totals.totalSites')"
+        icon="pi pi-building"
+        severity="info"
+        click-action="/sites"
+      />
+      <DashboardCard
+        :value="formatTotal(totals.newly_added_assets)"
+        :label="t('dashboard.change.newlyAddedAssets')"
+        :subtitle="t('dashboard.change.addedInLast', { days: NEW_ASSETS_DAYS })"
+        icon="pi pi-plus-circle"
+        severity="info"
+        click-action="/assets?sort=created_at&order=desc"
+      />
+    </div>
+
     <!-- 1. EXPOSURE - "Dove sono esposto" -->
     <div class="dashboard-section">
       <SectionHeader
@@ -129,14 +162,6 @@
             :loading="loadingRecentChanges"
           />
         </div>
-        <DashboardCard
-          :value="recentChanges.length || 0"
-          :label="t('dashboard.change.newlyAddedAssets')"
-          :subtitle="t('dashboard.change.newlyAddedAssetsSubtitle')"
-          icon="pi pi-plus-circle"
-          severity="info"
-          click-action="/assets?sort=created_at&order=desc"
-        />
       </div>
     </div>
 
@@ -255,6 +280,12 @@ const complianceSummary = ref({
   coverage_percentage: 0,
   sl_gap_summary: { zones_with_gap: 0, average_gap: 0, max_gap: 0 }
 })
+const totals = ref({ total_assets: 0, total_asset_types: 0, total_sites: 0, newly_added_assets: 0 })
+
+// "Newly Added Assets" counts the assets created in the last 7 days
+const NEW_ASSETS_DAYS = 7
+// Show the exact number (the card would otherwise abbreviate 1364 as "1.4k")
+const formatTotal = (n) => Number(n || 0).toLocaleString()
 const recentChanges = ref([])
 const loadingRecentChanges = ref(false)
 const evidenceMissing = ref(0)
@@ -325,14 +356,16 @@ const loadDashboardData = async () => {
       depsRes,
       complianceRes,
       changesRes,
-      evidenceRes
+      evidenceRes,
+      statsRes
     ] = await Promise.all([
       api.getExposureSummary().catch(() => ({ data: exposureData.value })),
       api.getReviewsSummary().catch(() => ({ data: { overdue_count: 0, due_count: 0 } })),
       api.getDependenciesSummary().catch(() => ({ data: { missing_dependencies_count: 0, critical_missing_count: 0 } })),
       compliancePromise,
       api.getRecentChanges(10).catch(() => ({ data: [] })),
-      evidencePromise
+      evidencePromise,
+      api.getDashboardStats({ new_assets_days: NEW_ASSETS_DAYS }).catch(() => ({ data: totals.value }))
     ])
     
     exposureData.value = exposureRes.data
@@ -341,6 +374,12 @@ const loadDashboardData = async () => {
     complianceSummary.value = complianceRes.data
     recentChanges.value = changesRes.data
     evidenceMissing.value = evidenceRes.data.missing_evidence_count || 0
+    totals.value = {
+      total_assets: statsRes.data.total_assets || 0,
+      total_asset_types: statsRes.data.total_asset_types || 0,
+      total_sites: statsRes.data.total_sites || 0,
+      newly_added_assets: statsRes.data.newly_added_assets || 0
+    }
   } catch (error) {
     console.error('Error loading dashboard data:', error)
   }
@@ -363,22 +402,22 @@ onMounted(async () => {
   align-items: center;
   margin-bottom: 0.75rem;
   background: white;
-  padding: 1.25rem 1.5rem;
-  border-radius: 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  padding: 1.1rem 1.5rem;
+  border-radius: 14px;
+  box-shadow: 0 1px 8px rgba(24, 54, 36, 0.08);
 }
 
 .header-content h1 {
-  margin: 0 0 0.25rem 0;
-  color: #2c3e50;
-  font-size: 2rem;
-  font-weight: 700;
+  margin: 0 0 0.15rem 0;
+  color: #174d2d;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
 .welcome-text {
   margin: 0;
-  color: #6c757d;
-  font-size: 1.1rem;
+  color: #6b7a71;
+  font-size: 0.9rem;
 }
 
 .quick-actions {
@@ -390,6 +429,11 @@ onMounted(async () => {
   margin-bottom: 2rem;
 }
 
+/* Totals strip right under the white header */
+.dashboard-totals {
+  margin-bottom: 1.5rem;
+}
+
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -398,29 +442,38 @@ onMounted(async () => {
 
 .change-section {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr;
   gap: 1.25rem;
   align-items: start;
 }
 
 .change-card {
   background: white;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 1px 8px rgba(24, 54, 36, 0.08);
+}
+
+/* "Recent Changes" and its subtitle share one line to save vertical space */
+.change-card-header {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .change-card-header h3 {
-  margin: 0 0 0.25rem 0;
-  font-size: 1.25rem;
+  margin: 0;
+  font-size: 1.15rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: #174d2d;
 }
 
 .change-card-subtitle {
-  margin: 0 0 1rem 0;
-  font-size: 0.875rem;
-  color: #6c757d;
+  margin: 0;
+  font-size: 0.82rem;
+  color: #6b7a71;
 }
 
 .action-center {
@@ -429,9 +482,9 @@ onMounted(async () => {
 
 .action-center-card {
   background: white;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 1px 8px rgba(24, 54, 36, 0.08);
 }
 
 .action-center-card.success {
@@ -453,9 +506,9 @@ onMounted(async () => {
 
 .action-center-header h3 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: #174d2d;
 }
 
 .action-center-content {

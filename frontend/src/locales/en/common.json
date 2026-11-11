@@ -46,6 +46,7 @@
     "refresh": "Refresh",
     "reset": "Reset",
     "exportCsv": "Export CSV",
+    "exportExcel": "Export Excel",
     "chooseColumns": "Choose columns",
     "showActive": "Show Active",
     "showTrash": "Show Trash",

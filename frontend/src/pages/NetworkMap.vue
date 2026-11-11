@@ -201,26 +201,27 @@ const filters = ref({
 })
 
 // Statistiche
+// Stats follow the active filters (same assets / connections that are drawn on the map)
 const networkStats = computed(() => {
-  const totalAssets = assets.value.length
+  const totalAssets = filteredAssets.value.length
   const connectedAssets = new Set()
   const isolatedAssets = new Set()
-  
-  connections.value.forEach(conn => {
+
+  filteredConnections.value.forEach(conn => {
     if (conn.parent_asset) connectedAssets.add(conn.parent_asset.id)
     if (conn.child_asset) connectedAssets.add(conn.child_asset.id)
   })
-  
-  assets.value.forEach(asset => {
+
+  filteredAssets.value.forEach(asset => {
     if (!connectedAssets.has(asset.id)) {
       isolatedAssets.add(asset.id)
     }
   })
-  
+
   return {
     totalAssets,
     connectedAssets: connectedAssets.size,
-    totalConnections: connections.value.length,
+    totalConnections: filteredConnections.value.length,
     isolatedAssets: isolatedAssets.size
   }
 })
@@ -469,9 +470,16 @@ async function fetchData() {
     
     assets.value = assetsRes.data
     connections.value = connectionsRes.data
-    sites.value = sitesRes.data
+    // The API returns sites in no fixed order: sort by name so "first site" is stable
+    sites.value = [...sitesRes.data].sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { numeric: true }))
     assetTypes.value = assetTypesRes.data
-    
+
+    // Default the site filter to the first site in the dropdown.
+    // "Clear filters" still shows all sites.
+    if (!filters.value.siteId && sites.value.length > 0) {
+      filters.value.siteId = sites.value[0].id
+    }
+
     // Estrai protocolli disponibili
     const protocols = new Set()
     assets.value.forEach(asset => {

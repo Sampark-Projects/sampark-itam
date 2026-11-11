@@ -696,8 +696,13 @@ onMounted(async () => {
 .settings-actions {
   display: flex;
   align-items: flex-start;
-  /* line up the button with the inputs, below the labels */
-  padding-top: 1.5rem;
+  /* The labels above the inputs take 2rem (line + gap): push the button down by the same
+     amount and give it the input's height so both sit on one line */
+  padding-top: 2rem;
+}
+
+.settings-actions .p-button {
+  min-height: 2.35rem;
 }
 
 .bulk-bar {
@@ -738,10 +743,6 @@ onMounted(async () => {
 
 .settings-grid {
   gap: 1rem;
-}
-
-.settings-actions {
-  padding-top: 0;
 }
 
 </style>

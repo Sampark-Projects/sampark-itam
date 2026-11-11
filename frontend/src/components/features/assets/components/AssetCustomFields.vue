@@ -11,7 +11,7 @@
         <table class="custom-fields-table">
           <tbody>
             <tr v-for="(field, index) in fieldsArray" :key="index" @click="readOnly ? null : startEditing" :class="{ 'clickable': !readOnly }">
-              <td>{{ field.key }}</td>
+              <td>{{ formatLabel(field.key) }}</td>
               <td>{{ field.value }}</td>
             </tr>
             <tr v-if="fieldsArray.length === 0">
@@ -61,6 +61,14 @@ const toast = useToast()
 const isEditing = ref(false)
 const editableFields = ref([])
 const showSave = ref(false)
+
+// Display label for a custom field key: "_" becomes a space and the first letter is
+// capitalised (e.g. "ip_address_raw" -> "Ip address raw"). Display only: the stored key
+// is not changed, and the edit form still shows the real key.
+function formatLabel(key) {
+  const text = String(key ?? '').replace(/_+/g, ' ').replace(/\s+/g, ' ').trim()
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
 
 const fieldsArray = computed(() => {
   return Object.entries(props.customFields).map(([key, value]) => ({ key, value }))
