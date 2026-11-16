@@ -15,6 +15,27 @@ from app.crud.asset_interface import (
 from app.schemas.asset_interface import AssetInterfaceCreate, AssetInterfaceUpdate
 from uuid import UUID
 from app.utils import sanitize_text_fields
+from app.errors.exceptions import ErrorCodeException
+from app.errors.error_codes import ErrorCode
+from app.services import tag_rules
+from sqlalchemy.exc import IntegrityError
+
+
+def ensure_not_archived(asset: Asset) -> None:
+    """A retired and archived asset is kept for the audit trail but no longer edited."""
+    if getattr(asset, "archived_at", None) is not None:
+        raise ErrorCodeException(status_code=409, error_code=ErrorCode.ASSET_ARCHIVED)
+
+
+def _commit_asset(db: Session) -> None:
+    """Commit, turning a clash on the unique tag index into the usual duplicate-tag error."""
+    try:
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        if "uq_assets_tenant_tag" in str(exc.orig):
+            raise ErrorCodeException(status_code=409, error_code=ErrorCode.DUPLICATE_ASSET_TAG)
+        raise
 
 
 def get_asset(db: Session, asset_id: uuid.UUID) -> Optional[Asset]:
@@ -171,6 +192,39 @@ def get_asset_by_ip(
     )
 
 
+def validate_parent_asset(
+    db: Session,
+    tenant_id: uuid.UUID,
+    parent_asset_id: Optional[uuid.UUID],
+    asset_id: Optional[uuid.UUID] = None,
+) -> None:
+    """A parent must be another live asset of the same tenant and must not create a loop."""
+    if parent_asset_id is None:
+        return
+    invalid = ErrorCodeException(status_code=400, error_code=ErrorCode.INVALID_PARENT_ASSET)
+    if asset_id is not None and parent_asset_id == asset_id:
+        raise invalid
+    parent = (
+        db.query(Asset.id, Asset.tenant_id, Asset.deleted_at, Asset.parent_asset_id)
+        .filter(Asset.id == parent_asset_id)
+        .first()
+    )
+    if not parent or parent.tenant_id != tenant_id or parent.deleted_at is not None:
+        raise invalid
+    if asset_id is None:
+        return
+    # walk up the chain from the proposed parent; meeting this asset means a loop
+    seen = {parent_asset_id}
+    current = parent.parent_asset_id
+    while current is not None:
+        if current == asset_id:
+            raise invalid
+        if current in seen:  # pre-existing loop, stop
+            break
+        seen.add(current)
+        current = db.query(Asset.parent_asset_id).filter(Asset.id == current).scalar()
+
+
 def create_asset(db: Session, asset_in: AssetCreate, tenant_id: uuid.UUID) -> Asset:
     """Create a new asset"""
     data = sanitize_text_fields(
@@ -189,9 +243,19 @@ def create_asset(db: Session, asset_in: AssetCreate, tenant_id: uuid.UUID) -> As
         ),
         ["description", "notes"],
     )
+    validate_parent_asset(db, tenant_id, data.get("parent_asset_id"))
+    from app.services.workflow_service import check_manual_status_change
+    check_manual_status_change(db, tenant_id, None, data.get("status_id"))
+    # naming standard: a typed tag is checked, an empty one is generated when a rule applies
+    tag = tag_rules.clean_tag(data.get("tag"))
+    if tag:
+        tag_rules.validate_tag(db, tenant_id, tag, data.get("asset_type_id"), data.get("site_id"))
+    else:
+        tag = tag_rules.generate_tag(db, tenant_id, data.get("asset_type_id"), data.get("site_id"))
+    data["tag"] = tag
     db_asset = Asset(**data, tenant_id=tenant_id)
     db.add(db_asset)
-    db.commit()
+    _commit_asset(db)
     db.refresh(db_asset)
     # Handle interfaces
     if hasattr(asset_in, "interfaces") and asset_in.interfaces:
@@ -210,8 +274,10 @@ def update_asset(
 ) -> Optional[Asset]:
     """Update an existing asset"""
     db_asset = get_asset(db, asset_id)
-    if not db_asset:
+    if not db_asset or db_asset.tenant_id != tenant_id:
+        # another tenant's asset is treated as not found
         return None
+    ensure_not_archived(db_asset)
     RELATIONSHIP_FIELDS = {
         "manufacturer",
         "status",
@@ -226,9 +292,28 @@ def update_asset(
         asset_in.model_dump(exclude_unset=True, exclude={"interfaces", *RELATIONSHIP_FIELDS}),
         ["description", "notes"],
     )
+    if "parent_asset_id" in update_data:
+        validate_parent_asset(db, tenant_id, update_data["parent_asset_id"], asset_id=db_asset.id)
+    if "status_id" in update_data:
+        from app.services.workflow_service import check_manual_status_change
+        check_manual_status_change(db, tenant_id, db_asset.id, update_data["status_id"], db_asset.status_id)
+    if "tag" in update_data:
+        # only a changed tag is checked, so legacy assets can still be edited
+        new_tag = tag_rules.clean_tag(update_data["tag"])
+        update_data["tag"] = new_tag
+        if new_tag and new_tag != (db_asset.tag or "").strip():
+            tag_rules.validate_tag(
+                db, tenant_id, new_tag,
+                update_data.get("asset_type_id", db_asset.asset_type_id),
+                update_data.get("site_id", db_asset.site_id),
+                exclude_asset_id=db_asset.id,
+            )
+        if (new_tag or "").lower() != (db_asset.tag or "").strip().lower():
+            # a new tag is checked by the unique index even on a row that was a legacy duplicate
+            db_asset.tag_legacy_duplicate = False
     for field, value in update_data.items():
         setattr(db_asset, field, value)
-    db.commit()
+    _commit_asset(db)
     db.refresh(db_asset)
     # Handle interfaces
     if hasattr(asset_in, "interfaces"):
@@ -316,12 +401,16 @@ def get_asset_hierarchy(db: Session, root_asset_id: uuid.UUID) -> dict:
 
 
 def update_asset_custom_fields(
-    db: Session, asset_id: uuid.UUID, update_data: AssetCustomFieldUpdate
+    db: Session, asset_id: uuid.UUID, update_data: AssetCustomFieldUpdate, tenant_id: Optional[uuid.UUID] = None
 ) -> Optional[Asset]:
     """Update the custom fields of an asset"""
-    db_asset = db.query(Asset).filter(Asset.id == asset_id).first()
+    query = db.query(Asset).filter(Asset.id == asset_id)
+    if tenant_id is not None:
+        query = query.filter(Asset.tenant_id == tenant_id)
+    db_asset = query.first()
     if not db_asset:
         return None
+    ensure_not_archived(db_asset)
 
     if not db_asset.custom_fields:
         db_asset.custom_fields = {}

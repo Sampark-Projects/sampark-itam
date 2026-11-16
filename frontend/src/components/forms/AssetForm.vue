@@ -17,6 +17,12 @@
         :assetStatusOptions="assetStatusOptions"
       />
 
+      <!-- Fields defined on the asset type -->
+      <AssetTypeFieldsForm
+        :form="form"
+        :assetTypes="assetTypes"
+      />
+
       <!-- Location -->
       <AssetLocationForm 
         :form="form"
@@ -55,8 +61,13 @@
         :form="form"
       />
 
+      <!-- Lifecycle, procurement and support (OT requirements) -->
+      <AssetLifecycleForm
+        :form="form"
+      />
+
       <!-- Dates and Notes -->
-      <AssetDatesForm 
+      <AssetDatesForm
         :form="form"
       />
     </BaseForm>
@@ -79,6 +90,21 @@ import AssetLocationForm from './AssetLocationForm.vue'
 import AssetTechnicalDetailsForm from './AssetTechnicalDetailsForm.vue'
 import AssetSecurityForm from './AssetSecurityForm.vue'
 import AssetDatesForm from './AssetDatesForm.vue'
+import AssetLifecycleForm from './AssetLifecycleForm.vue'
+import AssetTypeFieldsForm from './AssetTypeFieldsForm.vue'
+import { missingRequired } from '../../utils/customFieldDefs'
+import { parseLocalDate, formatLocalDate, LIFECYCLE_DATE_FIELDS } from '../../utils/localDate'
+
+// Free-text lifecycle fields: an empty box means "not set" and is saved as null
+const LIFECYCLE_TEXT_FIELDS = [
+  'requisition_number',
+  'purchase_order_number',
+  'cost_currency',
+  'acceptance_signed_by',
+  'plant_owner',
+  'amc_partner',
+  'disposal_reference'
+]
 
 const { t } = useI18n()
 const toast = useToast()
@@ -157,6 +183,29 @@ const {
       last_update_date: null,
       physical_access_ease: 'restricted',
   installation_date: null,
+  // OT lifecycle data (all optional)
+  safety_relevance: null,
+  requisition_number: '',
+  purchase_order_number: '',
+  purchase_date: null,
+  purchase_cost: null,
+  cost_currency: '',
+  expected_delivery_date: null,
+  received_date: null,
+  commissioned_date: null,
+  acceptance_date: null,
+  acceptance_signed_by: '',
+  warranty_expiry_date: null,
+  amc_expiry_date: null,
+  support_expiry_date: null,
+  licence_expiry_date: null,
+  plant_owner: '',
+  amc_partner: '',
+  disposal_method: null,
+  disposal_date: null,
+  disposal_reference: '',
+  parent_asset_id: null,
+  custom_fields: {},
   business_criticality: 'low',
   description: '',
   interfaces: props.asset?.interfaces ? [...props.asset.interfaces] : [],
@@ -179,6 +228,14 @@ watch(() => props.asset, (newAsset) => {
       last_update_date: newAsset.last_update_date ?? null,
       physical_access_ease: newAsset.physical_access_ease ?? 'restricted',
       installation_date: newAsset.installation_date ?? null,
+      // lifecycle dates arrive as "YYYY-MM-DD": the calendars need Date objects
+      ...Object.fromEntries(LIFECYCLE_DATE_FIELDS.map(f => [f, parseLocalDate(newAsset[f])])),
+      ...Object.fromEntries(LIFECYCLE_TEXT_FIELDS.map(f => [f, newAsset[f] ?? ''])),
+      safety_relevance: newAsset.safety_relevance ?? null,
+      disposal_method: newAsset.disposal_method ?? null,
+      parent_asset_id: newAsset.parent_asset_id ?? null,
+      custom_fields: newAsset.custom_fields && typeof newAsset.custom_fields === 'object' ? { ...newAsset.custom_fields } : {},
+      purchase_cost: newAsset.purchase_cost ?? null,
       business_criticality: newAsset.business_criticality ?? 'low',
       description: typeof newAsset.description === 'string' ? newAsset.description : '',
       protocols: newAsset.protocols || []
@@ -216,13 +273,8 @@ async function handleSubmit() {
   await submit(async (formData) => {
     
     // Format data fields as YYYY-MM-DD or ISO
-    const formatDate = (d) => {
-      if (!d) return null
-      if (typeof d === 'string' && d.length === 10) return d
-      const dateObj = new Date(d)
-      if (isNaN(dateObj)) return null
-      return dateObj.toISOString().slice(0, 10)
-    }
+    // Local calendar day (toISOString() shifts the date back a day east of UTC, e.g. in India)
+    const formatDate = formatLocalDate
     const formatDateTime = (d) => {
       if (!d) return null
       const dateObj = new Date(d)
@@ -232,7 +284,9 @@ async function handleSubmit() {
     const dataWithFormattedDates = {
       ...formData,
       installation_date: formatDate(formData.installation_date),
-      last_update_date: formatDateTime(formData.last_update_date)
+      last_update_date: formatDateTime(formData.last_update_date),
+      ...Object.fromEntries(LIFECYCLE_DATE_FIELDS.map(f => [f, formatDate(formData[f])])),
+      ...Object.fromEntries(LIFECYCLE_TEXT_FIELDS.map(f => [f, formData[f] === '' ? null : formData[f]]))
     }
     emit('submit', dataWithFormattedDates)
   }, {
@@ -260,6 +314,12 @@ function validateAssetData(assetData) {
     }
   })
   
+  // required fields defined on the asset type
+  const type = props.assetTypes.find(a => a.id === assetData.asset_type_id)
+  missingRequired(type?.fields_schema, assetData.custom_fields).forEach(label => {
+    errors.push(t('common.messages.required', { field: label }))
+  })
+
   return errors
 }
 

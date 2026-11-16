@@ -166,6 +166,15 @@ from app.routers import sites
 from app.routers import tenants
 from app.routers import locations_floormap
 from app.routers import asset_types
+from app.routers import asset_tag_rules
+from app.routers import lifecycle
+from app.routers import workflows
+from app.routers import changes
+from app.routers import maintenance
+from app.routers import config_management
+from app.routers import integrations
+from app.routers import procurement
+from app.routers import asset_software
 from app.routers import dashboards
 from app.routers import pcap
 from app.routers import asset_statuses
@@ -250,6 +259,16 @@ app.include_router(discovered_devices.router, tags=["discovered-devices"])
 app.include_router(asset_photos.router, tags=["asset_photo"])
 app.include_router(asset_documents.router, tags=["asset_document"])
 app.include_router(asset_types.router, tags=["asset_type"])
+app.include_router(asset_tag_rules.router, tags=["asset_tag_rules"])
+app.include_router(lifecycle.router, tags=["lifecycle"])
+app.include_router(workflows.router, tags=["workflows"])
+app.include_router(changes.router, tags=["changes"])
+app.include_router(maintenance.router, tags=["maintenance"])
+app.include_router(config_management.router, tags=["config"])
+app.include_router(integrations.webhooks, tags=["webhooks"])
+app.include_router(integrations.reports, tags=["reports"])
+app.include_router(procurement.router, tags=["procurement"])
+app.include_router(asset_software.router, tags=["assets"])
 app.include_router(sites.router, tags=["sites"])
 app.include_router(asset_interfaces.router, tags=["asset_interfaces"])
 app.include_router(asset_connections.router, tags=["asset_connection"])
@@ -344,7 +363,11 @@ async def startup_event():
                 from app.models import NotificationTemplate
                 from app.init_data.init_notification_templates import init_notification_templates
                 template_count = db.query(NotificationTemplate).count()
-                if template_count == 0:
+                # also add templates introduced later (the init upserts by template_code)
+                wanted_codes = {'asset_expiry_alert', 'lifecycle_task_assigned', 'lifecycle_run_finished', 'config_alert', 'maintenance_overdue'}
+                have_codes = {c for (c,) in db.query(NotificationTemplate.template_code).filter(
+                    NotificationTemplate.template_code.in_(wanted_codes)).all()}
+                if template_count == 0 or have_codes != wanted_codes:
                     logger.info("Initializing notification templates...")
                     init_notification_templates(db)
                     logger.info("Notification templates initialized")

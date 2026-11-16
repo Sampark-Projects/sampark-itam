@@ -15,7 +15,7 @@ const i18n = createI18n({
         strings: {
           filterbyStatus: 'Filtra per stato',
           filterbySite: 'Filtra per sito',
-          filterbyArea: 'Filtra per area',
+          filterbyAssetType: 'Filtra per tipo asset',
           filterbyLocation: 'Filtra per posizione',
           advancedFilters: 'Filtri avanzati',
           riskScoreMin: 'Min',
@@ -84,7 +84,7 @@ describe('AssetsFilters', () => {
   const mockFilters = {
     status_id: { value: null },
     site_id: { value: null },
-    area_id: { value: null },
+    asset_type_id: { value: null },
     location_id: { value: null },
     business_criticality: { value: null },
     risk_score_min: { value: null },
@@ -102,7 +102,7 @@ describe('AssetsFilters', () => {
         filters: mockFilters,
         assetStatusOptions: [],
         sites: [],
-        areas: [],
+        assetTypes: [],
         locations: []
       },
       global: {
@@ -113,7 +113,7 @@ describe('AssetsFilters', () => {
 
     expect(wrapper.find('#filter_status').exists()).toBe(true)
     expect(wrapper.find('#filter_site').exists()).toBe(true)
-    expect(wrapper.find('#filter_area').exists()).toBe(true)
+    expect(wrapper.find('#filter_asset_type').exists()).toBe(true)
   })
 
   it('should show advanced filters when button is clicked', async () => {
@@ -122,7 +122,7 @@ describe('AssetsFilters', () => {
         filters: mockFilters,
         assetStatusOptions: [],
         sites: [],
-        areas: [],
+        assetTypes: [],
         locations: []
       },
       global: {
@@ -150,7 +150,7 @@ describe('AssetsFilters', () => {
         filters: filters,
         assetStatusOptions: [{ id: '1', name: 'Active' }],
         sites: [{ id: '1', name: 'Site 1' }],
-        areas: [{ id: '1', name: 'Area 1' }],
+        assetTypes: [{ id: '1', name: 'Type 1' }],
         locations: []
       },
       global: {
@@ -182,7 +182,7 @@ describe('AssetsFilters', () => {
         filters: mockFilters,
         assetStatusOptions: [],
         sites: [],
-        areas: [],
+        assetTypes: [],
         locations: [{ id: '1', name: 'Location 1' }]
       },
       global: {
@@ -208,7 +208,7 @@ describe('AssetsFilters', () => {
         filters: mockFilters,
         assetStatusOptions: [],
         sites: [],
-        areas: [],
+        assetTypes: [],
         locations: []
       },
       global: {

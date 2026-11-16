@@ -18,5 +18,46 @@
     "level1_5": "1.5",
     "level2": "2",
     "level3": "3",
-    "level4": "4"
+    "level4": "4",
+    "customFields": {
+        "title": "Type-specific fields",
+        "hint": "Extra fields shown in the asset form for assets of this type (for example I/O points or supply voltage).",
+        "empty": "No type-specific fields yet.",
+        "label": "Field label",
+        "required": "Required",
+        "key": "Key",
+        "errorLabel": "Every field needs a label.",
+        "errorOptions": "A choice field needs at least one option.",
+        "add": "Add field",
+        "optionsPlaceholder": "Options, separated by commas",
+        "types": {
+            "text": "Text",
+            "number": "Number",
+            "date": "Date",
+            "select": "Choice",
+            "boolean": "Yes / No"
+        }
+    },
+    "tagRules": {
+        "button": "Naming rules",
+        "title": "Asset tag naming rules",
+        "hint": "New assets without a tag get the next free tag from the matching rule. Typed tags must follow the rule and be unique. The most specific rule wins: type and site, then type, then site, then all assets.",
+        "tokens": {
+            "seq": "running number, padded to n digits",
+            "site": "site code",
+            "year": "year (4 or 2 digits)"
+        },
+        "empty": "No naming rules yet.",
+        "pattern": "Pattern",
+        "appliesTo": "Applies to",
+        "anyType": "Any type",
+        "anySite": "Any site",
+        "next": "Next tag",
+        "nextNumber": "Next number",
+        "active": "Active",
+        "inactive": "Inactive",
+        "new": "New rule",
+        "edit": "Edit rule",
+        "required": "Name and pattern are required."
+    }
 }

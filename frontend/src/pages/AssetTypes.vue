@@ -2,12 +2,21 @@
   <div class="assettypes-page">
     <div class="page-header">
       <h1>{{ t('assettypes.title') }}</h1>
-      <Button 
-        v-if="canWrite('asset_types')" 
-        :label="t('common.actions.create')" 
-        icon="pi pi-plus" 
-        @click="showDialog = true" 
-      />
+      <div class="flex gap-2">
+        <Button
+          :label="t('assettypes.tagRules.button')"
+          icon="pi pi-tag"
+          severity="secondary"
+          outlined
+          @click="showTagRules = true"
+        />
+        <Button 
+          v-if="canWrite('asset_types')" 
+          :label="t('common.actions.create')" 
+          icon="pi pi-plus" 
+          @click="showDialog = true" 
+        />
+      </div>
     </div>
 
     <DataTable 
@@ -49,7 +58,7 @@
       v-model:visible="showDialog" 
       :header="t('common.actions.create')" 
       :modal="true" 
-      :style="{ width: '40vw' }"
+      :style="{ width: '55vw', maxWidth: '40rem' }"
     >
       <AssetTypeForm 
         :tenantId="tenantId" 
@@ -62,7 +71,7 @@
       v-model:visible="editDialog" 
       :header="t('common.actions.edit')" 
       :modal="true" 
-      :style="{ width: '40vw' }"
+      :style="{ width: '55vw', maxWidth: '40rem' }"
     >
       <AssetTypeForm 
         :tenantId="tenantId" 
@@ -71,6 +80,7 @@
         @cancel="onEditCancel" 
       />
     </Dialog>
+    <TagRulesDialog v-model:visible="showTagRules" :can-write="canWrite('asset_types')" />
   </div>
 </template>
 
@@ -83,12 +93,14 @@ import { usePermissions } from '../composables/usePermissions'
 import api from '../api/api'
 
 import AssetTypeForm from '../components/forms/AssetTypeForm.vue'
+import TagRulesDialog from '../components/forms/TagRulesDialog.vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 
 const toast = useToast()
+const showTagRules = ref(false)
 const router = useRouter()
 const { t } = useI18n()
 const { canWrite, canDelete } = usePermissions()

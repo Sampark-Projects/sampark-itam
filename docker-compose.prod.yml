@@ -53,6 +53,8 @@ services:
       - ./logs:/app/logs
     environment:
       - SECRET_KEY=${SECRET_KEY}
+      # plant time zone for day-based rules (expiry, due and overdue dates), e.g. Asia/Kolkata
+      - APP_TIMEZONE=${APP_TIMEZONE:-UTC}
       - ACCESS_TOKEN_EXPIRE_MINUTES=30
       - CORS_ORIGINS=https://localhost,https://127.0.0.1,https://industrace.local
       - SSO_REDIRECT_URI=${SSO_REDIRECT_URI}

@@ -16,6 +16,8 @@
       @back="router.push('/assets')"
     />
 
+    <AssetArchivedBanner :asset="asset" @changed="fetchAsset" />
+
     <!-- SEZIONI PRINCIPALI: Due colonne -->
     <div class="asset-main-sections">
       <!-- Colonna sinistra: Info principali e rete -->
@@ -33,6 +35,22 @@
     </div>
 
     <AssetDetailInterfaces :asset="asset" class="asset-interfaces" />
+
+    <AssetDetailLifecycle :asset="asset" class="asset-lifecycle" />
+
+    <AssetDetailComponents :asset="asset" class="asset-lifecycle" />
+
+    <AssetDetailSpares v-if="canRead('lifecycle')" :asset="asset" class="asset-lifecycle" />
+
+    <AssetDetailCosts v-if="canRead('lifecycle')" :asset="asset" class="asset-lifecycle" />
+
+    <AssetDetailWorkflow v-if="canRead('lifecycle')" :asset="asset" class="asset-lifecycle" @changed="fetchAsset" />
+
+    <AssetDetailConfig v-if="canRead('configurations')" :asset="asset" class="asset-lifecycle" />
+
+    <AssetDetailMaintenance v-if="canRead('maintenance')" :asset="asset" class="asset-lifecycle" @changed="fetchAsset" />
+
+    <AssetDetailSoftware :asset="asset" class="asset-lifecycle" />
 
     <!-- TABS: Rischio, Documenti, Contatti, Timeline -->
     <TabView class="modern-tabs">
@@ -200,6 +218,15 @@ import AssetSuppliersTab from '../components/features/assets/components/AssetSup
 import AssetDetailHeader from '../components/features/assets/AssetDetailHeader.vue'
 import AssetDetailMainInfo from '../components/features/assets/AssetDetailMainInfo.vue'
 import AssetDetailInterfaces from '../components/features/assets/AssetDetailInterfaces.vue'
+import AssetDetailLifecycle from '../components/features/assets/AssetDetailLifecycle.vue'
+import AssetDetailSpares from '../components/features/assets/AssetDetailSpares.vue'
+import AssetDetailSoftware from '../components/features/assets/AssetDetailSoftware.vue'
+import AssetArchivedBanner from '../components/features/assets/AssetArchivedBanner.vue'
+import AssetDetailComponents from '../components/features/assets/AssetDetailComponents.vue'
+import AssetDetailCosts from '../components/features/assets/AssetDetailCosts.vue'
+import AssetDetailWorkflow from '../components/features/assets/AssetDetailWorkflow.vue'
+import AssetDetailMaintenance from '../components/features/assets/AssetDetailMaintenance.vue'
+import AssetDetailConfig from '../components/features/assets/AssetDetailConfig.vue'
 import AssetDetailTechnicalInfo from '../components/features/assets/AssetDetailTechnicalInfo.vue'
 import AssetDetailRiskTab from '../components/features/assets/tabs/AssetDetailRiskTab.vue'
 import AssetDetailDocumentsTab from '../components/features/assets/tabs/AssetDetailDocumentsTab.vue'
@@ -808,7 +835,8 @@ const sanitizedDescription = computed(() => asset.value?.description ? DOMPurify
 .asset-col {
   min-width: 0;
 }
-.asset-interfaces {
+.asset-interfaces,
+.asset-lifecycle {
   margin-bottom: 1.5rem;
 }
 .section-title {

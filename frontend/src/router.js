@@ -48,6 +48,9 @@ const routes = [
   { path: '/assets/:id', name: 'AssetDetail', component: AssetDetail, meta: { requiresAuth: true } },
   { path: '/assets-new/:id', name: 'AssetDetailNew', component: AssetDetailNew, meta: { requiresAuth: true } },
   { path: '/asset-reviews', name: 'AssetReviews', component: AssetReviews, meta: { requiresAuth: true, requiresPermission: 'asset_reviews' } },
+  { path: '/lifecycle', name: 'Lifecycle', component: () => import('./pages/Lifecycle.vue'), meta: { requiresAuth: true, requiresPermission: 'lifecycle' } },
+  { path: '/reports', name: 'Reports', component: () => import('./pages/Reports.vue'), meta: { requiresAuth: true, requiresPermission: ['reports', 'api_keys'] } },
+  { path: '/changes', name: 'Changes', component: () => import('./pages/ChangesMaintenance.vue'), meta: { requiresAuth: true, requiresPermission: ['changes', 'maintenance', 'configurations'] } },
   { path: '/notifications', name: 'Notifications', component: () => import('./pages/Notifications.vue'), meta: { requiresAuth: true } },
   { path: '/security-zones', name: 'SecurityZones', component: () => import('./pages/SecurityZones.vue'), meta: { requiresAuth: true, requiresIec62443: true } },
   { path: '/security-zones/:id', name: 'SecurityZoneDetail', component: () => import('./pages/SecurityZoneDetail.vue'), meta: { requiresAuth: true, requiresIec62443: true } },
@@ -114,7 +117,8 @@ router.beforeEach(async (to, from, next) => {
       }
       if (to.meta.requiresPermission) {
         const { canRead } = usePermissions()
-        if (!canRead(to.meta.requiresPermission)) {
+        const needed = Array.isArray(to.meta.requiresPermission) ? to.meta.requiresPermission : [to.meta.requiresPermission]
+        if (!needed.some(section => canRead(section))) {
           next('/')
           return
         }

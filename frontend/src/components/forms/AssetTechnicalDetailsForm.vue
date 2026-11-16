@@ -11,7 +11,8 @@
         <div class="col-12 md:col-6">
           <div class="p-field">
             <label for="tag">{{ t('assets.fields.tag') }}</label>
-            <InputText id="tag" v-model="form.tag" class="w-full" />
+            <InputText id="tag" v-model="form.tag" class="w-full" :placeholder="tagPreview?.next_tag || ''" />
+            <small v-if="tagHint" class="tag-hint">{{ tagHint }}</small>
           </div>
         </div>
 
@@ -58,7 +59,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useToast } from 'primevue/usetoast'
 import Card from 'primevue/card'
@@ -126,12 +127,54 @@ function addProtocol() {
   }
 }
 
+// Naming standard: tell the user what tag a new asset will get when the field is left empty
+const tagPreview = ref(null)
+let tagTimer = null
+let tagSeq = 0
+
+async function loadTagPreview() {
+  const seq = ++tagSeq
+  const typeId = props.form.asset_type_id
+  if (props.form.id || !typeId) {
+    tagPreview.value = null
+    return
+  }
+  try {
+    const res = await api.getNextAssetTag({ asset_type_id: typeId, site_id: props.form.site_id || undefined })
+    if (seq === tagSeq) tagPreview.value = res.data && res.data.next_tag ? res.data : null
+  } catch (e) {
+    if (seq === tagSeq) tagPreview.value = null
+  }
+}
+
+const tagHint = computed(() => {
+  if (!tagPreview.value) return ''
+  return t('assets.tagHint.tagAuto', { tag: tagPreview.value.next_tag }) + ' (' + t('assets.tagHint.tagPattern', { pattern: tagPreview.value.pattern }) + ')'
+})
+
+watch(
+  () => [props.form.asset_type_id, props.form.site_id, props.form.id],
+  () => {
+    clearTimeout(tagTimer)
+    tagTimer = setTimeout(loadTagPreview, 250)
+  },
+  { immediate: true }
+)
+
+onBeforeUnmount(() => clearTimeout(tagTimer))
+
 onMounted(() => {
   loadSupportedProtocols()
 })
 </script>
 
 <style scoped>
+.tag-hint {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--sk-text-muted, #6b7a71);
+}
+
 .p-field {
   margin-bottom: 1rem;
 }

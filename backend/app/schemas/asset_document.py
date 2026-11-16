@@ -11,6 +11,7 @@ class AssetDocumentBase(BaseModel):
     name: str
     file_path: str
     description: Optional[str] = None
+    category: Optional[str] = None
 
 
 class AssetDocumentCreate(AssetDocumentBase):

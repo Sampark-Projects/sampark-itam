@@ -15,5 +15,46 @@
     "level1_5": "1.5",
     "level2": "2",
     "level3": "3",
-    "level4": "4"
+    "level4": "4",
+    "customFields": {
+        "title": "Campi specifici del tipo",
+        "hint": "Campi aggiuntivi mostrati nel modulo dell asset per gli asset di questo tipo (ad esempio punti I/O o tensione di alimentazione).",
+        "empty": "Nessun campo specifico.",
+        "label": "Etichetta del campo",
+        "required": "Obbligatorio",
+        "key": "Chiave",
+        "errorLabel": "Ogni campo richiede un etichetta.",
+        "errorOptions": "Un campo a scelta richiede almeno un opzione.",
+        "add": "Aggiungi campo",
+        "optionsPlaceholder": "Opzioni, separate da virgola",
+        "types": {
+            "text": "Testo",
+            "number": "Numero",
+            "date": "Data",
+            "select": "Scelta",
+            "boolean": "Sì / No"
+        }
+    },
+    "tagRules": {
+        "button": "Regole di denominazione",
+        "title": "Regole di denominazione dei tag",
+        "hint": "I nuovi asset senza tag ricevono il prossimo tag libero dalla regola corrispondente. I tag digitati devono rispettare la regola ed essere univoci. Vince la regola più specifica: tipo e sito, poi tipo, poi sito, poi tutti gli asset.",
+        "tokens": {
+            "seq": "numero progressivo, con n cifre",
+            "site": "codice del sito",
+            "year": "anno (4 o 2 cifre)"
+        },
+        "empty": "Nessuna regola di denominazione.",
+        "pattern": "Schema",
+        "appliesTo": "Si applica a",
+        "anyType": "Qualsiasi tipo",
+        "anySite": "Qualsiasi sito",
+        "next": "Prossimo tag",
+        "nextNumber": "Prossimo numero",
+        "active": "Attiva",
+        "inactive": "Non attiva",
+        "new": "Nuova regola",
+        "edit": "Modifica regola",
+        "required": "Nome e schema sono obbligatori."
+    }
 }

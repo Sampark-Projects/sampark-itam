@@ -29,7 +29,7 @@ from app.errors.exceptions import ErrorCodeException
 from app.errors.error_codes import ErrorCode
 from app.schemas.asset_status import AssetStatus as AssetStatusSchema
 from app.schemas.contact import Contact as ContactSchema
-from app.schemas.asset import AssetContact, AssetContactCreate
+from app.schemas.asset import AssetContact, AssetContactCreate, AssetSummary
 from app.schemas.asset import AssetBulkUpdateRequest, AssetBulkSoftDeleteRequest
 from app.schemas.asset import RiskScoreRequest, RiskScoreResponse, RiskOverviewResponse
 from app.services.risk_scoring import CompositeRiskScoringEngine
@@ -94,7 +94,9 @@ def _apply_asset_filters(
     if status_id:
         query = query.filter(Asset.status_id == status_id)
     if site_id:
-        query = query.filter(Asset.site_id == site_id)
+        # a plant includes the assets of its units
+        from app.services import site_tree
+        query = query.filter(Asset.site_id.in_(site_tree.subtree_ids(db, tenant_id, site_id)))
     if area_id:
         query = query.filter(Asset.area_id == area_id)
     if location_id:
@@ -184,6 +186,11 @@ ASSET_EXPORT_COLUMNS = [
     "name", "tag", "serial_number", "model", "manufacturer", "asset_type", "status",
     "site", "site_code", "area", "location", "business_criticality", "risk_score",
     "ip_address", "mac_address", "description",
+    # OT lifecycle data
+    "safety_relevance", "plant_owner", "amc_partner", "requisition_number", "purchase_order_number",
+    "purchase_date", "purchase_cost", "cost_currency", "expected_delivery_date", "received_date",
+    "commissioned_date", "acceptance_date", "acceptance_signed_by",
+    "warranty_expiry_date", "amc_expiry_date", "support_expiry_date", "licence_expiry_date",
 ]
 
 
@@ -384,6 +391,10 @@ def export_assets(
                 ", ".join(i.ip_address for i in ifaces if i.ip_address),
                 ", ".join(i.mac_address for i in ifaces if i.mac_address),
                 a.description,
+                a.safety_relevance, a.plant_owner, a.amc_partner, a.requisition_number, a.purchase_order_number,
+                a.purchase_date, a.purchase_cost, a.cost_currency, a.expected_delivery_date, a.received_date,
+                a.commissioned_date, a.acceptance_date, a.acceptance_signed_by,
+                a.warranty_expiry_date, a.amc_expiry_date, a.support_expiry_date, a.licence_expiry_date,
             )
         ])
 
@@ -1284,6 +1295,12 @@ def import_assets_xlsx_confirm(
     return sanitize_for_json({"created": created, "updated": updated, "errors": errors})
 
 
+BULK_UPDATE_BLOCKED_FIELDS = frozenset({
+    "id", "tenant_id", "created_at", "updated_at", "deleted_at", "tag", "parent_asset_id", "archived_at", "archived_by",
+    "tag_legacy_duplicate",
+})
+
+
 @router.post("/bulk-update")
 def bulk_update_assets(
     req: AssetBulkUpdateRequest,
@@ -1293,6 +1310,12 @@ def bulk_update_assets(
 ):
     updated, errors = [], []
     language = resolve_audit_language(current_user, request)
+    # identity and rule-checked fields cannot be bulk-set: they have their own validation
+    blocked = sorted(set(req.fields) & BULK_UPDATE_BLOCKED_FIELDS)
+    if blocked:
+        raise ErrorCodeException(status_code=400, error_code=ErrorCode.INVALID_ASSET_UPDATE,
+                                 detail="These fields cannot be bulk-updated: " + ", ".join(blocked))
+    from app.services.workflow_service import check_manual_status_change
 
     for asset_id in req.ids:
         asset = (
@@ -1303,6 +1326,17 @@ def bulk_update_assets(
         if not asset:
             errors.append({"id": str(asset_id), "error": "Asset non trovato"})
             continue
+        if asset.archived_at is not None:
+            errors.append({"id": str(asset_id), "error": "ASSET_ARCHIVED"})
+            continue
+        if "status_id" in req.fields:
+            try:
+                new_status = req.fields["status_id"]
+                check_manual_status_change(db, current_user.tenant_id, asset.id,
+                                           uuid.UUID(str(new_status)) if new_status else None, asset.status_id)
+            except ErrorCodeException as exc:
+                errors.append({"id": str(asset_id), "error": exc.detail or "WORKFLOW_STATUS_LOCKED"})
+                continue
 
         # Prepare old data with names
         old_data = {}
@@ -1394,6 +1428,18 @@ def bulk_soft_delete_assets(
 
 
 # Get single asset
+@router.get("/next-tag")
+def preview_next_tag(
+    asset_type_id: Optional[uuid.UUID] = None,
+    site_id: Optional[uuid.UUID] = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """The tag the naming standard would give a new asset of this type and site (not reserved)."""
+    from app.services import tag_rules
+    return tag_rules.preview_tag(db, current_user.tenant_id, asset_type_id, site_id) or {"next_tag": None}
+
+
 @router.get("/{asset_id}", response_model=AssetRead)
 def get_asset(
     asset_id: uuid.UUID,
@@ -1434,9 +1480,9 @@ def update_asset(
     db: Session = Depends(get_db),
 ):
     asset = crud_assets.get_asset(db, asset_id)
-    if not asset:
+    if not asset or asset.tenant_id != current_user.tenant_id:
         raise ErrorCodeException(status_code=404, error_code=ErrorCode.ASSET_NOT_FOUND)
-    
+
     # Store old risk score before update
     old_risk_score = asset.risk_score
     
@@ -1616,9 +1662,11 @@ def hard_delete_asset(
 def patch_custom_fields(
     asset_id: uuid.UUID,
     custom_fields_update: AssetCustomFieldUpdate,
+    request: Request,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    asset = crud_assets.update_asset_custom_fields(db, asset_id, custom_fields_update)
+    asset = crud_assets.update_asset_custom_fields(db, asset_id, custom_fields_update, current_user.tenant_id)
     if not asset:
         raise ErrorCodeException(status_code=404, error_code=ErrorCode.ASSET_NOT_FOUND)
     return asset
@@ -1638,6 +1686,28 @@ def update_asset_position_endpoint(
     if not asset or asset.tenant_id != current_user.tenant_id:
         raise ErrorCodeException(status_code=404, error_code=ErrorCode.ASSET_NOT_FOUND)
     return {"id": asset_id, "map_x": asset.map_x, "map_y": asset.map_y}
+
+
+@router.get("/{asset_id}/components", response_model=List[AssetSummary])
+def list_asset_components(
+    asset_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Assets that are a component of this asset (direct children only)."""
+    asset = db.query(Asset.id, Asset.tenant_id).filter(Asset.id == asset_id).first()
+    if not asset or asset.tenant_id != current_user.tenant_id:
+        raise ErrorCodeException(status_code=404, error_code=ErrorCode.ASSET_NOT_FOUND)
+    return (
+        db.query(Asset.id, Asset.name)
+        .filter(
+            Asset.parent_asset_id == asset_id,
+            Asset.tenant_id == current_user.tenant_id,
+            Asset.deleted_at.is_(None),
+        )
+        .order_by(Asset.name)
+        .all()
+    )
 
 
 @router.get("/{asset_id}/zone-memberships")

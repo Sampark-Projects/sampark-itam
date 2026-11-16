@@ -91,6 +91,194 @@ export default {
   getAsset(id) {
     return api.get(`/assets/${id}`)
   },
+  getWorkflowFieldChoices() {
+    return api.get('/workflows/field-choices')
+  },
+  getWorkflowDefinitions() {
+    return api.get('/workflows/definitions')
+  },
+  updateWorkflowDefinition(kind, data) {
+    return api.put(`/workflows/definitions/${kind}`, data)
+  },
+  getWorkflowTasks() {
+    return api.get('/workflows/tasks')
+  },
+  getWorkflowRuns(params = {}) {
+    return api.get('/workflows/runs', { params })
+  },
+  getAssetWorkflowRuns(assetId) {
+    return api.get(`/workflows/assets/${assetId}/runs`)
+  },
+  startWorkflowRun(assetId, data) {
+    return api.post(`/workflows/assets/${assetId}/runs`, data)
+  },
+  completeWorkflowStep(runId, stepId, data) {
+    return api.post(`/workflows/runs/${runId}/steps/${stepId}/complete`, data)
+  },
+  rejectWorkflowStep(runId, stepId, data) {
+    return api.post(`/workflows/runs/${runId}/steps/${stepId}/reject`, data)
+  },
+  cancelWorkflowRun(runId, data) {
+    return api.post(`/workflows/runs/${runId}/cancel`, data)
+  },
+  retroDecideChangeRequest(id, data) {
+    return api.post(`/changes/${id}/retro-decision`, data)
+  },
+  getChangeSettings() {
+    return api.get('/changes/settings')
+  },
+  updateChangeSettings(data) {
+    return api.put('/changes/settings', data)
+  },
+  getChangeRequests(params = {}) {
+    return api.get('/changes', { params })
+  },
+  createChangeRequest(data) {
+    return api.post('/changes', data)
+  },
+  updateChangeRequest(id, data) {
+    return api.put(`/changes/${id}`, data)
+  },
+  transitionChangeRequest(id, data) {
+    return api.post(`/changes/${id}/transition`, data)
+  },
+  getUnapprovedChanges(params = {}) {
+    return api.get('/changes/unapproved', { params })
+  },
+  reviewUnapprovedChange(auditId, data) {
+    return api.post(`/changes/unapproved/${auditId}/review`, data)
+  },
+  getMaintenanceDue(params = {}) {
+    return api.get('/maintenance/due', { params })
+  },
+  getAssetMaintenance(assetId) {
+    return api.get(`/maintenance/assets/${assetId}`)
+  },
+  createMaintenanceTask(assetId, data) {
+    return api.post(`/maintenance/assets/${assetId}`, data)
+  },
+  completeMaintenanceTask(id, data) {
+    return api.post(`/maintenance/records/${id}/complete`, data)
+  },
+  deleteMaintenanceRecord(id) {
+    return api.delete(`/maintenance/records/${id}`)
+  },
+  getSpareParts(params = {}) {
+    return api.get('/maintenance/parts', { params })
+  },
+  createSparePart(data) {
+    return api.post('/maintenance/parts', data)
+  },
+  updateSparePart(id, data) {
+    return api.put(`/maintenance/parts/${id}`, data)
+  },
+  deleteSparePart(id) {
+    return api.delete(`/maintenance/parts/${id}`)
+  },
+  getConfigOverview(params = {}) {
+    return api.get('/config/overview', { params })
+  },
+  runConfigAlerts() {
+    return api.post('/config/alerts/run')
+  },
+  getAssetConfigArtifacts(assetId) {
+    return api.get(`/config/assets/${assetId}/artifacts`)
+  },
+  createConfigArtifact(assetId, data) {
+    return api.post(`/config/assets/${assetId}/artifacts`, data)
+  },
+  updateConfigArtifact(id, data) {
+    return api.put(`/config/artifacts/${id}`, data)
+  },
+  deleteConfigArtifact(id) {
+    return api.delete(`/config/artifacts/${id}`)
+  },
+  setConfigBaseline(versionId) {
+    return api.post(`/config/versions/${versionId}/baseline`)
+  },
+  clearConfigBaseline(artifactId) {
+    return api.delete(`/config/artifacts/${artifactId}/baseline`)
+  },
+  deleteConfigVersion(versionId) {
+    return api.delete(`/config/versions/${versionId}`)
+  },
+  compareConfigVersions(a, b) {
+    return api.get('/config/compare', { params: { a, b } })
+  },
+  downloadConfigVersion(versionId) {
+    return api.get(`/config/versions/${versionId}/download`, { responseType: 'blob' })
+  },
+  uploadConfigVersion(artifactId, file, fields = {}) {
+    const form = new FormData()
+    form.append('file', file)
+    Object.entries(fields).forEach(([k, v]) => { if (v) form.append(k, v) })
+    return api.post(`/config/artifacts/${artifactId}/versions`, form, { headers: { 'Content-Type': 'multipart/form-data' } })
+  },
+  getLifecycleSettings() {
+    return api.get('/lifecycle/settings')
+  },
+  updateLifecycleSettings(data) {
+    return api.put('/lifecycle/settings', data)
+  },
+  runLifecycleAlerts() {
+    return api.post('/lifecycle/alerts/run')
+  },
+  getLifecycleExpiring(params = {}) {
+    return api.get('/lifecycle/expiring', { params })
+  },
+  getLifecycleObsolescence(params = {}) {
+    return api.get('/lifecycle/obsolescence', { params })
+  },
+  getLifecycleCostSummary(params = {}) {
+    return api.get('/lifecycle/cost-summary', { params })
+  },
+  getVendorLifecycleEntries() {
+    return api.get('/lifecycle/vendor-entries')
+  },
+  createVendorLifecycleEntry(data) {
+    return api.post('/lifecycle/vendor-entries', data)
+  },
+  updateVendorLifecycleEntry(id, data) {
+    return api.put(`/lifecycle/vendor-entries/${id}`, data)
+  },
+  deleteVendorLifecycleEntry(id) {
+    return api.delete(`/lifecycle/vendor-entries/${id}`)
+  },
+  importVendorLifecycleCsv(file) {
+    const form = new FormData()
+    form.append('file', file)
+    return api.post('/lifecycle/vendor-entries/import', form, { headers: { 'Content-Type': 'multipart/form-data' } })
+  },
+  getAssetVendorLifecycle(assetId) {
+    return api.get(`/lifecycle/assets/${assetId}/vendor`)
+  },
+  getAssetCosts(assetId) {
+    return api.get(`/lifecycle/assets/${assetId}/costs`)
+  },
+  addAssetCost(assetId, data) {
+    return api.post(`/lifecycle/assets/${assetId}/costs`, data)
+  },
+  deleteAssetCost(assetId, entryId) {
+    return api.delete(`/lifecycle/assets/${assetId}/costs/${entryId}`)
+  },
+  getAssetTagRules() {
+    return api.get('/asset-tag-rules')
+  },
+  createAssetTagRule(data) {
+    return api.post('/asset-tag-rules', data)
+  },
+  updateAssetTagRule(id, data) {
+    return api.put(`/asset-tag-rules/${id}`, data)
+  },
+  deleteAssetTagRule(id) {
+    return api.delete(`/asset-tag-rules/${id}`)
+  },
+  getNextAssetTag(params = {}) {
+    return api.get('/assets/next-tag', { params })
+  },
+  getAssetComponents(id) {
+    return api.get(`/assets/${id}/components`)
+  },
   createAsset(assetData) {
     return api.post('/assets', assetData)
   },
@@ -231,6 +419,18 @@ export default {
   },
   uploadAssetDocument(assetId, formData) {
     return api.post(`/assets/${assetId}/documents`, formData)
+  },
+  updateAssetDocument(assetId, documentId, data) {
+    return api.patch(`/assets/${assetId}/documents/${documentId}`, data)
+  },
+  getAssetSpares(assetId) {
+    return api.get(`/lifecycle/assets/${assetId}/spares`)
+  },
+  setAssetSpares(assetId, spareAssetIds) {
+    return api.put(`/lifecycle/assets/${assetId}/spares`, { spare_asset_ids: spareAssetIds })
+  },
+  reopenArchivedAsset(assetId, reason) {
+    return api.post(`/workflows/assets/${assetId}/reopen`, { reason })
   },
   deleteAssetDocument(assetId, documentId) {
     return api.delete(`/assets/${assetId}/documents/${documentId}`)
@@ -1107,6 +1307,105 @@ export default {
     return api.post(`/discovered-devices/${deviceId}/onboard`, payload)
   },
   
+  getMaintenancePlans(assetId) {
+    return api.get(`/maintenance/assets/${assetId}/plans`)
+  },
+  createMaintenancePlan(assetId, data) {
+    return api.post(`/maintenance/assets/${assetId}/plans`, data)
+  },
+  updateMaintenancePlan(planId, data) {
+    return api.put(`/maintenance/plans/${planId}`, data)
+  },
+  deleteMaintenancePlan(planId) {
+    return api.delete(`/maintenance/plans/${planId}`)
+  },
+  runMaintenancePlans() {
+    return api.post('/maintenance/plans/run')
+  },
+  getPurchaseOrders(params = {}) {
+    return api.get('/procurement/orders', { params })
+  },
+  getPurchaseOrder(id) {
+    return api.get(`/procurement/orders/${id}`)
+  },
+  createPurchaseOrder(data) {
+    return api.post('/procurement/orders', data)
+  },
+  updatePurchaseOrder(id, data) {
+    return api.put(`/procurement/orders/${id}`, data)
+  },
+  transitionPurchaseOrder(id, data) {
+    return api.post(`/procurement/orders/${id}/transition`, data)
+  },
+  checkDelivery(lineId, assetId) {
+    return api.get(`/procurement/lines/${lineId}/check`, { params: { asset_id: assetId } })
+  },
+  receiveDelivery(lineId, data) {
+    return api.post(`/procurement/lines/${lineId}/receive`, data)
+  },
+  removeDelivery(assetId) {
+    return api.delete(`/procurement/assets/${assetId}/receipt`)
+  },
+  getAssetReceipt(assetId) {
+    return api.get(`/procurement/assets/${assetId}`)
+  },
+  getAssetSoftware(assetId) {
+    return api.get(`/assets/${assetId}/software`)
+  },
+  addAssetSoftware(assetId, data) {
+    return api.post(`/assets/${assetId}/software`, data)
+  },
+  updateAssetSoftware(assetId, itemId, data) {
+    return api.put(`/assets/${assetId}/software/${itemId}`, data)
+  },
+  deleteAssetSoftware(assetId, itemId) {
+    return api.delete(`/assets/${assetId}/software/${itemId}`)
+  },
+  getWebhookEvents() {
+    return api.get('/webhooks/events')
+  },
+  getWebhooks() {
+    return api.get('/webhooks')
+  },
+  createWebhook(data) {
+    return api.post('/webhooks', data)
+  },
+  updateWebhook(id, data) {
+    return api.put(`/webhooks/${id}`, data)
+  },
+  deleteWebhook(id) {
+    return api.delete(`/webhooks/${id}`)
+  },
+  rotateWebhookSecret(id, params = {}) {
+    return api.post(`/webhooks/${id}/rotate-secret`, null, { params })
+  },
+  testWebhook(id) {
+    return api.post(`/webhooks/${id}/test`)
+  },
+  redeliverWebhook(deliveryId) {
+    return api.post(`/webhooks/deliveries/${deliveryId}/redeliver`)
+  },
+  getKpiTrend(params = {}) {
+    return api.get('/reports/trend', { params })
+  },
+  getWebhookDeliveries(params = {}) {
+    return api.get('/webhooks/deliveries', { params })
+  },
+  getPlantDashboard(params = {}) {
+    return api.get('/reports/dashboard', { params })
+  },
+  getKpiTargets() {
+    return api.get('/reports/targets')
+  },
+  setKpiTarget(data) {
+    return api.put('/reports/targets', data)
+  },
+  clearKpiTarget(params) {
+    return api.delete('/reports/targets', { params })
+  },
+  downloadAuditPack(params = {}) {
+    return api.get('/reports/audit-pack', { params, responseType: 'blob' })
+  },
   // Generic HTTP methods for direct API calls
   get(url, config = {}) {
     return api.get(url, config)
