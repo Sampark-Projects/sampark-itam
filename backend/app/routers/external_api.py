@@ -386,6 +386,46 @@ async def update_asset_lifecycle_external(
 
 
 # Endpoint to check health
+# --- Minimal lookups for other applications (id and name only) ---------------------------------
+
+@router.get("/asset-types")
+async def asset_types_external(
+    api_key=Depends(require_read_scope),
+    db: Session = Depends(get_db),
+    request: Request = None,
+):
+    """Asset types of the key's tenant (plus the shared global types): id and name only."""
+    from app.models import AssetType
+    _guard(request, api_key, "/asset-types")
+    rows = (
+        db.query(AssetType.id, AssetType.name)
+        .filter((AssetType.tenant_id == api_key.tenant_id) | (AssetType.tenant_id == None))
+        .order_by(AssetType.name)
+        .all()
+    )
+    return [{"id": str(r.id), "name": r.name} for r in rows]
+
+
+@router.get("/asset-list")
+async def asset_list_external(
+    skip: int = 0,
+    limit: int = api_paging.DEFAULT_LIMIT,
+    api_key=Depends(require_read_scope),
+    db: Session = Depends(get_db),
+    request: Request = None,
+):
+    """Assets of the key's tenant: id and name only, paged (limit up to 500)."""
+    _guard(request, api_key, "/asset-list")
+    skip, limit = api_paging.clamp(skip, limit)
+    query = db.query(Asset.id, Asset.name).filter(
+        Asset.tenant_id == api_key.tenant_id, Asset.deleted_at == None
+    )
+    total = query.count()
+    rows = query.order_by(Asset.name, Asset.id).offset(skip).limit(limit).all()
+    items = [{"id": str(r.id), "name": r.name} for r in rows]
+    return api_paging.page(items, total, skip, limit)
+
+
 @router.get("/health")
 async def health_check():
     """Health check of the external API"""

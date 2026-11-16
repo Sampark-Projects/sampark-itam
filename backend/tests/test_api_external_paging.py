@@ -86,3 +86,14 @@ def test_archived_asset_cannot_be_written(db):
     db.commit()
     r = _client(db, w).patch(f"/external/v1/assets/{w.asset.id}/lifecycle", json={"purchase_order_number": "X"})
     assert r.status_code == 409
+
+
+def test_id_and_name_lookups_only_return_the_keys_tenant(db):
+    mine, other = World(db, "A"), World(db, "B")
+    c = _client(db, mine, scopes=("read",))
+    types = c.get("/external/v1/asset-types").json()
+    assert types == [{"id": str(mine.type.id), "name": "PLC"}]
+    assets = c.get("/external/v1/asset-list").json()
+    assert assets["total"] == 1 and assets["items"] == [{"id": str(mine.asset.id), "name": mine.asset.name}]
+    assert str(other.asset.id) not in str(assets) and str(other.type.id) not in str(types)
+    assert c.get("/external/v1/asset-list", params={"limit": 1, "skip": 1}).json()["items"] == []
