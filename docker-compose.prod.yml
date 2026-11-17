@@ -56,7 +56,7 @@ services:
       # plant time zone for day-based rules (expiry, due and overdue dates), e.g. Asia/Kolkata
       - APP_TIMEZONE=${APP_TIMEZONE:-UTC}
       - ACCESS_TOKEN_EXPIRE_MINUTES=30
-      - CORS_ORIGINS=https://localhost,https://127.0.0.1,https://industrace.local
+      - CORS_ORIGINS=https://localhost,https://127.0.0.1,https://industrace.local,http://localhost:4500,http://localhost:4400,https://itsmqa.samparkme.com,https://itsm.samparkme.com
       - SSO_REDIRECT_URI=${SSO_REDIRECT_URI}
       - ENVIRONMENT=production
       - DEBUG=false
