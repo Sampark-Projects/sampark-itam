@@ -40,7 +40,7 @@ services:
       # plant time zone for day-based rules (expiry, due and overdue dates), e.g. Asia/Kolkata
       - APP_TIMEZONE=${APP_TIMEZONE:-Asia/Kolkata}
       - ACCESS_TOKEN_EXPIRE_MINUTES=30
-      - CORS_ORIGINS=http://localhost:5174,http://127.0.0.1:5174,http://localhost:5173,http://localhost:3000
+      - CORS_ORIGINS=http://localhost:5174,http://127.0.0.1:5174,http://localhost:5173,http://localhost:3000,http://localhost:4500,http://localhost:4400,https://itsmqa.samparkme.com,https://itsm.samparkme.com
       - ENVIRONMENT=development
       - DEBUG=true
       # ENCRYPTION_KEY: Optional in development (temporary key will be generated and saved to logs/.encryption_key_temp)
