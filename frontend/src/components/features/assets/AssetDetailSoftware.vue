@@ -10,7 +10,8 @@
     </h3>
     <p v-if="error" class="p-error">{{ error }}</p>
 
-    <table v-if="items.length" class="sw-table">
+    <div v-if="items.length" ref="scrollBox" class="sw-scroll" :style="boxHeight ? { maxHeight: boxHeight + 'px' } : null">
+    <table class="sw-table">
       <thead>
         <tr>
           <th>{{ t('assets.software.name') }}</th>
@@ -36,6 +37,7 @@
         </tr>
       </tbody>
     </table>
+    </div>
     <p v-else class="muted">{{ t('assets.software.empty') }}</p>
 
     <div v-if="editable" class="add-row">
@@ -52,7 +54,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
 import Dropdown from 'primevue/dropdown'
@@ -81,6 +83,26 @@ const form = ref(blank())
 const editingId = ref(null)
 const error = ref('')
 const saving = ref(false)
+
+// The table shows at most 5 entries; the rest scrolls. The height is measured (rows with a vendor line are taller).
+const VISIBLE_ROWS = 5
+const scrollBox = ref(null)
+const boxHeight = ref(0)
+
+function fitHeight() {
+  const box = scrollBox.value
+  if (!box) { boxHeight.value = 0; return }
+  const rows = box.querySelectorAll('tbody tr')
+  if (rows.length <= VISIBLE_ROWS) { boxHeight.value = 0; return }
+  const head = box.querySelector('thead')
+  let h = head ? head.offsetHeight : 0
+  for (let i = 0; i < VISIBLE_ROWS; i++) h += rows[i].offsetHeight
+  boxHeight.value = h + 1
+}
+
+watch(items, () => nextTick(fitHeight), { flush: 'post' })
+onMounted(() => window.addEventListener('resize', fitHeight))
+onBeforeUnmount(() => window.removeEventListener('resize', fitHeight))
 
 function isExpired(value) {
   const d = parseLocalDate(value)
@@ -145,8 +167,9 @@ watch(() => props.asset?.id, (id) => { if (id) { reset(); load(id) } }, { immedi
 <style scoped>
 .muted { color: var(--sk-text-muted, #6b7a71); font-size: 0.85rem; margin: 0 0 0.5rem; }
 .block { display: block; }
-.sw-table { width: 100%; border-collapse: collapse; margin-bottom: 0.75rem; font-size: 0.9rem; }
-.sw-table th { text-align: left; font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--sk-text-muted, #6b7a71); padding: 0.25rem 0.5rem; }
+.sw-scroll { overflow-y: auto; margin-bottom: 0.75rem; border-bottom: 1px solid var(--sk-border, #e1e7e3); }
+.sw-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.sw-table th { position: sticky; top: 0; z-index: 1; background: var(--sk-table-head, #f4f7f5); text-align: left; font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--sk-text-muted, #6b7a71); padding: 0.25rem 0.5rem; }
 .sw-table td { padding: 0.35rem 0.5rem; border-top: 1px solid var(--sk-border, #e1e7e3); vertical-align: top; }
 .num { text-align: right; white-space: nowrap; }
 .expired { color: var(--red-600, #c0392b); font-weight: 600; }
