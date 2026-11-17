@@ -51,13 +51,6 @@
       "ordered": "de757cb5-acf8-41d8-9258-63e61f039c57",
       "received": "68acf8ee-293f-4b80-b00b-462dc7850d78"
     },
-    "changes": {
-      "submitted": "469c0088-efd0-4e5a-a5dc-203595c41184",
-      "approved": "835421c3-55dd-4fb4-bbaa-3b19cad2ab5a",
-      "closed": "7b9e0623-859d-4bad-b8c9-f639e5757074",
-      "emergency": "3f1e8a1f-3a73-444a-98cb-589144f1cbd3",
-      "upgrade": "48330f97-1257-42a7-8f9a-9c5ce99b7836"
-    },
     "artifacts": {
       "main": "6795e7d1-328d-4e70-8272-6dd6781bd800",
       "hmi": "c7f5583b-1787-4ebf-b895-314b8a84191f",
@@ -115,5 +108,6 @@
     "1",
     "2",
     "3"
-  ]
+  ],
+  "note": "Change requests were removed from the product; the change request records no longer exist."
 }

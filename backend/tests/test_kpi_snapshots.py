@@ -21,7 +21,7 @@ def test_snapshot_is_idempotent_per_day(db):
 def test_trend_has_gaps_and_todays_point(db):
     w = World(db)
     old = local_today() - timedelta(days=2)
-    db.add(KpiSnapshot(tenant_id=w.tenant.id, site_id=None, day=old, metrics={"assets_total": 5, "open_changes": 2}))
+    db.add(KpiSnapshot(tenant_id=w.tenant.id, site_id=None, day=old, metrics={"assets_total": 5, "overdue_maintenance": 2}))
     db.commit()
     admin = client_for(db, w.user(ADMIN_DEFAULT_PERMISSIONS))
     r = admin.get("/reports/trend", params={"days": 5}).json()

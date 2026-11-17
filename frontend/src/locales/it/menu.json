@@ -1,10 +1,10 @@
 {
-"navigation": {
+  "navigation": {
     "dashboard": "Dashboard",
     "assets": "Dispositivi",
     "assetReviews": "Review Asset",
     "lifecycle": "Ciclo di vita",
-    "changes": "Modifiche e manutenzione",
+    "changes": "Manutenzione e configurazione",
     "reports": "Report e integrazioni",
     "securityZones": "Security Zones",
     "conduits": "Conduits",
@@ -32,11 +32,11 @@
     "settings": "Impostazioni",
     "logout": "Esci",
     "utility": "Utility"
-    },
-"section": {
+  },
+  "section": {
     "management": "Gestione",
     "registry": "Inventario",
     "utility": "Utility",
     "isa62443": "Industrial ISA/IEC"
-    }
+  }
 }

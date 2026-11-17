@@ -9,8 +9,7 @@ from typing import Dict, Iterable, List, Optional
 from urllib.parse import urlparse
 
 EVENTS = (
-    "change.submitted", "change.approved", "change.rejected", "change.implemented", "change.closed",
-    "change.cancelled", "workflow.started", "workflow.completed", "workflow.rejected",
+    "workflow.started", "workflow.completed", "workflow.rejected",
     "config.drift", "lifecycle.expiry", "maintenance.completed", "maintenance.overdue",
     "purchase.approved", "purchase.rejected", "purchase.ordered", "ping",
 )

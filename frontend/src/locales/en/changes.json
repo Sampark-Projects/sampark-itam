@@ -1,107 +1,8 @@
 {
-  "title": "Changes and maintenance",
+  "title": "Maintenance and configuration",
   "tabs": {
-    "changes": "Change requests",
-    "unapproved": "Unapproved changes",
     "maintenance": "Maintenance",
-    "parts": "Spare parts",
-    "settings": "Settings"
-  },
-  "status": {
-    "draft": "Draft",
-    "submitted": "Submitted",
-    "approved": "Approved",
-    "rejected": "Rejected",
-    "implemented": "Implemented",
-    "closed": "Closed",
-    "cancelled": "Cancelled",
-    "open": "Open",
-    "all": "All"
-  },
-  "types": {
-    "configuration": "Configuration",
-    "firmware": "Firmware",
-    "program": "Program / logic",
-    "hardware": "Hardware",
-    "network": "Network",
-    "other": "Other"
-  },
-  "risk": {
-    "low": "Low",
-    "medium": "Medium",
-    "high": "High"
-  },
-  "actions": {
-    "submitted": "Submit for approval",
-    "approved": "Approve",
-    "rejected": "Reject",
-    "draft": "Return to draft",
-    "implemented": "Mark implemented",
-    "closed": "Close",
-    "cancelled": "Cancel request"
-  },
-  "request": {
-    "new": "New change request",
-    "edit": "Edit change request",
-    "code": "Number",
-    "title": "Title",
-    "description": "What will change",
-    "reason": "Why",
-    "type": "Type",
-    "risk": "Risk",
-    "plannedStart": "Planned start",
-    "plannedEnd": "Planned end",
-    "assets": "Assets affected",
-    "requestedBy": "Requested by",
-    "decidedBy": "Decided by",
-    "note": "Note",
-    "noteRequired": "Write the reason in the note box.",
-    "empty": "No change requests.",
-    "required": "A title and at least one asset are required.",
-    "selfApproval": "You requested this change, so another person has to decide on it.",
-    "approvedHint": "Changes to the assets are covered from approval until the request is marked implemented.",
-    "implementation": "Implementation note",
-    "approvals": "Approvals",
-    "retro": "Approved afterwards"
-  },
-  "urgency": {
-    "label": "Urgency",
-    "normal": "Normal",
-    "emergency": "Emergency",
-    "help": "An emergency change can be implemented right after submitting. It still needs to be approved or rejected afterwards, and its edits are covered from the moment it was submitted."
-  },
-  "retro": {
-    "approved": "Approved",
-    "rejected": "Rejected",
-    "approve": "Approve afterwards",
-    "reject": "Reject afterwards"
-  },
-  "review": {
-    "title": "Post-implementation review",
-    "choose": "How did it go?",
-    "help": "Required to close a change request.",
-    "required": "Choose the review outcome to close the request.",
-    "successful": "Successful",
-    "partial": "Partly successful",
-    "failed": "Failed",
-    "rolled_back": "Rolled back"
-  },
-  "unapproved": {
-    "hint": "Asset edits to controlled fields that no approved change request covered at that moment. Review a flag to clear it with a note.",
-    "within": "Last",
-    "days": "{n} days",
-    "showReviewed": "Show reviewed",
-    "when": "When",
-    "asset": "Asset",
-    "by": "Changed by",
-    "changes": "Changes",
-    "empty": "No unapproved changes in this period.",
-    "review": "Review",
-    "reviewTitle": "Review unapproved change",
-    "reviewNote": "Why is this acceptable? (for example an emergency fix, with the ticket number)",
-    "reviewedBy": "Reviewed by {name}",
-    "saved": "Review saved.",
-    "none": "(empty)"
+    "parts": "Spare parts"
   },
   "maintenance": {
     "hint": "Planned maintenance that is overdue or due soon. Completing a preventive task can schedule the next one.",
@@ -135,14 +36,12 @@
     "planned": "Planned"
   },
   "assetCard": {
-    "title": "Maintenance and changes",
+    "title": "Maintenance",
     "addTask": "Plan maintenance",
     "taskTitle": "Task",
     "empty": "No maintenance recorded.",
     "parts": "Spare parts for this asset",
     "noParts": "No spare parts linked.",
-    "changes": "Change requests",
-    "noChanges": "No change requests.",
     "inStock": "{n} in stock",
     "delete": "Delete this record? Parts used go back to stock.",
     "required": "A title and a due date are required."
@@ -164,20 +63,9 @@
     "deleteConfirm": "Delete this spare part?",
     "required": "A name is required."
   },
-  "settings": {
-    "hint": "Who may approve change requests and which asset fields count as controlled. An edit to a controlled field without an approved change request is flagged.",
-    "approver": "Approver role",
-    "anyAdmin": "Administrators only",
-    "selfApproval": "The person who requested a change may also approve it",
-    "required": "Approvals needed (change board)",
-    "requiredHelp": "A change request is approved once this many different approvers agree. One rejection stops it.",
-    "fields": "Controlled fields",
-    "saved": "Settings saved."
-  },
   "upgrade": {
     "toVersion": "New version",
-    "changeRequest": "Approved change request",
-    "hint": "A firmware upgrade or patch needs an approved change request that covers this asset before it can be completed. Completing an upgrade sets the asset firmware version.",
+    "hint": "Completing an upgrade sets the asset firmware version to the new version.",
     "installedVersion": "Version installed",
     "completeHint": "Completing an upgrade updates the firmware version of the asset."
   },

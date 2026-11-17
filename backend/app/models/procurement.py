@@ -3,7 +3,7 @@ Its lines are what a delivered asset is checked against."""
 import uuid
 
 from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, Numeric, String, Text, UniqueConstraint
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -33,12 +33,44 @@ class PurchaseOrder(Base):
     decided_at = Column(DateTime, nullable=True)
     decision_note = Column(Text, nullable=True)
     ordered_at = Column(DateTime, nullable=True)
+    # the approval levels this request has to pass, copied from the settings when it is submitted
+    approval_chain = Column(JSONB, nullable=True)
+    # the purchase order document itself (optional); stored under uploads/
+    po_file_name = Column(String(255), nullable=True)
+    po_file_path = Column(String(500), nullable=True)
+    po_file_size = Column(Integer, nullable=True)
+    po_file_uploaded_at = Column(DateTime, nullable=True)
+    po_file_uploaded_by = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     closed_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
     lines = relationship("PurchaseOrderLine", cascade="all, delete-orphan", order_by="PurchaseOrderLine.position",
                          back_populates="order", lazy="selectin")
+
+
+class PurchaseApproval(Base):
+    """One level's decision on a purchase request. Cleared when the request goes back to draft."""
+    __tablename__ = "purchase_approvals"
+    __table_args__ = (UniqueConstraint("order_id", "level", name="uq_purchase_approval_level"),)
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    order_id = Column(UUID(as_uuid=True), ForeignKey("purchase_orders.id", ondelete="CASCADE"), nullable=False, index=True)
+    level = Column(Integer, nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    decision = Column(String(10), nullable=False)  # approved / rejected
+    note = Column(Text, nullable=True)
+    decided_at = Column(DateTime, default=func.now())
+
+
+class PurchaseApprovalSettings(Base):
+    """The approval chain of a tenant: ordered levels [{level, name, role_id}]. Empty = one level, any approver."""
+    __tablename__ = "purchase_approval_settings"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, unique=True)
+    levels = Column(JSONB, nullable=False, default=list)
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
 
 class PurchaseOrderLine(Base):

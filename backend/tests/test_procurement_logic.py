@@ -82,3 +82,35 @@ def test_end_of_life_risk_points():
     assert ll.support_expired(A(), date(2026, 1, 1))
     A.support_expiry_date = date(2030, 1, 1)
     assert not ll.support_expired(A(), date(2026, 1, 1))  # an expired warranty alone does not count
+
+
+# --- multi-level approval ---------------------------------------------------------------------
+
+def test_chain_is_cleaned_and_limited():
+    out = pl.clean_chain([{"name": "  Plant   head ", "role_id": "r1"}, {"name": "Finance"}])
+    assert out == [{"level": 1, "name": "Plant head", "role_id": "r1"}, {"level": 2, "name": "Finance", "role_id": None}]
+    assert pl.clean_chain([]) == [] and pl.clean_chain(None) == []
+    assert pl.chain_or_default([])[0]["level"] == 1  # nothing configured: one level
+    for bad in ([{"name": " "}], [{"name": "x"}] * (pl.MAX_LEVELS + 1), [{"name": "x" * 81}], "levels"):
+        with pytest.raises(pl.ProcurementInputError):
+            pl.clean_chain(bad)
+
+
+def test_levels_decide_in_order():
+    chain = pl.clean_chain([{"name": "A"}, {"name": "B"}, {"name": "C"}])
+    assert pl.next_level(chain, set())["level"] == 1
+    assert pl.next_level(chain, {1})["level"] == 2
+    assert pl.next_level(chain, {1, 2})["level"] == 3
+    assert pl.next_level(chain, {1, 2, 3}) is None
+
+
+def test_who_may_decide_a_level():
+    with_role = {"level": 2, "name": "Plant head", "role_id": "role-b"}
+    no_role = {"level": 1, "name": "Approval", "role_id": None}
+    ok = lambda level, **kw: pl.may_decide_level(level, kw.get("user", "u"), kw.get("role", "x"), kw.get("admin", False),
+                                                 kw.get("requester", "r"), kw.get("earlier", set()))
+    assert ok(with_role, role="role-b") and not ok(with_role, role="role-a", admin=True)  # the role, not just rights
+    assert ok(no_role, admin=True) and not ok(no_role, admin=False)  # no role: any approver
+    assert not ok(with_role, role="role-b", user="r")  # never the requester
+    assert not ok(with_role, role="role-b", earlier={"u"})  # never twice on one request
+    assert not ok(None, admin=True)  # nothing left to decide

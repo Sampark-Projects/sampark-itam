@@ -34,8 +34,6 @@
     "baseline_coverage": "Baseline coverage",
     "config_drift": "Config drift",
     "overdue_maintenance": "Overdue maintenance",
-    "open_changes": "Open changes",
-    "unapproved_changes": "Unapproved changes",
     "workflows_in_progress": "Workflows in progress"
   },
   "metricHelp": {
@@ -45,8 +43,6 @@
     "baseline_coverage": "Share of configuration items that have a golden baseline (higher is better).",
     "config_drift": "Configuration items whose latest version differs from the baseline.",
     "overdue_maintenance": "Planned maintenance past its due date.",
-    "open_changes": "Change requests that are submitted, approved or being implemented.",
-    "unapproved_changes": "Edits to controlled fields in the last {days} days with no approved change request.",
     "workflows_in_progress": "Lifecycle workflows that are not finished."
   },
   "status": {
@@ -69,11 +65,11 @@
     "cleared": "Target cleared."
   },
   "audit": {
-    "hint": "An Excel workbook for an audit: asset register, vendor end of life, change requests, unapproved changes, maintenance (with upgrades and patches), software, purchase requests, configuration and workflows.",
+    "hint": "An Excel workbook for an audit: asset register, vendor end of life, maintenance (with upgrades and patches), software, purchase requests, configuration and workflows.",
     "site": "Site",
     "allSites": "All sites",
     "days": "Period (days)",
-    "daysHelp": "Changes, maintenance and workflow history from this many days back.",
+    "daysHelp": "Maintenance and workflow history from this many days back.",
     "download": "Download audit pack",
     "done": "The audit pack has been downloaded."
   },
@@ -123,7 +119,7 @@
     },
     "verifyTitle": "How to verify a request",
     "verify": "Each request is a POST with a JSON body and the headers X-Sampark-Event, X-Sampark-Delivery, X-Sampark-Timestamp and X-Sampark-Signature. The signature is sha256= followed by the HMAC-SHA256 of \"timestamp.body\" (the timestamp, a dot, then the raw body) with your secret. Reject requests with an old timestamp. A non-2xx answer is retried up to 5 times (after 1 minute, 5 minutes, 30 minutes and 2 hours).",
-    "apiKeysNote": "To let another system read or update this data, create an API key (read or write scope) and call the /external/v1 endpoints: lifecycle/expiring, changes, maintenance/due, config/status, and PATCH assets/(id)/lifecycle."
+    "apiKeysNote": "To let another system read or update this data, create an API key (read or write scope) and call the /external/v1 endpoints: lifecycle/expiring, maintenance/due, config/status, and PATCH assets/(id)/lifecycle."
   },
   "events": {
     "change.submitted": "Change submitted",

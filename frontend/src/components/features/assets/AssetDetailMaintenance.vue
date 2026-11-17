@@ -26,7 +26,6 @@
           <td>
             {{ r.title }}
             <small v-if="r.from_version || r.to_version" class="muted block">{{ r.from_version || '?' }} → {{ r.to_version || '?' }}</small>
-            <small v-if="r.change_request_id && changeCode(r.change_request_id)" class="muted block">{{ changeCode(r.change_request_id) }}</small>
             <small v-if="r.plan_id" class="muted block"><i class="pi pi-replay"></i> {{ t('changes.plans.fromPlan') }}</small>
             <small v-if="r.parts.length" class="muted block">{{ r.parts.map(p => `${p.quantity}× ${p.name}`).join(', ') }}</small>
           </td>
@@ -50,8 +49,6 @@
       <Calendar v-model="form.due_date" dateFormat="dd/mm/yy" showIcon :placeholder="t('changes.maintenance.due')" class="f-date" />
       <template v-if="isUpgrade">
         <InputText v-model="form.to_version" maxlength="100" :placeholder="t('changes.upgrade.toVersion')" class="f-ver" />
-        <Dropdown v-model="form.change_request_id" :options="approvedChanges" optionLabel="label" optionValue="value" showClear
-                  :placeholder="t('changes.upgrade.changeRequest')" class="f-cr" />
       </template>
       <Button :label="t('changes.assetCard.addTask')" icon="pi pi-plus" :loading="saving" @click="add" />
       <small v-if="isUpgrade" class="muted block w-full">{{ t('changes.upgrade.hint') }}</small>
@@ -95,17 +92,6 @@
       </ul>
     </div>
 
-    <div class="sub">
-      <h4>{{ t('changes.assetCard.changes') }}</h4>
-      <p v-if="!changes.length" class="muted">{{ t('changes.assetCard.noChanges') }}</p>
-      <ul v-else class="plain">
-        <li v-for="c in changes" :key="c.id">
-          <strong>{{ c.code }}</strong> {{ c.title }}
-          <Tag :value="t(`changes.status.${c.status}`)" severity="secondary" class="chip" />
-        </li>
-      </ul>
-    </div>
-
     <MaintenanceCompleteDialog v-model:visible="showComplete" :record="current" @done="onCompleted" />
   </section>
 </template>
@@ -139,7 +125,6 @@ const KINDS = ['preventive', 'corrective', 'inspection', 'upgrade', 'patch']
 const records = ref([])
 const plans = ref([])
 const parts = ref([])
-const changes = ref([])
 const error = ref('')
 const saving = ref(false)
 const savingPlan = ref(false)
@@ -147,34 +132,22 @@ const showComplete = ref(false)
 const current = ref(null)
 
 const kindOptions = computed(() => KINDS.map(v => ({ value: v, label: t(`changes.maintenance.kinds.${v}`) })))
-const emptyForm = (kind = 'preventive') => ({ kind, title: '', due_date: null, to_version: '', change_request_id: null })
+const emptyForm = (kind = 'preventive') => ({ kind, title: '', due_date: null, to_version: '' })
 const form = ref(emptyForm())
 const planForm = ref({ title: '', interval_days: null, next_due_date: null })
 const isUpgrade = computed(() => ['upgrade', 'patch'].includes(form.value.kind))
 const overdueCount = computed(() => records.value.filter(r => r.overdue).length)
-// an upgrade or patch is done under an approved change request that covers this asset
-const approvedChanges = computed(() => changes.value
-  .filter(c => ['approved', 'implemented'].includes(c.status))
-  .map(c => ({ value: c.id, label: `${c.code} · ${c.title}` })))
-
-function changeCode(id) {
-  const c = changes.value.find(x => x.id === id)
-  return c ? `${c.code} · ${c.title}` : ''
-}
-
 async function load() {
   error.value = ''
   const id = props.asset?.id
   if (!id) return
   try {
-    const [m, pl, p, c] = await Promise.all([
-      api.getAssetMaintenance(id), api.getMaintenancePlans(id), api.getSpareParts({ asset_id: id }),
-      canRead('changes') ? api.getChangeRequests({ asset_id: id }) : Promise.resolve({ data: [] })
+    const [m, pl, p] = await Promise.all([
+      api.getAssetMaintenance(id), api.getMaintenancePlans(id), api.getSpareParts({ asset_id: id })
     ])
     records.value = Array.isArray(m.data) ? m.data : []
     plans.value = Array.isArray(pl.data) ? pl.data : []
     parts.value = Array.isArray(p.data) ? p.data : []
-    changes.value = Array.isArray(c.data) ? c.data : []
   } catch (err) {
     error.value = apiErrorText(err, t)
   }
@@ -191,7 +164,6 @@ async function add() {
     const body = { kind: form.value.kind, title: form.value.title, due_date: formatLocalDate(form.value.due_date) }
     if (isUpgrade.value) {
       body.to_version = form.value.to_version || null
-      body.change_request_id = form.value.change_request_id || null
     }
     await api.createMaintenanceTask(props.asset.id, body)
     form.value = emptyForm(form.value.kind)

@@ -47,10 +47,10 @@ def test_a_unit_inherits_the_plant_target(db):
     w = World(db, "D")
     _asset_in(db, w, _unit(db, w))
     admin = client_for(db, w.user(ADMIN_DEFAULT_PERMISSIONS))
-    admin.put("/reports/targets", json={"metric": "open_changes", "target_value": 9})
-    admin.put("/reports/targets", json={"metric": "open_changes", "target_value": 3, "site_id": str(w.site.id)})
+    admin.put("/reports/targets", json={"metric": "overdue_maintenance", "target_value": 9})
+    admin.put("/reports/targets", json={"metric": "overdue_maintenance", "target_value": 3, "site_id": str(w.site.id)})
     rows = {r["name"]: r for r in admin.get("/reports/dashboard").json()["rows"]}
-    assert rows["Engine unit"]["targets"]["open_changes"] == 3  # the plant target, not the tenant default
+    assert rows["Engine unit"]["targets"]["overdue_maintenance"] == 3  # the plant target, not the tenant default
 
 
 def test_a_plant_naming_rule_applies_to_its_units(db):

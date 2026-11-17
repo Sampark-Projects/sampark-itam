@@ -34,8 +34,6 @@
     "baseline_coverage": "Copertura baseline",
     "config_drift": "Deriva configurazione",
     "overdue_maintenance": "Manutenzione in ritardo",
-    "open_changes": "Modifiche aperte",
-    "unapproved_changes": "Modifiche non approvate",
     "workflows_in_progress": "Workflow in corso"
   },
   "metricHelp": {
@@ -45,8 +43,6 @@
     "baseline_coverage": "Quota di elementi di configurazione con una baseline di riferimento (più alto è meglio).",
     "config_drift": "Elementi di configurazione la cui ultima versione differisce dalla baseline.",
     "overdue_maintenance": "Manutenzione pianificata oltre la scadenza.",
-    "open_changes": "Richieste di modifica inviate, approvate o in corso di attuazione.",
-    "unapproved_changes": "Modifiche ai campi controllati negli ultimi {days} giorni senza una richiesta approvata.",
     "workflows_in_progress": "Workflow del ciclo di vita non ancora conclusi."
   },
   "status": {
@@ -69,7 +65,7 @@
     "cleared": "Obiettivo rimosso."
   },
   "audit": {
-    "hint": "Una cartella di lavoro Excel per l'audit: registro asset, fine vita del fornitore, richieste di modifica, modifiche non approvate, manutenzione (con aggiornamenti e patch), software, richieste di acquisto, configurazione e workflow.",
+    "hint": "Una cartella di lavoro Excel per l'audit: registro asset, fine vita del fornitore, manutenzione (con aggiornamenti e patch), software, richieste di acquisto, configurazione e workflow.",
     "site": "Sito",
     "allSites": "Tutti i siti",
     "days": "Periodo (giorni)",
@@ -123,7 +119,7 @@
     },
     "verifyTitle": "Come verificare una richiesta",
     "verify": "Ogni richiesta è una POST con corpo JSON e le intestazioni X-Sampark-Event, X-Sampark-Delivery, X-Sampark-Timestamp e X-Sampark-Signature. La firma è sha256= seguito dall'HMAC-SHA256 di \"timestamp.corpo\" (il timestamp, un punto, poi il corpo grezzo) con il tuo segreto. Rifiuta le richieste con un timestamp vecchio. Una risposta non 2xx viene ritentata fino a 5 volte (dopo 1 minuto, 5 minuti, 30 minuti e 2 ore).",
-    "apiKeysNote": "Per permettere a un altro sistema di leggere o aggiornare questi dati, crea una chiave API (ambito lettura o scrittura) e chiama gli endpoint /external/v1: lifecycle/expiring, changes, maintenance/due, config/status e PATCH assets/(id)/lifecycle."
+    "apiKeysNote": "Per permettere a un altro sistema di leggere o aggiornare questi dati, crea una chiave API (ambito lettura o scrittura) e chiama gli endpoint /external/v1: lifecycle/expiring, maintenance/due, config/status e PATCH assets/(id)/lifecycle."
   },
   "events": {
     "change.submitted": "Modifica inviata",

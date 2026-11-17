@@ -11,6 +11,7 @@ from typing import Dict, List, Optional
 STATUSES = ("draft", "submitted", "approved", "rejected", "ordered", "received", "closed", "cancelled")
 OPEN = ("draft", "submitted", "approved", "ordered")
 EDITABLE = ("draft",)
+PO_FILE_STATUSES = ("approved", "ordered", "received")  # when the purchase order document may be attached
 RECEIVABLE = ("approved", "ordered", "received")  # deliveries can be booked against these
 
 TRANSITIONS: Dict[str, tuple] = {
@@ -25,6 +26,50 @@ TRANSITIONS: Dict[str, tuple] = {
 }
 DECISIONS = ("approved", "rejected")
 MAX_LINES = 50
+MAX_LEVELS = 5
+DEFAULT_CHAIN = [{"level": 1, "name": "Approval", "role_id": None}]
+
+
+def clean_chain(levels) -> List[Dict]:
+    """The approval levels of a tenant, in order. An empty list means the single default level."""
+    if levels is None:
+        levels = []
+    if not isinstance(levels, (list, tuple)):
+        raise ProcurementInputError("approval levels must be a list")
+    if len(levels) > MAX_LEVELS:
+        raise ProcurementInputError(f"at most {MAX_LEVELS} approval levels")
+    out = []
+    for index, raw in enumerate(levels, start=1):
+        name = " ".join(str((raw or {}).get("name") or "").split())
+        if not name:
+            raise ProcurementInputError(f"level {index}: give the level a name")
+        if len(name) > 80:
+            raise ProcurementInputError(f"level {index}: the name is too long")
+        out.append({"level": index, "name": name, "role_id": str(raw["role_id"]) if raw.get("role_id") else None})
+    return out
+
+
+def chain_or_default(chain) -> List[Dict]:
+    return list(chain) if chain else [dict(level) for level in DEFAULT_CHAIN]
+
+
+def next_level(chain, approved_levels) -> Optional[Dict]:
+    """The level that has to decide now, or None when every level has approved."""
+    for level in chain_or_default(chain):
+        if level["level"] not in approved_levels:
+            return level
+    return None
+
+
+def may_decide_level(level: Optional[Dict], user_id, user_role_id, is_admin_user: bool, requester_id,
+                     earlier_approvers) -> bool:
+    """Who may decide a level: a member of its role (any approver when the level has no role), never the
+    requester, and never someone who already approved an earlier level of the same request."""
+    if level is None or user_id == requester_id or user_id in earlier_approvers:
+        return False
+    if level.get("role_id"):
+        return str(user_role_id) == str(level["role_id"])
+    return bool(is_admin_user)
 
 
 class ProcurementInputError(ValueError):
@@ -50,10 +95,10 @@ def check_transition(status: str, target: str, is_requester: bool, can_decide: b
     if target not in TRANSITIONS.get(status, ()):
         raise ProcurementInputError(f"cannot move from {status} to {target}")
     if target in DECISIONS:
-        if not can_decide:
-            raise ProcurementInputError("only an approver can decide")
         if is_requester:
             raise ProcurementInputError("the requester cannot approve or reject their own request")
+        if not can_decide:
+            raise ProcurementInputError("only an approver of the current level can decide")
     if target == "submitted" and lines < 1:
         raise ProcurementInputError("add at least one line before submitting")
     if target == "rejected" and not (note or "").strip():

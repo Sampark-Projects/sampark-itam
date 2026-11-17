@@ -4,7 +4,6 @@ from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from app.services import change_logic as cl
 
 
 def _blank_to_none(v):
@@ -13,91 +12,17 @@ def _blank_to_none(v):
     return v
 
 
-class ChangeSettingsIn(BaseModel):
-    approver_role_id: Optional[uuid.UUID] = None
-    allow_self_approval: bool = False
-    controlled_fields: List[str] = Field(default_factory=lambda: list(cl.DEFAULT_CONTROLLED_FIELDS))
-    required_approvals: int = Field(1, ge=1, le=cl.MAX_REQUIRED_APPROVALS)  # change board quorum
-
-    @field_validator("controlled_fields", mode="before")
-    @classmethod
-    def _check_fields(cls, v):
-        try:
-            return cl.clean_controlled_fields(v)
-        except cl.ChangeInputError as exc:
-            raise ValueError(str(exc))
-
-
-class ChangeRequestIn(BaseModel):
-    title: str = Field(..., min_length=1, max_length=150)
-    description: Optional[str] = Field(None, max_length=5000)
-    reason: Optional[str] = Field(None, max_length=5000)
-    change_type: Literal["configuration", "firmware", "program", "hardware", "network", "other"] = "configuration"
-    risk: Literal["low", "medium", "high"] = "low"
-    urgency: Literal["normal", "emergency"] = "normal"
-    planned_start: Optional[date] = None
-    planned_end: Optional[date] = None
-    asset_ids: List[uuid.UUID] = Field(..., min_length=1, max_length=200)
-
-    @field_validator("title", mode="before")
-    @classmethod
-    def _trim_title(cls, v):
-        return " ".join(v.split()) if isinstance(v, str) else v
-
-    @field_validator("description", "reason", mode="before")
-    @classmethod
-    def _blank(cls, v):
-        return _blank_to_none(v)
-
-    @model_validator(mode="after")
-    def _dates(self):
-        if self.planned_start and self.planned_end and self.planned_end < self.planned_start:
-            raise ValueError("planned end is before planned start")
-        return self
-
-
-class ChangeTransitionIn(BaseModel):
-    target: Literal["submitted", "approved", "rejected", "draft", "implemented", "closed", "cancelled"]
-    note: Optional[str] = Field(None, max_length=5000)
-    review_outcome: Optional[Literal["successful", "partial", "failed", "rolled_back"]] = None  # needed to close
-
-    @field_validator("note", mode="before")
-    @classmethod
-    def _blank(cls, v):
-        return _blank_to_none(v)
-
-
-class RetroDecisionIn(BaseModel):
-    decision: Literal["approved", "rejected"]
-    note: Optional[str] = Field(None, max_length=5000)
-
-    @field_validator("note", mode="before")
-    @classmethod
-    def _blank(cls, v):
-        return _blank_to_none(v)
-
-
-class FlagReviewIn(BaseModel):
-    note: str = Field(..., min_length=3, max_length=2000)
-
-    @field_validator("note", mode="before")
-    @classmethod
-    def _trim(cls, v):
-        return v.strip() if isinstance(v, str) else v
-
-
 class PartUse(BaseModel):
     spare_part_id: uuid.UUID
     quantity: int = Field(..., ge=1, le=100000)
 
 
 class MaintenanceIn(BaseModel):
-    # upgrade = firmware upgrade, patch = software / security patch: both need an approved change request
+    # upgrade = firmware upgrade, patch = software / security patch
     kind: Literal["preventive", "corrective", "inspection", "upgrade", "patch"]
     title: str = Field(..., min_length=1, max_length=150)
     description: Optional[str] = Field(None, max_length=5000)
     due_date: Optional[date] = None
-    change_request_id: Optional[uuid.UUID] = None
     from_version: Optional[str] = Field(None, max_length=100)
     to_version: Optional[str] = Field(None, max_length=100)
 

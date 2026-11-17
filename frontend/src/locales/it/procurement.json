@@ -73,5 +73,38 @@
     "receivedAgainst": "Ricevuto su",
     "line": "riga {n}",
     "accepted": "accettato con differenze"
+  },
+  "poFile": {
+    "title": "Documento dell'ordine di acquisto",
+    "attach": "Allega il documento dell'ordine di acquisto (facoltativo)",
+    "hint": "PDF, Word, Excel, testo o CSV, fino a 10 MB.",
+    "none": "Non allegato",
+    "upload": "Carica ordine",
+    "replace": "Sostituisci",
+    "remove": "Rimuovi il documento dell'ordine di acquisto",
+    "removeConfirm": "Rimuovere il documento dell'ordine di acquisto?",
+    "tooLarge": "Il file supera i 10 MB.",
+    "failedAfterOrder": "La richiesta è segnata come ordinata, ma non è stato possibile caricare il documento dell'ordine. Usa Carica ordine per riprovare."
+  },
+  "levels": {
+    "button": "Livelli di approvazione",
+    "title": "Livelli di approvazione",
+    "chain": "Approvazione",
+    "hint": "Una richiesta di acquisto viene approvata livello per livello, in questo ordine. Ogni livello è deciso da un membro del suo ruolo (o da un qualsiasi approvatore se non c'è un ruolo), mai dal richiedente e mai da chi ha già approvato un livello precedente. Un solo rifiuto chiude la richiesta. Senza livelli basta un approvatore. Gli approvatori devono avere accesso alla sezione Ciclo di vita. Le modifiche valgono per le richieste inviate da ora.",
+    "none": "Nessun livello: decide un solo approvatore.",
+    "name": "Nome del livello, es. Direttore di stabilimento",
+    "anyApprover": "Qualsiasi approvatore",
+    "add": "Aggiungi livello",
+    "up": "Sposta su",
+    "down": "Sposta giù",
+    "remove": "Rimuovi livello",
+    "nameRequired": "Dai un nome a ogni livello.",
+    "saved": "Livelli di approvazione salvati.",
+    "state": {
+      "approved": "Approvato",
+      "rejected": "Rifiutato",
+      "waiting": "In attesa",
+      "pending": "Non ancora"
+    }
   }
 }

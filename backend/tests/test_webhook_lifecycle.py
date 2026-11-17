@@ -10,7 +10,7 @@ from tests.test_api_ot_modules import ADMIN_DEFAULT_PERMISSIONS, World, client_f
 
 
 def _endpoint(db, w):
-    ep, secret = ws.create_endpoint(db, w.tenant.id, None, "CMDB", "http://10.1.2.3/hook", ["change.approved"])
+    ep, secret = ws.create_endpoint(db, w.tenant.id, None, "CMDB", "http://10.1.2.3/hook", ["purchase.approved"])
     return ep, secret
 
 

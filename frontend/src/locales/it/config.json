@@ -34,8 +34,6 @@
     "file": "File",
     "label": "Etichetta della versione",
     "note": "Nota",
-    "changeRequest": "Richiesta di modifica",
-    "noChangeRequest": "Nessuna",
     "versions": "Versioni",
     "version": "Versione",
     "fileName": "File",

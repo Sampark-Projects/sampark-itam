@@ -190,7 +190,7 @@ def audit_pack(
     site_id: Optional[uuid.UUID] = None, days: int = Query(90, ge=1, le=730), audit: AuditContext = Depends(),
     current_user: User = Depends(get_current_user), db: Session = Depends(get_db),
 ):
-    """An Excel workbook for an audit: register, vendor support, changes, flags, maintenance, configuration, workflows."""
+    """An Excel workbook for an audit: register, vendor support, maintenance, software, purchase requests, configuration, workflows."""
     data = rs.build_audit_pack(db, current_user.tenant_id, current_user, site_id, days)
     name = f"audit-pack-{datetime.utcnow():%Y%m%d}.xlsx"
     digest = hashlib.sha256(data).hexdigest()

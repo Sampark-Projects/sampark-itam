@@ -19,7 +19,7 @@ from app.services.audit_trail import AuditContext, snapshot
 from app.services.rbac import require_section_access
 
 REC_FIELDS = ("asset_id", "kind", "status", "title", "description", "due_date", "performed_on", "performed_by",
-              "vendor", "cost_amount", "cost_currency", "change_request_id", "plan_id", "from_version", "to_version")
+              "vendor", "cost_amount", "cost_currency", "plan_id", "from_version", "to_version")
 PART_FIELDS = ("name", "part_number", "manufacturer_name", "quantity", "min_quantity", "storage_location", "notes")
 
 
@@ -205,8 +205,7 @@ def complete_record(
     rec = ms.complete_record(db, rec, current_user, data)
     if rec.kind == "upgrade" and rec.to_version != firmware_before:
         audit.log("update", "Asset", rec.asset_id, f"Firmware upgraded by maintenance '{rec.title}'",
-                  {"firmware_version": firmware_before}, {"firmware_version": rec.to_version,
-                                                          "change_request_id": str(rec.change_request_id)})
+                  {"firmware_version": firmware_before}, {"firmware_version": rec.to_version})
     audit.log("complete", "MaintenanceRecord", rec.id, f"Completed maintenance '{rec.title}'", old,
               {**snapshot(rec, REC_FIELDS),
                "parts": [{"spare_part_id": str(p.spare_part_id), "quantity": p.quantity} for p in rec.parts]})

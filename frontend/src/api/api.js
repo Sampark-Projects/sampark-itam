@@ -121,33 +121,6 @@ export default {
   cancelWorkflowRun(runId, data) {
     return api.post(`/workflows/runs/${runId}/cancel`, data)
   },
-  retroDecideChangeRequest(id, data) {
-    return api.post(`/changes/${id}/retro-decision`, data)
-  },
-  getChangeSettings() {
-    return api.get('/changes/settings')
-  },
-  updateChangeSettings(data) {
-    return api.put('/changes/settings', data)
-  },
-  getChangeRequests(params = {}) {
-    return api.get('/changes', { params })
-  },
-  createChangeRequest(data) {
-    return api.post('/changes', data)
-  },
-  updateChangeRequest(id, data) {
-    return api.put(`/changes/${id}`, data)
-  },
-  transitionChangeRequest(id, data) {
-    return api.post(`/changes/${id}/transition`, data)
-  },
-  getUnapprovedChanges(params = {}) {
-    return api.get('/changes/unapproved', { params })
-  },
-  reviewUnapprovedChange(auditId, data) {
-    return api.post(`/changes/unapproved/${auditId}/review`, data)
-  },
   getMaintenanceDue(params = {}) {
     return api.get('/maintenance/due', { params })
   },
@@ -1336,6 +1309,23 @@ export default {
   },
   transitionPurchaseOrder(id, data) {
     return api.post(`/procurement/orders/${id}/transition`, data)
+  },
+  getPurchaseApprovalLevels() {
+    return api.get('/procurement/approval-levels')
+  },
+  savePurchaseApprovalLevels(levels) {
+    return api.put('/procurement/approval-levels', { levels })
+  },
+  uploadPurchaseOrderFile(id, file) {
+    const form = new FormData()
+    form.append('file', file)
+    return api.post(`/procurement/orders/${id}/po-file`, form, { headers: { 'Content-Type': 'multipart/form-data' } })
+  },
+  downloadPurchaseOrderFile(id) {
+    return api.get(`/procurement/orders/${id}/po-file`, { responseType: 'blob' })
+  },
+  deletePurchaseOrderFile(id) {
+    return api.delete(`/procurement/orders/${id}/po-file`)
   },
   checkDelivery(lineId, assetId) {
     return api.get(`/procurement/lines/${lineId}/check`, { params: { asset_id: assetId } })

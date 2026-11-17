@@ -11,6 +11,7 @@
     <div class="toolbar">
       <Dropdown v-model="statusFilter" :options="filterOptions" optionLabel="label" optionValue="value" class="filter" @change="load" />
       <span class="spacer"></span>
+      <Button v-if="canDelete('lifecycle')" :label="t('procurement.levels.button')" icon="pi pi-sitemap" outlined @click="openLevels" />
       <Button v-if="canWrite('lifecycle')" :label="t('procurement.new')" icon="pi pi-plus" @click="openForm(null)" />
     </div>
 
@@ -89,6 +90,31 @@
       </template>
     </Dialog>
 
+    <!-- approval levels -->
+    <Dialog v-model:visible="levelsOpen" modal :header="t('procurement.levels.title')" :style="{ width: '40rem', maxWidth: '96vw' }">
+      <p class="hint">{{ t('procurement.levels.hint') }}</p>
+      <Message v-if="levelsError" severity="error" :closable="true" @close="levelsError = ''">{{ levelsError }}</Message>
+      <div v-if="levelsLoading" class="muted"><i class="pi pi-spin pi-spinner"></i></div>
+      <template v-else>
+        <p v-if="!levelRows.length" class="muted">{{ t('procurement.levels.none') }}</p>
+        <div v-for="(row, index) in levelRows" :key="index" class="level-row">
+          <strong class="level-no">{{ index + 1 }}</strong>
+          <InputText v-model="row.name" maxlength="80" :placeholder="t('procurement.levels.name')" class="level-name" />
+          <Dropdown v-model="row.role_id" :options="roleOptions" optionLabel="label" optionValue="value" showClear
+                    :placeholder="t('procurement.levels.anyApprover')" class="level-role" />
+          <Button icon="pi pi-arrow-up" text rounded size="small" :disabled="index === 0" :aria-label="t('procurement.levels.up')" @click="moveLevel(index, -1)" />
+          <Button icon="pi pi-arrow-down" text rounded size="small" :disabled="index === levelRows.length - 1" :aria-label="t('procurement.levels.down')" @click="moveLevel(index, 1)" />
+          <Button icon="pi pi-trash" text rounded size="small" severity="danger" :aria-label="t('procurement.levels.remove')" @click="levelRows.splice(index, 1)" />
+        </div>
+        <Button v-if="levelRows.length < maxLevels" :label="t('procurement.levels.add')" icon="pi pi-plus" size="small" outlined class="mt-2"
+                @click="levelRows.push({ name: '', role_id: null })" />
+      </template>
+      <template #footer>
+        <Button :label="t('common.actions.cancel')" text severity="secondary" @click="levelsOpen = false" />
+        <Button :label="t('common.actions.save')" icon="pi pi-save" :loading="levelsSaving" :disabled="levelsLoading" @click="saveLevels" />
+      </template>
+    </Dialog>
+
     <!-- detail, decisions and deliveries -->
     <Dialog v-model:visible="detailOpen" modal :header="detail ? `${detail.code} · ${detail.title}` : ''" :style="{ width: '56rem', maxWidth: '96vw' }">
       <template v-if="detail">
@@ -100,6 +126,33 @@
           <span v-if="detail.decided_by"><strong>{{ t('procurement.decidedBy') }}:</strong> {{ detail.decided_by }} ({{ formatDate(detail.decided_at) }})</span>
           <span v-if="detail.expected_delivery_date"><strong>{{ t('procurement.expectedDelivery') }}:</strong> {{ formatDate(detail.expected_delivery_date) }}</span>
           <span v-if="detail.total !== null"><strong>{{ t('procurement.total') }}:</strong> {{ formatMoney(detail.total, detail.currency) }}</span>
+        </div>
+        <div v-if="detail.approval" class="chain">
+          <strong>{{ t('procurement.levels.chain') }}</strong>
+          <ol>
+            <li v-for="l in detail.approval.levels" :key="l.level" :class="['lvl', l.state]">
+              <Tag :value="t(`procurement.levels.state.${l.state}`)" :severity="levelSeverity(l.state)" class="chip" />
+              <span class="lvl-name">{{ l.level }}. {{ l.name }}</span>
+              <small v-if="l.role" class="muted"> · {{ l.role }}</small>
+              <small v-if="l.by" class="muted"> · {{ l.by }}<template v-if="l.at">, {{ formatDate(l.at) }}</template></small>
+              <small v-if="l.note" class="muted block">{{ l.note }}</small>
+            </li>
+          </ol>
+        </div>
+        <div v-if="detail.po_file || detail.can_attach_po" class="po-file-box">
+          <strong>{{ t('procurement.poFile.title') }}:</strong>
+          <template v-if="detail.po_file">
+            <a href="#" @click.prevent="downloadPo">{{ detail.po_file.name }}</a>
+            <small>({{ formatSize(detail.po_file.size) }}, {{ formatDate(detail.po_file.uploaded_at) }})</small>
+            <Button v-if="canDelete('lifecycle')" icon="pi pi-trash" size="small" text rounded severity="danger"
+                    :aria-label="t('procurement.poFile.remove')" :loading="poBusy" @click="removePo" />
+          </template>
+          <span v-else class="po-none">{{ t('procurement.poFile.none') }}</span>
+          <template v-if="detail.can_attach_po && canWrite('lifecycle')">
+            <input ref="poReplace" type="file" class="hidden-file" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.csv" @change="replacePo" />
+            <Button :label="detail.po_file ? t('procurement.poFile.replace') : t('procurement.poFile.upload')" icon="pi pi-upload"
+                    size="small" outlined :loading="poBusy" @click="poReplace.click()" />
+          </template>
         </div>
         <p v-if="detail.justification" class="block-text"><strong>{{ t('procurement.justification') }}:</strong> {{ detail.justification }}</p>
         <p v-if="detail.specification" class="block-text"><strong>{{ t('procurement.specification') }}:</strong> {{ detail.specification }}</p>
@@ -161,6 +214,11 @@
         <div v-if="detail.allowed_targets.length || detail.can_edit" class="actions-box">
           <InputText v-if="detail.allowed_targets.includes('ordered')" v-model="action.po_number" maxlength="100"
                      :placeholder="t('procurement.poNumberPlaceholder')" class="w-full mb-2" />
+          <div v-if="detail.allowed_targets.includes('ordered')" class="po-upload mb-2">
+            <label class="po-upload-label">{{ t('procurement.poFile.attach') }}</label>
+            <input ref="poInput" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.csv" @change="onPoPicked" />
+            <small class="po-hint">{{ t('procurement.poFile.hint') }}</small>
+          </div>
           <Textarea v-model="action.note" rows="2" :placeholder="t('procurement.notePlaceholder')" class="w-full mb-2" />
           <div class="flex gap-2 flex-wrap">
             <Button v-if="detail.can_edit" :label="t('procurement.edit')" icon="pi pi-pencil" size="small" outlined @click="openForm(detail)" />
@@ -197,7 +255,7 @@ import { formatLocalDate, parseLocalDate } from '../../../utils/localDate'
 import { apiErrorText, formatMoney } from '../../../utils/money'
 
 const { t } = useI18n()
-const { canWrite } = usePermissions()
+const { canWrite, canDelete } = usePermissions()
 const { formatDate } = useDateFormatter()
 
 const STATUSES = ['draft', 'submitted', 'approved', 'rejected', 'ordered', 'received', 'closed', 'cancelled']
@@ -307,6 +365,7 @@ const canReceive = computed(() => canWrite('lifecycle') && detail.value && ['app
 function showDetail(data) {
   detail.value = data
   action.value = { note: '', po_number: data.po_number || '' }
+  poFile.value = null
   receiving.value = null
   detailError.value = ''
   detailOpen.value = true
@@ -320,12 +379,153 @@ async function openDetail(id) {
   }
 }
 
+// --- approval levels ---
+const levelsOpen = ref(false)
+const levelsLoading = ref(false)
+const levelsSaving = ref(false)
+const levelsError = ref('')
+const levelRows = ref([])
+const roleOptions = ref([])
+const maxLevels = ref(5)
+
+function levelSeverity(state) {
+  return { approved: 'success', rejected: 'danger', waiting: 'warning' }[state] || 'secondary'
+}
+
+async function openLevels() {
+  levelsOpen.value = true
+  levelsLoading.value = true
+  levelsError.value = ''
+  try {
+    const [lv, roles] = await Promise.all([api.getPurchaseApprovalLevels(), api.getRoles()])
+    levelRows.value = (lv.data.levels || []).map(l => ({ name: l.name, role_id: l.role_id || null }))
+    maxLevels.value = lv.data.max_levels || 5
+    roleOptions.value = asList(roles).map(r => ({ value: r.id, label: r.name }))
+  } catch (err) {
+    levelsError.value = apiErrorText(err, t)
+  } finally {
+    levelsLoading.value = false
+  }
+}
+
+function moveLevel(index, step) {
+  const rows = levelRows.value
+  const target = index + step
+  if (target < 0 || target >= rows.length) return
+  ;[rows[index], rows[target]] = [rows[target], rows[index]]
+}
+
+async function saveLevels() {
+  levelsError.value = ''
+  if (levelRows.value.some(r => !r.name.trim())) {
+    levelsError.value = t('procurement.levels.nameRequired')
+    return
+  }
+  levelsSaving.value = true
+  try {
+    await api.savePurchaseApprovalLevels(levelRows.value.map(r => ({ name: r.name.trim(), role_id: r.role_id || null })))
+    levelsOpen.value = false
+    message.value = { severity: 'success', text: t('procurement.levels.saved') }
+  } catch (err) {
+    levelsError.value = apiErrorText(err, t)
+  } finally {
+    levelsSaving.value = false
+  }
+}
+
+// --- purchase order document ---
+const poInput = ref(null)
+const poReplace = ref(null)
+const poFile = ref(null)
+const poBusy = ref(false)
+const MAX_PO_BYTES = 10 * 1024 * 1024
+
+function formatSize(bytes) {
+  if (bytes == null) return ''
+  return bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`
+}
+
+function onPoPicked(event) {
+  const file = event.target.files && event.target.files[0]
+  detailError.value = ''
+  if (file && file.size > MAX_PO_BYTES) {
+    detailError.value = t('procurement.poFile.tooLarge')
+    event.target.value = ''
+    poFile.value = null
+    return
+  }
+  poFile.value = file || null
+}
+
+async function sendPo(file) {
+  const res = await api.uploadPurchaseOrderFile(detail.value.id, file)
+  detail.value = res.data
+}
+
+async function replacePo(event) {
+  const file = event.target.files && event.target.files[0]
+  event.target.value = ''
+  if (!file) return
+  detailError.value = ''
+  if (file.size > MAX_PO_BYTES) {
+    detailError.value = t('procurement.poFile.tooLarge')
+    return
+  }
+  poBusy.value = true
+  try {
+    await sendPo(file)
+    await load()
+  } catch (err) {
+    detailError.value = apiErrorText(err, t)
+  } finally {
+    poBusy.value = false
+  }
+}
+
+async function downloadPo() {
+  try {
+    const res = await api.downloadPurchaseOrderFile(detail.value.id)
+    const url = URL.createObjectURL(res.data)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = detail.value.po_file.name
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  } catch (err) {
+    detailError.value = apiErrorText(err, t)
+  }
+}
+
+async function removePo() {
+  if (!window.confirm(t('procurement.poFile.removeConfirm'))) return
+  poBusy.value = true
+  try {
+    detail.value = (await api.deletePurchaseOrderFile(detail.value.id)).data
+    await load()
+  } catch (err) {
+    detailError.value = apiErrorText(err, t)
+  } finally {
+    poBusy.value = false
+  }
+}
+
 async function move(target) {
   busy.value = true
   detailError.value = ''
   try {
     const res = await api.transitionPurchaseOrder(detail.value.id, { target, note: action.value.note || null, po_number: action.value.po_number || null })
     showDetail(res.data)
+    if (target === 'ordered' && poFile.value) {
+      const file = poFile.value
+      poFile.value = null
+      try {
+        await sendPo(file)
+      } catch (err) {
+        detailError.value = `${t('procurement.poFile.failedAfterOrder')} ${apiErrorText(err, t)}`
+      }
+    }
     await load()
   } catch (err) {
     detailError.value = apiErrorText(err, t)
@@ -403,6 +603,18 @@ onMounted(load)
 .mismatch { margin-top: 0.5rem; color: #8a5300; }
 .mismatch p { margin: 0 0 0.4rem; }
 .ok { margin: 0.5rem 0 0; color: var(--sk-primary, #2f6f4f); }
+.chain { margin: 0.5rem 0 0.75rem; }
+.chain ol { list-style: none; margin: 0.35rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.lvl .lvl-name { font-weight: 500; margin: 0 0.25rem; }
+.level-row { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.5rem; }
+.level-no { width: 1.25rem; text-align: center; }
+.level-name { flex: 1 1 10rem; }
+.level-role { flex: 1 1 12rem; }
+.po-upload { display: flex; flex-direction: column; gap: 0.25rem; }
+.po-upload-label { font-weight: 500; }
+.po-hint, .po-none { color: var(--sk-text-muted, #6b7a71); }
+.po-file-box { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin: 0.5rem 0 0.75rem; }
+.hidden-file { display: none; }
 .actions-box { border-top: 1px solid var(--sk-border, #e1e7e3); padding-top: 0.75rem; }
 label.inline { display: inline; margin: 0; }
 </style>

@@ -73,5 +73,38 @@
     "receivedAgainst": "Received against",
     "line": "line {n}",
     "accepted": "accepted with differences"
+  },
+  "poFile": {
+    "title": "Purchase order document",
+    "attach": "Attach the purchase order document (optional)",
+    "hint": "PDF, Word, Excel, text or CSV, up to 10 MB.",
+    "none": "Not attached",
+    "upload": "Upload PO",
+    "replace": "Replace",
+    "remove": "Remove the purchase order document",
+    "removeConfirm": "Remove the purchase order document?",
+    "tooLarge": "The file is larger than 10 MB.",
+    "failedAfterOrder": "The request is marked as ordered, but the purchase order document could not be uploaded. Use Upload PO to try again."
+  },
+  "levels": {
+    "button": "Approval levels",
+    "title": "Approval levels",
+    "chain": "Approval",
+    "hint": "A purchase request is approved level by level, in this order. Each level is decided by a member of its role (or any approver if no role is set), never by the requester, and never by someone who already approved an earlier level. One rejection ends the request. With no levels, one approver is enough. The approvers need access to the Lifecycle section. Changes apply to requests submitted from now on.",
+    "none": "No levels set: one approver decides.",
+    "name": "Level name, e.g. Plant head",
+    "anyApprover": "Any approver",
+    "add": "Add level",
+    "up": "Move up",
+    "down": "Move down",
+    "remove": "Remove level",
+    "nameRequired": "Give every level a name.",
+    "saved": "Approval levels saved.",
+    "state": {
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "waiting": "Waiting",
+      "pending": "Not yet"
+    }
   }
 }

@@ -18,7 +18,7 @@ from app.services.audit_trail import AuditContext, snapshot
 from app.services.rbac import require_section_access
 
 ART_FIELDS = ("asset_id", "name", "kind", "description", "backup_interval_days", "baseline_version_id")
-VER_FIELDS = ("artifact_id", "version_number", "label", "note", "file_name", "size_bytes", "sha256", "change_request_id")
+VER_FIELDS = ("artifact_id", "version_number", "label", "note", "file_name", "size_bytes", "sha256")
 
 router = APIRouter(
     prefix="/config",
@@ -122,14 +122,13 @@ def upload_version(
     file: UploadFile = File(...),
     label: Optional[str] = Form(None),
     note: Optional[str] = Form(None),
-    change_request_id: Optional[uuid.UUID] = Form(None),
     audit: AuditContext = Depends(),
     current_user: User = Depends(get_current_user), db: Session = Depends(get_db),
 ):
     art = cs.get_artifact(db, current_user.tenant_id, artifact_id)
     label = (label or "").strip()[:100] or None
     note = (note or "").strip()[:5000] or None
-    ver = cs.add_version(db, art, current_user, file, label, note, change_request_id)
+    ver = cs.add_version(db, art, current_user, file, label, note)
     audit.log("upload", "ConfigVersion", ver.id, f"Uploaded version {ver.version_number} of '{art.name}'",
               None, snapshot(ver, VER_FIELDS))
     return cs.serialize_artifact(db, cs.get_artifact(db, current_user.tenant_id, artifact_id))

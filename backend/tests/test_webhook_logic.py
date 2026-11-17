@@ -8,7 +8,7 @@ from app.services import webhook_logic as wl
 
 
 def test_events_are_validated():
-    assert wl.clean_events(["change.approved", "change.approved", "ping"]) == ["change.approved", "ping"]
+    assert wl.clean_events(["purchase.approved", "purchase.approved", "ping"]) == ["purchase.approved", "ping"]
     for bad in (None, [], "ping", ["nope"], ["ping", "nope"]):
         with pytest.raises(wl.WebhookInputError):
             wl.clean_events(bad)
@@ -33,8 +33,8 @@ def test_blocked_urls(url):
 
 def test_body_is_stable_and_signed():
     when = datetime(2026, 3, 1, 12, 0, 5, 999)
-    a = wl.build_body("change.approved", "d1", "t1", when, {"b": 2, "a": 1})
-    b = wl.build_body("change.approved", "d1", "t1", when, {"a": 1, "b": 2})
+    a = wl.build_body("purchase.approved", "d1", "t1", when, {"b": 2, "a": 1})
+    b = wl.build_body("purchase.approved", "d1", "t1", when, {"a": 1, "b": 2})
     assert a == b and '"occurred_at":"2026-03-01T12:00:05Z"' in a
     sig = wl.sign("secret", 1700000000, a)
     assert len(sig) == 64

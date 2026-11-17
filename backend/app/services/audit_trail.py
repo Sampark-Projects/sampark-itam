@@ -58,7 +58,7 @@ def write(
 
 
 class AuditContext:
-    """Request-scoped helper: `audit.log("update", "ChangeRequest", cr.id, "Approved CR-0001", old, new)`."""
+    """Request-scoped helper: `audit.log("update", "PurchaseOrder", order.id, "Approved PR-0001", old, new)`."""
 
     def __init__(
         self,

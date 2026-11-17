@@ -19,10 +19,10 @@ from app.crud import assets as crud_assets
 from app.database import Base, get_db
 from app.errors.exceptions import ErrorCodeException
 from app.models import (
-    Asset, AssetLifecycleRun, AssetStatus, AssetType, AuditLog, ChangeRequest, MaintenanceRecord, Role, Site,
+    Asset, AssetLifecycleRun, AssetStatus, AssetType, AuditLog, MaintenanceRecord, Role, Site,
     Tenant, User,
 )
-from app.routers import asset_tag_rules, changes, config_management, integrations, lifecycle, maintenance, workflows
+from app.routers import asset_tag_rules, config_management, integrations, lifecycle, maintenance, workflows
 from app.schemas import AssetCreate, AssetUpdate
 from app.services import tag_rules
 from app.services import webhook_service
@@ -31,7 +31,7 @@ from app.services.rbac_permissions import (
     ADMIN_DEFAULT_PERMISSIONS, EDITOR_DEFAULT_PERMISSIONS, VIEWER_DEFAULT_PERMISSIONS,
 )
 
-NEW_SECTIONS = ("lifecycle", "changes", "maintenance", "configurations", "reports")
+NEW_SECTIONS = ("lifecycle", "maintenance", "configurations", "reports")
 
 
 @pytest.fixture
@@ -95,7 +95,7 @@ class World:
 
 def client_for(db, user) -> TestClient:
     api = FastAPI()
-    for module in (changes, maintenance, config_management, lifecycle, workflows, asset_tag_rules):
+    for module in (maintenance, config_management, lifecycle, workflows, asset_tag_rules):
         api.include_router(module.router)
     api.include_router(integrations.webhooks)
     api.include_router(integrations.reports)
@@ -114,10 +114,6 @@ def with_levels(base, **levels):
     return perms
 
 
-def new_change(client, asset_id, title="Firmware update"):
-    return client.post("/changes", json={"title": title, "asset_ids": [str(asset_id)], "change_type": "firmware"})
-
-
 # --- RBAC sections ----------------------------------------------------------------------------
 
 def test_default_roles_cover_the_new_sections():
@@ -125,7 +121,7 @@ def test_default_roles_cover_the_new_sections():
         assert all(section in perms for section in NEW_SECTIONS)
 
 
-@pytest.mark.parametrize("path", ["/changes", "/maintenance/parts", "/config/overview", "/lifecycle/expiring",
+@pytest.mark.parametrize("path", ["/maintenance/parts", "/config/overview", "/lifecycle/expiring",
                                   "/workflows/tasks", "/reports/dashboard"])
 def test_no_section_no_access(db, path):
     w = World(db)
@@ -137,8 +133,7 @@ def test_no_section_no_access(db, path):
 def test_viewer_reads_but_cannot_write(db):
     w = World(db)
     viewer = client_for(db, w.user(VIEWER_DEFAULT_PERMISSIONS))
-    assert viewer.get("/changes").status_code == 200
-    assert new_change(viewer, w.asset.id).status_code == 403
+    assert viewer.get("/maintenance/parts").status_code == 200
     assert viewer.post("/maintenance/parts", json={"name": "Fuse"}).status_code == 403
     assert viewer.get("/reports/audit-pack").status_code == 403  # exporting the register needs level 2
 
@@ -147,9 +142,6 @@ def test_settings_need_level_three(db):
     w = World(db)
     editor = client_for(db, w.user(EDITOR_DEFAULT_PERMISSIONS, "editor"))
     admin = client_for(db, w.user(ADMIN_DEFAULT_PERMISSIONS, "admin"))
-    body = {"approver_role_id": None, "allow_self_approval": False, "controlled_fields": ["firmware_version"]}
-    assert editor.put("/changes/settings", json=body).status_code == 403
-    assert admin.put("/changes/settings", json=body).status_code == 200
     target = {"metric": "config_drift", "target_value": 0}
     assert editor.put("/reports/targets", json=target).status_code == 403
     assert admin.put("/reports/targets", json=target).status_code == 200
@@ -168,12 +160,6 @@ def test_other_tenant_records_are_not_found(db):
     client_a = client_for(db, a.user(ADMIN_DEFAULT_PERMISSIONS))
     client_b = client_for(db, b.user(ADMIN_DEFAULT_PERMISSIONS))
 
-    cr = new_change(client_b, b.asset.id).json()
-    assert client_a.get(f"/changes/{cr['id']}").status_code == 404
-    assert client_a.post(f"/changes/{cr['id']}/transition", json={"target": "submitted"}).status_code == 404
-    # a change request cannot name another tenant's asset
-    assert new_change(client_a, b.asset.id).status_code in (400, 404)
-
     rec = client_b.post(f"/maintenance/assets/{b.asset.id}", json={"kind": "corrective", "title": "Fix",
                                                                    "due_date": str(date.today())}).json()
     assert client_a.delete(f"/maintenance/records/{rec['id']}").status_code == 404
@@ -182,7 +168,7 @@ def test_other_tenant_records_are_not_found(db):
     art = client_b.post(f"/config/assets/{b.asset.id}/artifacts", json={"name": "Main program", "kind": "program"}).json()
     assert client_a.put(f"/config/artifacts/{art['id']}", json={"name": "x", "kind": "program"}).status_code == 404
     assert client_a.get(f"/workflows/assets/{b.asset.id}/runs").status_code == 404
-    assert db.query(ChangeRequest).count() == 1 and db.query(MaintenanceRecord).count() == 1
+    assert db.query(MaintenanceRecord).count() == 1
 
 
 # --- audit trail ------------------------------------------------------------------------------
@@ -194,25 +180,6 @@ def _audit(db, entity, action=None):
     return q.all()
 
 
-def test_change_request_actions_are_audited(db):
-    w = World(db)
-    requester = w.user(EDITOR_DEFAULT_PERMISSIONS, "req")
-    approver = w.user(ADMIN_DEFAULT_PERMISSIONS, "appr")
-    req, appr = client_for(db, requester), client_for(db, approver)
-
-    cr = new_change(req, w.asset.id).json()
-    assert req.post(f"/changes/{cr['id']}/transition", json={"target": "submitted"}).status_code == 200
-    # separation of duties: the requester cannot approve their own request
-    assert req.post(f"/changes/{cr['id']}/transition", json={"target": "approved"}).status_code == 403
-    assert appr.post(f"/changes/{cr['id']}/transition", json={"target": "approved", "note": "ok"}).status_code == 200
-
-    created = _audit(db, "ChangeRequest", "create")
-    approved = _audit(db, "ChangeRequest", "approve")
-    assert len(created) == 1 and created[0].user_id == requester.id
-    assert len(approved) == 1 and approved[0].user_id == approver.id
-    assert "approved" in approved[0].description
-
-
 def test_maintenance_config_and_webhook_actions_are_audited(db, monkeypatch):
     w = World(db)
     admin = client_for(db, w.user(ADMIN_DEFAULT_PERMISSIONS))
@@ -220,10 +187,10 @@ def test_maintenance_config_and_webhook_actions_are_audited(db, monkeypatch):
     assert admin.delete(f"/maintenance/parts/{part['id']}").status_code == 204
     art = admin.post(f"/config/assets/{w.asset.id}/artifacts", json={"name": "Drive params", "kind": "configuration"}).json()
     assert admin.delete(f"/config/artifacts/{art['id']}").status_code == 204
-    assert admin.put("/reports/targets", json={"metric": "open_changes", "target_value": 5}).status_code == 200
+    assert admin.put("/reports/targets", json={"metric": "overdue_maintenance", "target_value": 5}).status_code == 200
 
     monkeypatch.setattr(webhook_service, "network_policy", lambda refresh=False: ([], frozenset()))
-    hook = admin.post("/webhooks", json={"name": "CMDB", "url": "http://10.1.2.3/hook", "events": ["change.approved"]})
+    hook = admin.post("/webhooks", json={"name": "CMDB", "url": "http://10.1.2.3/hook", "events": ["purchase.approved"]})
     assert hook.status_code == 200
     assert admin.post(f"/webhooks/{hook.json()['id']}/rotate-secret").status_code == 200
 
@@ -308,7 +275,7 @@ def test_webhook_to_internal_service_is_refused(db, monkeypatch):
     w = World(db)
     admin = client_for(db, w.user(ADMIN_DEFAULT_PERMISSIONS))
     monkeypatch.setattr(webhook_service, "network_policy", lambda refresh=False: ([], frozenset({"10.9.9.9"})))
-    body = {"name": "x", "events": ["change.approved"]}
+    body = {"name": "x", "events": ["purchase.approved"]}
     assert admin.post("/webhooks", json={**body, "url": "http://127.0.0.1/hook"}).status_code == 400
     assert admin.post("/webhooks", json={**body, "url": "http://169.254.169.254/latest"}).status_code == 400
     assert admin.post("/webhooks", json={**body, "url": "http://10.9.9.9:5432/"}).status_code == 400

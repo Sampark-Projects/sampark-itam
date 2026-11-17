@@ -1,5 +1,5 @@
 """API tests for requirement gaps batch 2: purchase requests and receiving, maintenance plans and
-overdue alerts, firmware upgrades under change control, software inventory, end of life in the risk score."""
+overdue alerts, firmware upgrades, software inventory, end of life in the risk score."""
 import uuid
 from datetime import date, timedelta
 
@@ -10,7 +10,7 @@ from app.database import get_db
 from app.models import (
     Asset, AssetSoftware, Manufacturer, MaintenancePlan, MaintenanceRecord, VendorLifecycleEntry,
 )
-from app.routers import asset_software, changes, maintenance, procurement
+from app.routers import asset_software, maintenance, procurement
 from app.services import maintenance_service as ms
 from app.services.auth import get_current_user
 from app.services.rbac_permissions import ADMIN_DEFAULT_PERMISSIONS, EDITOR_DEFAULT_PERMISSIONS, VIEWER_DEFAULT_PERMISSIONS
@@ -21,7 +21,7 @@ from tests.test_api_ot_modules import World, _audit, db  # noqa: F401  (db is th
 
 def client(db, user) -> TestClient:
     api = FastAPI()
-    for module in (procurement, maintenance, changes, asset_software):
+    for module in (procurement, maintenance, asset_software):
         api.include_router(module.router)
 
     def override_db():
@@ -172,27 +172,16 @@ def test_overdue_tasks_alert_once(db, monkeypatch):
     assert ms.run_maintenance_plans(db, w.tenant.id)["overdue"] == 0  # not sent twice
 
 
-# --- firmware upgrades under change control ---------------------------------------------------
+# --- firmware upgrades ------------------------------------------------------------------------
 
-def test_firmware_upgrade_needs_an_approved_change_and_updates_the_asset(db):
+def test_firmware_upgrade_updates_the_asset(db):
     w = World(db)
     w.asset.firmware_version = "V2.8"
     db.commit()
     eng = client(db, w.user(EDITOR_DEFAULT_PERMISSIONS, "engineer"))
-    boss = client(db, w.user(ADMIN_DEFAULT_PERMISSIONS, "manager"))
     task = eng.post(f"/maintenance/assets/{w.asset.id}", json={
         "kind": "upgrade", "title": "Firmware V2.9", "due_date": str(date.today()), "to_version": "V2.9"}).json()
     assert task["from_version"] == "V2.8"
-    no_cr = eng.post(f"/maintenance/records/{task['id']}/complete", json={"performed_on": str(date.today())})
-    assert no_cr.status_code == 409 and "change request" in no_cr.json()["detail"]
-
-    cr = eng.post("/changes", json={"title": "Firmware V2.9", "asset_ids": [str(w.asset.id)], "change_type": "firmware"}).json()
-    eng.put(f"/maintenance/records/{task['id']}", json={"kind": "upgrade", "title": "Firmware V2.9",
-                                                        "due_date": str(date.today()), "to_version": "V2.9",
-                                                        "change_request_id": cr["id"]})
-    assert eng.post(f"/maintenance/records/{task['id']}/complete", json={"performed_on": str(date.today())}).status_code == 409
-    eng.post(f"/changes/{cr['id']}/transition", json={"target": "submitted"})
-    boss.post(f"/changes/{cr['id']}/transition", json={"target": "approved"})
     assert eng.post(f"/maintenance/records/{task['id']}/complete", json={"performed_on": str(date.today())}).status_code == 200
     db.refresh(w.asset)
     assert w.asset.firmware_version == "V2.9"
@@ -235,3 +224,114 @@ def test_end_of_life_raises_the_risk_score(db):
     assert after["vulnerability"]["score"] == before["vulnerability"]["score"] + 3
     assert after["final_score"] > before["final_score"]
     assert any("end of support" in line for line in after["vulnerability"]["breakdown"])
+
+
+def test_purchase_order_document_upload_download_replace_remove(db, tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)  # files are stored under ./uploads
+    w, other = World(db), World(db, "B")
+    maker = _maker(db, w)
+    req = client(db, w.user(EDITOR_DEFAULT_PERMISSIONS, "engineer"))
+    boss = client(db, w.user(ADMIN_DEFAULT_PERMISSIONS, "manager"))
+    order = _order(req, w, maker)
+    oid, pdf = order["id"], b"%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n"
+    files = lambda name, data=pdf, mime="application/pdf": {"file": (name, data, mime)}
+
+    # a draft cannot take the document yet
+    assert req.post(f"/procurement/orders/{oid}/po-file", files=files("po.pdf")).status_code == 409
+    req.post(f"/procurement/orders/{oid}/transition", json={"target": "submitted"})
+    boss.post(f"/procurement/orders/{oid}/transition", json={"target": "approved"})
+    detail = req.get(f"/procurement/orders/{oid}").json()
+    assert detail["po_file"] is None and detail["can_attach_po"] is True
+
+    # wrong type is refused
+    assert req.post(f"/procurement/orders/{oid}/po-file", files=files("x.exe", b"MZ\x90\x00", "application/x-msdownload")).status_code == 400
+    assert req.post(f"/procurement/orders/{oid}/po-file", files=files("fake.pdf", b"not a pdf at all")).status_code == 400
+
+    up = req.post(f"/procurement/orders/{oid}/po-file", files=files("../../evil/PO 4500.pdf"))
+    assert up.status_code == 200 and up.json()["po_file"]["name"] == "PO 4500.pdf" and up.json()["po_file"]["size"] == len(pdf)
+    stored = list((tmp_path / "uploads").rglob("*.pdf"))
+    assert len(stored) == 1 and str(w.tenant.id) in str(stored[0])
+    assert req.get(f"/procurement/orders/{oid}/po-file").content == pdf
+
+    # ordering keeps the document; replacing removes the old file from disk
+    req.post(f"/procurement/orders/{oid}/transition", json={"target": "ordered", "po_number": "4500000001"})
+    again = req.post(f"/procurement/orders/{oid}/po-file", files=files("PO v2.pdf"))
+    assert again.json()["po_file"]["name"] == "PO v2.pdf"
+    assert len(list((tmp_path / "uploads").rglob("*.pdf"))) == 1
+
+    # another tenant cannot see it
+    stranger = client(db, other.user(EDITOR_DEFAULT_PERMISSIONS, "outsider"))
+    assert stranger.get(f"/procurement/orders/{oid}/po-file").status_code in (403, 404)
+
+    assert req.delete(f"/procurement/orders/{oid}/po-file").status_code == 403  # removing needs level 3
+    gone = boss.delete(f"/procurement/orders/{oid}/po-file")
+    assert gone.status_code == 200 and gone.json()["po_file"] is None
+    assert list((tmp_path / "uploads").rglob("*.pdf")) == []
+    assert req.get(f"/procurement/orders/{oid}/po-file").status_code == 404
+
+
+# --- multi-level purchase approval ------------------------------------------------------------
+
+def test_purchase_request_goes_through_every_approval_level(db):
+    w = World(db)
+    maker = _maker(db, w)
+    editor = w.user(EDITOR_DEFAULT_PERMISSIONS, "engineer")
+    manager, head = w.user(ADMIN_DEFAULT_PERMISSIONS, "manager"), w.user(ADMIN_DEFAULT_PERMISSIONS, "head")
+    req, mgr, hd = client(db, editor), client(db, manager), client(db, head)
+
+    assert req.put("/procurement/approval-levels", json={"levels": []}).status_code == 403  # level 3 only
+    unknown = mgr.put("/procurement/approval-levels", json={"levels": [{"name": "Manager", "role_id": str(uuid.uuid4())}]})
+    assert unknown.status_code == 400
+    saved = mgr.put("/procurement/approval-levels", json={"levels": [
+        {"name": "Manager", "role_id": str(manager.role_id)}, {"name": "Plant head", "role_id": str(head.role_id)}]})
+    assert saved.status_code == 200 and [l["role_name"] is not None for l in saved.json()["levels"]] == [True, True]
+    assert [l["name"] for l in req.get("/procurement/approval-levels").json()["levels"]] == ["Manager", "Plant head"]
+
+    order = _order(req, w, maker)
+    oid = order["id"]
+    move = lambda c, target, **kw: c.post(f"/procurement/orders/{oid}/transition", json={"target": target, **kw})
+    assert move(req, "submitted").status_code == 200
+    state = req.get(f"/procurement/orders/{oid}").json()
+    assert [l["state"] for l in state["approval"]["levels"]] == ["waiting", "pending"] and state["approval"]["current_level"] == 1
+    assert state["allowed_targets"] == ["draft", "cancelled"]  # the requester decides nothing
+
+    # level 2 cannot jump the queue, and level 1 cannot be decided by the wrong role
+    assert move(hd, "approved").status_code == 409
+    assert "approved" not in hd.get(f"/procurement/orders/{oid}").json()["allowed_targets"]
+    first = move(mgr, "approved", note="Budget ok")
+    assert first.status_code == 200 and first.json()["status"] == "submitted"
+    assert [l["state"] for l in first.json()["approval"]["levels"]] == ["approved", "waiting"]
+    assert first.json()["approval"]["levels"][0]["by"] and first.json()["approval"]["levels"][0]["note"] == "Budget ok"
+    assert first.json()["decided_by"] is None  # not decided yet
+    assert move(mgr, "approved").status_code == 409  # one person cannot approve two levels
+    final = move(hd, "approved")
+    assert final.status_code == 200 and final.json()["status"] == "approved" and final.json()["decided_by"]
+    assert final.json()["approval"]["current_level"] is None
+    assert req.post(f"/procurement/orders/{oid}/po-file", files={"file": ("po.pdf", b"%PDF-1.4\n", "application/pdf")}).status_code == 200
+
+    # a rejection at any level ends the request
+    other = _order(req, w, maker)["id"]
+    send = lambda c, target, **kw: c.post(f"/procurement/orders/{other}/transition", json={"target": target, **kw})
+    send(req, "submitted")
+    send(mgr, "approved")
+    assert send(hd, "rejected").status_code == 409  # a reason is needed
+    rejected = send(hd, "rejected", note="Over budget")
+    assert rejected.json()["status"] == "rejected"
+    assert [l["state"] for l in rejected.json()["approval"]["levels"]] == ["approved", "rejected"]
+
+
+def test_resubmitting_starts_the_approval_again_with_the_current_levels(db):
+    w = World(db)
+    maker = _maker(db, w)
+    req = client(db, w.user(EDITOR_DEFAULT_PERMISSIONS, "engineer"))
+    boss = client(db, w.user(ADMIN_DEFAULT_PERMISSIONS, "manager"))
+    oid = _order(req, w, maker)["id"]
+    move = lambda c, target, **kw: c.post(f"/procurement/orders/{oid}/transition", json={"target": target, **kw})
+    move(req, "submitted")  # no levels set: one level, any approver
+    assert len(req.get(f"/procurement/orders/{oid}").json()["approval"]["levels"]) == 1
+    boss.put("/procurement/approval-levels", json={"levels": [{"name": "A"}, {"name": "B"}]})
+    move(req, "draft")
+    assert req.get(f"/procurement/orders/{oid}").json()["approval"] is None
+    move(req, "submitted")
+    assert [l["name"] for l in req.get(f"/procurement/orders/{oid}").json()["approval"]["levels"]] == ["A", "B"]
+    assert move(boss, "approved").json()["status"] == "submitted"  # level 1 of 2

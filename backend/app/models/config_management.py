@@ -54,7 +54,6 @@ class ConfigVersion(Base):
     scan_status = Column(String(15), nullable=True)  # clean / not_scanned / error (infected files are refused)
     scan_detail = Column(String(255), nullable=True)
     content_text = Column(Text, nullable=True)  # kept for small text files so versions can be compared line by line
-    change_request_id = Column(UUID(as_uuid=True), ForeignKey("change_requests.id", ondelete="SET NULL"), nullable=True)
     uploaded_by = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     uploaded_at = Column(DateTime, default=func.now())
 

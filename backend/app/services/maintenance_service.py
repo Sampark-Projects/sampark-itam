@@ -14,7 +14,6 @@ from app.services import webhook_service
 from app.models import (
     Asset,
     AssetCostEntry,
-    ChangeRequest,
     MaintenancePlan,
     MaintenanceRecord,
     MaintenanceRecordPart,
@@ -90,36 +89,8 @@ def get_record(db: Session, tenant_id, record_id) -> MaintenanceRecord:
     return rec
 
 
-def _check_change(db: Session, tenant_id, change_id):
-    if change_id and not db.query(ChangeRequest.id).filter(
-            ChangeRequest.id == change_id, ChangeRequest.tenant_id == tenant_id).first():
-        raise _bad(ErrorCode.MAINTENANCE_INVALID, "Unknown change request")
-
-
-UPGRADE_KINDS = ("upgrade", "patch")
-APPROVED_CHANGE = ("approved", "implemented", "closed")
-
-
-def _check_upgrade_change(db: Session, rec: MaintenanceRecord) -> None:
-    """A firmware upgrade or patch is a change to the asset: it must be covered by an approved change
-    request that names this asset (IEC 62443-2-3 patch management, change control)."""
-    from app.models import change_request_assets
-    if rec.kind not in UPGRADE_KINDS:
-        return
-    if not rec.change_request_id:
-        raise _bad(ErrorCode.MAINTENANCE_INVALID, "An upgrade or patch needs an approved change request", 409)
-    cr = db.query(ChangeRequest).filter(ChangeRequest.id == rec.change_request_id, ChangeRequest.tenant_id == rec.tenant_id).first()
-    if cr is None or cr.status not in APPROVED_CHANGE:
-        raise _bad(ErrorCode.MAINTENANCE_INVALID, "The change request is not approved", 409)
-    covers = db.query(change_request_assets.c.asset_id).filter(
-        change_request_assets.c.change_request_id == cr.id, change_request_assets.c.asset_id == rec.asset_id).first()
-    if not covers:
-        raise _bad(ErrorCode.MAINTENANCE_INVALID, "The change request does not cover this asset", 409)
-
-
 def create_record(db: Session, asset: Asset, user: User, data) -> MaintenanceRecord:
     """A new maintenance task is always planned; it is completed later with what was done."""
-    _check_change(db, asset.tenant_id, data.change_request_id)
     if data.due_date is None:
         raise _bad(ErrorCode.MAINTENANCE_INVALID, "A due date is required")
     from_version = getattr(data, "from_version", None)
@@ -127,7 +98,7 @@ def create_record(db: Session, asset: Asset, user: User, data) -> MaintenanceRec
         from_version = asset.firmware_version  # what is installed now
     rec = MaintenanceRecord(
         tenant_id=asset.tenant_id, asset_id=asset.id, kind=data.kind, status="planned", title=data.title,
-        description=data.description, due_date=data.due_date, change_request_id=data.change_request_id,
+        description=data.description, due_date=data.due_date,
         created_by=user.id, from_version=from_version, to_version=getattr(data, "to_version", None),
     )
     db.add(rec)
@@ -139,11 +110,10 @@ def create_record(db: Session, asset: Asset, user: User, data) -> MaintenanceRec
 def update_record(db: Session, rec: MaintenanceRecord, data) -> MaintenanceRecord:
     if rec.status != "planned":
         raise _bad(ErrorCode.MAINTENANCE_INVALID, "Only a planned task can be edited", 409)
-    _check_change(db, rec.tenant_id, data.change_request_id)
     if data.due_date is None:
         raise _bad(ErrorCode.MAINTENANCE_INVALID, "A due date is required")
     rec.kind, rec.title, rec.description = data.kind, data.title, data.description
-    rec.due_date, rec.change_request_id = data.due_date, data.change_request_id
+    rec.due_date = data.due_date
     rec.from_version, rec.to_version = getattr(data, "from_version", None), getattr(data, "to_version", None)
     db.commit()
     db.refresh(rec)
@@ -175,7 +145,6 @@ def complete_record(db: Session, rec: MaintenanceRecord, user: User, data) -> Ma
         raise _bad(ErrorCode.MAINTENANCE_INVALID, "The work cannot be in the future")
     if getattr(data, "to_version", None):
         rec.to_version = data.to_version.strip()
-    _check_upgrade_change(db, rec)
     if rec.kind == "upgrade" and not rec.to_version:
         raise _bad(ErrorCode.MAINTENANCE_INVALID, "Enter the firmware version that was installed")
     rec.status, rec.performed_on = "done", data.performed_on
@@ -352,7 +321,7 @@ def serialize_record(db: Session, rec: MaintenanceRecord, names: Optional[Dict] 
         "id": rec.id, "asset_id": rec.asset_id, "kind": rec.kind, "status": rec.status, "title": rec.title,
         "description": rec.description, "due_date": rec.due_date, "performed_on": rec.performed_on,
         "performed_by": rec.performed_by, "vendor": rec.vendor, "cost_amount": rec.cost_amount,
-        "cost_currency": rec.cost_currency, "change_request_id": rec.change_request_id,
+        "cost_currency": rec.cost_currency,
         "plan_id": rec.plan_id, "from_version": rec.from_version, "to_version": rec.to_version,
         "overdue": rec.status == "planned" and rec.due_date is not None and rec.due_date < today,
         "parts": [{"spare_part_id": x.spare_part_id, "name": part_names.get(x.spare_part_id), "quantity": x.quantity}

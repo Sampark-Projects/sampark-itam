@@ -11,7 +11,7 @@ An asset moves through five stages. Sampark covers each one and keeps a full aud
 |---|---|---|
 | 1. Plan and procure | A purchase request with lines, approved by a different person, then ordered with the ERP PO number | Lifecycle → Purchase requests |
 | 2. Receive and onboard | The delivery is booked against the order, checked (model, quantity), a tag is generated, then commissioning and acceptance sign-off | Asset page → Lifecycle workflow; Lifecycle → My tasks / Workflows |
-| 3. Operate and maintain | Expiry alerts, maintenance plans, software and spares, versioned configurations with a golden baseline, change requests | Lifecycle, Changes & Maintenance, asset page |
+| 3. Operate and maintain | Expiry alerts, maintenance plans, software and spares, versioned configurations with a golden baseline | Lifecycle, Maintenance & configuration, asset page |
 | 4. Plan replacement | Vendor end-of-life table matched to assets, obsolescence report, cost of ownership | Lifecycle → Expiring, Obsolescence, Vendor, Cost |
 | 5. Retire | Decommission approval, data-wipe confirmation, disposal evidence, then the record is archived | Asset page → Start retirement |
 
@@ -21,11 +21,11 @@ Reports (plant dashboard, audit pack, webhooks) sit on top of all of this.
 
 - **Workflow.** Each tenant has one Onboarding and one Retirement workflow: an ordered list of steps. A step is a task or an approval, can belong to a role, and can demand evidence before it can be completed (asset fields, an uploaded document of a given category, a comment, a confirmation). A step can also set the asset status. Edit them in **Lifecycle → Workflow setup**; changes apply only to runs started afterwards.
 - **Run.** One workflow in progress on one asset (only one open run per asset). Every step records who did it and when.
-- **Separation of duties.** The person who started a run cannot approve its approval steps, and the requester of a purchase request or change request cannot approve it. Plan for **two users** in the demo.
+- **Separation of duties.** The person who started a run cannot approve its approval steps, and the requester of a purchase request cannot approve it. A purchase request can have several approval levels (Lifecycle → Purchase requests → Approval levels), each decided by a different person. Plan for **two users**, or more if you set up levels, in the demo.
 - **Status lock.** While a run is in progress, and for the statuses the retirement workflow sets (Retired), the asset status cannot be edited by hand. Retired assets are archived (read-only) until someone with lifecycle level 3 reopens them with a reason.
 - **Alerts.** A daily job e-mails the asset owner and point-of-contact users at the configured steps (default 90 / 30 / 7 days) before warranty, AMC or support dates, and when a configuration drifts or maintenance is overdue. E-mails need the mail setup to be working.
 - **Vendor end-of-life table.** Entries per manufacturer and model (`*` and `?` wildcards, most specific wins), loaded by CSV. Obsolescence is end of support, else end of life.
-- **Permissions.** Sections `lifecycle`, `changes`, `maintenance`, `configurations`, `reports`: level 1 reads, 2 writes, 3 deletes and changes settings. Webhooks use `api_keys`.
+- **Permissions.** Sections `lifecycle`, `maintenance`, `configurations`, `reports`: level 1 reads, 2 writes, 3 deletes and changes settings. Webhooks use `api_keys`.
 
 ## 3. Before the demo
 
@@ -72,12 +72,10 @@ Each step: what to do, what to say, what to expect.
 - Upload version 2 with a small edit. The state changes to **Differs from baseline**; open the comparison to show the line diff. Say that a drift e-mail goes to the owner.
 - Show the backup state (a backup interval makes it overdue if no new version arrives).
 
-**F. Change management (6 min).** *Changes & Maintenance → Change requests.*
-- Create a change for DEMO-PLC-01 (type program, risk medium). Submit; approver gets e-mailed. Approve with the second user. Mark implemented, then close: closing requires a review outcome.
-- Show the **Settings** tab: approver role, controlled fields, how many approvers are required (try 2 to show the change board).
-- Show an **emergency** change: it can be implemented right after submitting, but must be approved or rejected afterwards before it can close.
-- Show **Unapproved changes**: edit DEMO-PLC-02's firmware version without a change request, then open the tab and show the flag; clear it with a reviewer note.
-- Edits made while an asset's **onboarding workflow is running** (such as the location set during commissioning) are not flagged, because registering a new asset is not a change; edits after it finishes are. This tab also lists real edits from the copied data (for example a Data Historian remote-access change): clear those with a note before the demo, or explain them.
+**F. Multi-level purchase approval (4 min).** *Lifecycle → Purchase requests → Approval levels.* (Change requests and unapproved-change tracking were removed from the product.)
+- Set two levels, for example "Manager" (role reviewer) and "Plant head" (role admin). Raise a request as the requester and submit it.
+- Open it: the Approval list shows level 1 waiting. The wrong role has no Approve button; the right one approves with a note and the request stays submitted with level 2 waiting.
+- The same person cannot approve level 2. The second approver approves and the request becomes approved; show a rejection at level 2 ending another request.
 
 **G. Maintenance (3 min).** *Changes & Maintenance → Maintenance.*
 - Add a maintenance plan (every 90 days). The first task appears within 14 days of the due date. Complete a task with a cost: the cost appears under the asset's cost of ownership. An upgrade task can only be completed under an approved change request.
@@ -92,7 +90,7 @@ Each step: what to do, what to say, what to expect.
 
 **J. Reports (4 min).** *Reports.*
 - Plant dashboard: group by Site or Area, targets (met / missed), trend cards (the sparkline needs at least two days of history; today's value always matches the dashboard).
-- Audit pack: download the workbook and show the sheets (Summary, Assets, Vendor end of life, Change requests, Unapproved changes, Maintenance, Configuration, Workflows, Software, Purchase requests).
+- Audit pack: download the workbook and show the sheets (Summary, Assets, Vendor end of life, Maintenance, Configuration, Workflows, Software, Purchase requests).
 - Webhooks: add an endpoint (use a test receiver), trigger an event, show the signed delivery and the retry/redeliver behaviour.
 - Audit trail: open **Audit logs** and show every step above is recorded with user and before/after values.
 

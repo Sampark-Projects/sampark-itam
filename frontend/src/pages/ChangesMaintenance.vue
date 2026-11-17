@@ -1,6 +1,6 @@
 <!--
   - ChangesMaintenance.vue
-  - Change requests, unapproved-change flags, planned maintenance, spare parts and the change settings.
+  - Planned maintenance, spare parts and configuration items.
 -->
 <template>
   <div class="changes-page">
@@ -9,12 +9,6 @@
     </div>
 
     <TabView lazy class="modern-tabs">
-      <TabPanel v-if="canRead('changes')" :header="t('changes.tabs.changes')">
-        <ChangeRequestsTab />
-      </TabPanel>
-      <TabPanel v-if="canRead('changes')" :header="t('changes.tabs.unapproved')">
-        <UnapprovedChangesTab />
-      </TabPanel>
       <TabPanel v-if="canRead('maintenance')" :header="t('changes.tabs.maintenance')">
         <MaintenanceDueTab />
       </TabPanel>
@@ -24,9 +18,6 @@
       <TabPanel v-if="canRead('configurations')" :header="t('configmgmt.tab')">
         <ConfigOverviewTab />
       </TabPanel>
-      <TabPanel v-if="canRead('changes')" :header="t('changes.tabs.settings')">
-        <ChangeSettingsTab />
-      </TabPanel>
     </TabView>
   </div>
 </template>
@@ -35,11 +26,8 @@
 import { useI18n } from 'vue-i18n'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
-import ChangeRequestsTab from '../components/features/changes/ChangeRequestsTab.vue'
-import UnapprovedChangesTab from '../components/features/changes/UnapprovedChangesTab.vue'
 import MaintenanceDueTab from '../components/features/changes/MaintenanceDueTab.vue'
 import SparePartsTab from '../components/features/changes/SparePartsTab.vue'
-import ChangeSettingsTab from '../components/features/changes/ChangeSettingsTab.vue'
 import ConfigOverviewTab from '../components/features/changes/ConfigOverviewTab.vue'
 import { usePermissions } from '../composables/usePermissions'
 

@@ -281,7 +281,7 @@ def init_notification_templates(db: Session):
         {
             'template_code': 'approval_requested',
             'name': 'Approval Requested',
-            'description': 'Notification to approvers when a change request or purchase request waits for a decision',
+            'description': 'Notification to approvers when a purchase request waits for a decision',
             'subject_template': '{{item_type}} {{item_code}} needs your approval: {{title}}',
             'body_template_html': '''
             <html>
@@ -310,7 +310,7 @@ def init_notification_templates(db: Session):
         {
             'template_code': 'approval_decided',
             'name': 'Approval Decision',
-            'description': 'Notification to the requester when a change request or purchase request was approved or rejected',
+            'description': 'Notification to the requester when a purchase request was approved or rejected',
             'subject_template': '{{item_type}} {{item_code}} {{decision}}: {{title}}',
             'body_template_html': '''
             <html>

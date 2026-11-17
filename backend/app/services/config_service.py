@@ -16,13 +16,11 @@ from app.errors.error_codes import ErrorCode
 from app.errors.exceptions import ErrorCodeException
 from app.models import (
     Asset,
-    ChangeRequest,
     ConfigAlertSent,
     ConfigArtifact,
     ConfigVersion,
     User,
 )
-from app.services import change_logic
 from app.services import webhook_service
 from app.services import config_logic as cl
 from app.services import config_security as sec
@@ -155,12 +153,7 @@ def open_verified(ver: ConfigVersion):
 
 def add_version(
     db: Session, art: ConfigArtifact, user: User, upload, label: Optional[str], note: Optional[str],
-    change_request_id=None,
 ) -> ConfigVersion:
-    if change_request_id and not db.query(ChangeRequest.id).filter(
-            ChangeRequest.id == change_request_id, ChangeRequest.tenant_id == art.tenant_id).first():
-        raise _bad(ErrorCode.CONFIG_INVALID, "Unknown change request")
-
     relative_dir = Path("tenants") / str(art.tenant_id) / "configs" / str(art.id)
     relative = relative_dir / f"{uuid.uuid4()}{cl.safe_extension(upload.filename)}"
     target = upload_root() / relative
@@ -204,7 +197,7 @@ def add_version(
             file_name=cl.clean_filename(upload.filename), file_path=str(relative).replace("\\", "/"),
             size_bytes=size, sha256=digest.hexdigest(), content_text=sec.protect_text(text),
             encrypted=encrypt, scan_status=scan_status, scan_detail=scan_detail,
-            change_request_id=change_request_id, uploaded_by=user.id,
+            uploaded_by=user.id,
         )
         db.add(ver)
         try:
@@ -280,9 +273,6 @@ def serialize_artifact(db: Session, art: ConfigArtifact, with_versions: bool = T
     baseline = next((v for v in versions if v.id == art.baseline_version_id), None)
     ids = {x for v in versions for x in (v.uploaded_by,) if x} | ({art.baseline_set_by} if art.baseline_set_by else set())
     names = {u.id: (u.name or u.email) for u in db.query(User).filter(User.id.in_(ids or [uuid.uuid4()])).all()}
-    cr_ids = {v.change_request_id for v in versions if v.change_request_id}
-    codes = {c.id: change_logic.format_number(c.number) for c in db.query(ChangeRequest).filter(
-        ChangeRequest.id.in_(cr_ids or [uuid.uuid4()])).all()}
     out = {
         "id": art.id, "asset_id": art.asset_id, "name": art.name, "kind": art.kind, "description": art.description,
         "backup_interval_days": art.backup_interval_days,
@@ -301,7 +291,6 @@ def serialize_artifact(db: Session, art: ConfigArtifact, with_versions: bool = T
             "encrypted": bool(v.encrypted), "scan_status": v.scan_status,
             "has_text": v.content_text is not None, "uploaded_by": names.get(v.uploaded_by),
             "uploaded_at": v.uploaded_at, "is_baseline": v.id == art.baseline_version_id,
-            "change_request": codes.get(v.change_request_id),
         } for v in versions]
     return out
 
@@ -342,12 +331,7 @@ def send_alert(db: Session, art: ConfigArtifact, kind: str, ref: Optional[Config
     if not recipients:
         return 0  # not recorded: it goes out once someone is set as owner or contact
     if kind == "drift":
-        cr_text = "no change request referenced"
-        if ref and ref.change_request_id:
-            cr = db.query(ChangeRequest).filter(ChangeRequest.id == ref.change_request_id).first()
-            if cr:
-                cr_text = f"change request {change_logic.format_number(cr.number)} ({cr.status})"
-        message = (f"Version {ref.version_number} differs from the golden baseline; {cr_text}.")
+        message = f"Version {ref.version_number} differs from the golden baseline."
         title = "differs from baseline"
     else:
         message = f"No new version has been stored for {art.backup_interval_days} days."

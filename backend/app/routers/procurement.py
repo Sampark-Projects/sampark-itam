@@ -1,22 +1,26 @@
 """Plan and procure: purchase requests (demand, specification, approval, order) and receiving assets
 against their lines. Uses the `lifecycle` RBAC section; deciding needs level 3."""
+import shutil
 import uuid
-from datetime import date
+from datetime import date, datetime
+from pathlib import Path
 from typing import List, Literal, Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, File, Query, UploadFile
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.errors.error_codes import ErrorCode
 from app.errors.exceptions import ErrorCodeException
-from app.models import Asset, PurchaseOrder, User
+from app.models import Asset, PurchaseOrder, Role, User
 from app.services import procurement_logic as pl
 from app.services import procurement_service as ps
 from app.services.audit_trail import AuditContext
 from app.services.auth import get_current_user
-from app.services.rbac import require_section_access
+from app.services.file_validation import validate_document_file, validate_file_size
+from app.services.rbac import require_permission, require_section_access
 
 router = APIRouter(
     prefix="/procurement",
@@ -82,6 +86,35 @@ def _data(order: PurchaseOrder):
                        "unit_cost": float(l.unit_cost) if l.unit_cost is not None else None} for l in order.lines]}
 
 
+class LevelIn(BaseModel):
+    name: str = Field(..., min_length=1, max_length=80)
+    role_id: Optional[uuid.UUID] = None
+
+
+class LevelsIn(BaseModel):
+    levels: List[LevelIn] = Field(default_factory=list, max_length=pl.MAX_LEVELS)
+
+
+def _levels_out(db: Session, tenant_id, levels):
+    roles = {str(r.id): r.name for r in db.query(Role).filter(Role.tenant_id == tenant_id).all()}
+    return {"levels": [{**l, "role_name": roles.get(l.get("role_id") or "")} for l in levels], "max_levels": pl.MAX_LEVELS}
+
+
+@router.get("/approval-levels")
+def get_approval_levels(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """The approval chain new requests are submitted under. Empty: one level, any approver."""
+    return _levels_out(db, current_user.tenant_id, ps.get_levels(db, current_user.tenant_id))
+
+
+@router.put("/approval-levels", dependencies=[Depends(require_permission("lifecycle", 3))])
+def put_approval_levels(data: LevelsIn, audit: AuditContext = Depends(),
+                        current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    old = ps.get_levels(db, current_user.tenant_id)
+    new = ps.save_levels(db, current_user.tenant_id, [l.model_dump() for l in data.levels])
+    audit.log("update", "PurchaseApprovalSettings", None, "Changed the purchase approval levels", {"levels": old}, {"levels": new})
+    return _levels_out(db, current_user.tenant_id, new)
+
+
 @router.get("/orders")
 def list_orders(
     status: Optional[str] = Query(None, pattern="^(open|draft|submitted|approved|rejected|ordered|received|closed|cancelled)$"),
@@ -131,6 +164,103 @@ def transition(order_id: uuid.UUID, data: TransitionIn, audit: AuditContext = De
     action = {"approved": "approve", "rejected": "reject", "cancelled": "cancel"}.get(order.status, "update")
     audit.log(action, "PurchaseOrder", order.id, f"Purchase request {pl.format_number(order.number)}: {before} -> {order.status}",
               {"status": before}, {"status": order.status, "note": data.note, "po_number": order.po_number})
+    return ps.serialize(db, order, current_user, detail=True)
+
+
+PO_MIME_TYPES = {
+    "application/pdf", "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "text/plain", "text/csv", "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+}
+
+
+OLE_HEADER = bytes.fromhex("d0cf11e0")  # .doc and .xls
+ZIP_HEADER = bytes.fromhex("504b0304")  # .docx and .xlsx
+BOM_AND_SPACE = bytes.fromhex("efbbbf20090d0a")  # byte order mark, space, tab, CR, LF
+
+
+def _looks_like(content_type: str, head: bytes) -> bool:
+    """The first bytes must match the declared type (does not depend on python-magic)."""
+    if content_type == "application/pdf":
+        return head.lstrip(BOM_AND_SPACE).startswith(b"%PDF")
+    if content_type in ("application/msword", "application/vnd.ms-excel"):
+        return head.startswith(OLE_HEADER)
+    if content_type.startswith("application/vnd.openxmlformats"):
+        return head.startswith(ZIP_HEADER)
+    return bytes(1) not in head  # text and CSV: no NUL bytes
+
+
+def _po_path(order: PurchaseOrder) -> Path:
+    return Path("uploads") / order.po_file_path
+
+
+def _drop_po_file(order: PurchaseOrder) -> None:
+    if order.po_file_path:
+        try:
+            _po_path(order).unlink(missing_ok=True)
+        except OSError:
+            pass
+    order.po_file_name = order.po_file_path = order.po_file_size = None
+    order.po_file_uploaded_at = order.po_file_uploaded_by = None
+
+
+@router.post("/orders/{order_id}/po-file")
+def upload_po_file(order_id: uuid.UUID, file: UploadFile = File(...), audit: AuditContext = Depends(),
+                   current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Attach the purchase order document (replaces an earlier one). Allowed once the request is approved."""
+    order = ps.get_order(db, current_user.tenant_id, order_id)
+    if order.status not in pl.PO_FILE_STATUSES:
+        raise ErrorCodeException(status_code=409, error_code=ErrorCode.PROCUREMENT_INVALID,
+                                 detail="The purchase order document can be attached once the request is approved")
+    if not validate_file_size(file):
+        raise ErrorCodeException(status_code=400, error_code=ErrorCode.FILE_TOO_LARGE)
+    head = file.file.read(1024)
+    file.file.seek(0)
+    if file.content_type not in PO_MIME_TYPES or not _looks_like(file.content_type, head) or not validate_document_file(file):
+        raise ErrorCodeException(status_code=400, error_code=ErrorCode.INVALID_ASSET_DOCUMENT_FORMAT)
+
+    name = Path(file.filename or "purchase-order").name[:255]
+    relative = Path("tenants") / str(current_user.tenant_id) / "purchase_orders" / f"{uuid.uuid4()}{Path(name).suffix[:10]}"
+    target = Path("uploads") / relative
+    target.parent.mkdir(parents=True, exist_ok=True)
+    file.file.seek(0)
+    with target.open("wb") as out:
+        shutil.copyfileobj(file.file, out)
+    old = order.po_file_name
+    _drop_po_file(order)
+    order.po_file_name, order.po_file_path, order.po_file_size = name, str(relative), target.stat().st_size
+    order.po_file_uploaded_at, order.po_file_uploaded_by = datetime.utcnow(), current_user.id
+    db.commit()
+    db.refresh(order)
+    audit.log("update", "PurchaseOrder", order.id,
+              f"Purchase request {pl.format_number(order.number)}: purchase order document '{name}' attached",
+              {"po_file": old}, {"po_file": name})
+    return ps.serialize(db, order, current_user, detail=True)
+
+
+@router.get("/orders/{order_id}/po-file")
+def download_po_file(order_id: uuid.UUID, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    order = ps.get_order(db, current_user.tenant_id, order_id)
+    if not order.po_file_path or not _po_path(order).exists():
+        raise ErrorCodeException(status_code=404, error_code=ErrorCode.ASSET_DOCUMENT_NOT_FOUND)
+    safe = order.po_file_name.replace('"', "")
+    return FileResponse(path=_po_path(order), filename=order.po_file_name, media_type="application/octet-stream",
+                        headers={"Content-Disposition": f'attachment; filename="{safe}"'})
+
+
+@router.delete("/orders/{order_id}/po-file")
+def delete_po_file(order_id: uuid.UUID, audit: AuditContext = Depends(),
+                   current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    order = ps.get_order(db, current_user.tenant_id, order_id)
+    if not order.po_file_path:
+        raise ErrorCodeException(status_code=404, error_code=ErrorCode.ASSET_DOCUMENT_NOT_FOUND)
+    old = order.po_file_name
+    _drop_po_file(order)
+    db.commit()
+    db.refresh(order)
+    audit.log("update", "PurchaseOrder", order.id,
+              f"Purchase request {pl.format_number(order.number)}: purchase order document removed", {"po_file": old}, {"po_file": None})
     return ps.serialize(db, order, current_user, detail=True)
 
 

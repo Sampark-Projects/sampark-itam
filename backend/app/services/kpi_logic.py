@@ -9,8 +9,6 @@ METRICS: Dict[str, Optional[str]] = {
     "baseline_coverage": "min",      # percent of configuration items that have a golden baseline
     "config_drift": "max",           # configuration items that differ from their baseline
     "overdue_maintenance": "max",    # planned maintenance past its due date
-    "open_changes": "max",           # change requests submitted, approved or being implemented
-    "unapproved_changes": "max",     # unreviewed edits to controlled fields with no approved change request
     "workflows_in_progress": None,
 }
 TARGETABLE = tuple(m for m, d in METRICS.items() if d)

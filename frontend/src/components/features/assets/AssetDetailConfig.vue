@@ -50,7 +50,6 @@
                 <strong>v{{ v.version_number }}</strong><span v-if="v.label"> · {{ v.label }}</span>
                 <Tag v-if="v.is_baseline" :value="t('configmgmt.card.baseline')" severity="success" class="chip" />
                 <Tag v-if="v.id === art.latest?.id" :value="t('configmgmt.card.latest')" severity="info" class="chip" />
-                <small v-if="v.change_request" class="muted"> · {{ v.change_request }}</small>
                 <small v-if="v.note" class="muted block">{{ v.note }}</small>
                 <small class="muted block mono" :title="v.sha256">sha256 {{ v.sha256.slice(0, 12) }}…</small>
               </td>
@@ -112,10 +111,6 @@
       <div class="p-field">
         <label>{{ t('configmgmt.card.label') }}</label>
         <InputText v-model="uploadForm.label" maxlength="100" class="w-full" placeholder="v2.3" />
-      </div>
-      <div class="p-field">
-        <label>{{ t('configmgmt.card.changeRequest') }}</label>
-        <Dropdown v-model="uploadForm.change_request_id" :options="changeOptions" optionLabel="label" optionValue="value" showClear :placeholder="t('configmgmt.card.noChangeRequest')" class="w-full" />
       </div>
       <div class="p-field">
         <label>{{ t('configmgmt.card.note') }}</label>
@@ -261,22 +256,14 @@ const showUpload = ref(false)
 const uploadTarget = ref(null)
 const file = ref(null)
 const fileInput = ref(null)
-const uploadForm = ref({ label: '', note: '', change_request_id: null })
-const changeOptions = ref([])
+const uploadForm = ref({ label: '', note: '' })
 
 async function openUpload(art) {
   uploadTarget.value = art
   file.value = null
-  uploadForm.value = { label: '', note: '', change_request_id: null }
+  uploadForm.value = { label: '', note: '' }
   dialogError.value = ''
   showUpload.value = true
-  try {
-    if (!canRead('changes')) throw new Error('no access to change requests')
-    const res = await api.getChangeRequests({ asset_id: props.asset.id })
-    changeOptions.value = (Array.isArray(res.data) ? res.data : []).map(c => ({ value: c.id, label: `${c.code} · ${c.title}` }))
-  } catch (e) {
-    changeOptions.value = []
-  }
 }
 
 async function upload() {

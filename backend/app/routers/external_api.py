@@ -245,34 +245,6 @@ async def expiring_external(
     return api_paging.page_list(items, skip, limit)
 
 
-@router.get("/changes")
-async def changes_external(
-    status: Optional[str] = None,
-    skip: int = 0,
-    limit: int = api_paging.DEFAULT_LIMIT,
-    api_key=Depends(require_read_scope),
-    db: Session = Depends(get_db),
-    request: Request = None,
-):
-    """Change requests with the assets they cover, newest first, in pages."""
-    from app.models import ChangeRequest
-    from app.services import change_logic
-
-    _guard(request, api_key, "/changes")
-    query = db.query(ChangeRequest).filter(ChangeRequest.tenant_id == api_key.tenant_id)
-    if status in change_logic.STATUSES:
-        query = query.filter(ChangeRequest.status == status)
-    skip, limit = api_paging.clamp(skip, limit)
-    total = query.count()
-    rows = query.order_by(ChangeRequest.number.desc()).offset(skip).limit(limit).all()
-    return api_paging.page([{
-        "id": c.id, "code": change_logic.format_number(c.number), "title": c.title, "type": c.change_type,
-        "risk": c.risk, "status": c.status, "planned_start": c.planned_start, "planned_end": c.planned_end,
-        "decided_at": c.decided_at, "implemented_at": c.implemented_at,
-        "assets": [{"id": a.id, "name": a.name, "tag": a.tag} for a in c.assets],
-    } for c in rows], total, skip, limit)
-
-
 @router.get("/maintenance/due")
 async def maintenance_due_external(
     days: int = 30,

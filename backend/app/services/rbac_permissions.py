@@ -148,16 +148,6 @@ NEW_SECTIONS = {
             4: "Full administration"
         }
     },
-    "changes": {
-        "description": "Change requests and unapproved-change flags",
-        "levels": {
-            0: "No access",
-            1: "View change requests and flags",
-            2: "Raise, edit and move change requests, review flags",
-            3: "Change the change settings, act for others (administrator)",
-            4: "Full administration"
-        }
-    },
     "maintenance": {
         "description": "Maintenance records and spare parts",
         "levels": {
@@ -237,7 +227,6 @@ ADMIN_DEFAULT_PERMISSIONS = {
     "evidence": 3,
     "network_probes": 3,
     "lifecycle": 3,
-    "changes": 3,
     "maintenance": 3,
     "configurations": 3,
     "reports": 3,
@@ -276,7 +265,6 @@ EDITOR_DEFAULT_PERMISSIONS = {
     "evidence": 2,  # Può gestire evidence
     "network_probes": 1,
     "lifecycle": 2,
-    "changes": 2,
     "maintenance": 2,
     "configurations": 2,
     "reports": 2,
@@ -315,7 +303,6 @@ VIEWER_DEFAULT_PERMISSIONS = {
     "evidence": 1,
     "network_probes": 1,
     "lifecycle": 1,
-    "changes": 1,
     "maintenance": 1,
     "configurations": 1,
     "reports": 1,

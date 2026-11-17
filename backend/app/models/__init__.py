@@ -9,10 +9,9 @@ from .lifecycle import LifecycleAlertSettings, AssetExpiryAlertSent, VendorLifec
 from .lifecycle_workflow import LifecycleWorkflow, LifecycleWorkflowStep, AssetLifecycleRun, AssetLifecycleRunStep
 from .config_management import ConfigArtifact, ConfigVersion, ConfigAlertSent
 from .integrations import WebhookEndpoint, WebhookDelivery, KpiTarget, KpiSnapshot
-from .procurement import PurchaseOrder, PurchaseOrderLine, AssetSoftware
+from .procurement import PurchaseOrder, PurchaseOrderLine, PurchaseApproval, PurchaseApprovalSettings, AssetSoftware
 from .change_maintenance import (
-    ChangeSettings, ChangeRequest, ChangeFlagReview, ChangeApproval, SparePart, MaintenanceRecord, MaintenanceRecordPart, MaintenancePlan,
-    change_request_assets, spare_part_assets,
+    SparePart, MaintenanceRecord, MaintenanceRecordPart, MaintenancePlan, spare_part_assets,
 )
 from .location import Location, LocationFloorplan
 from .manufacturer import Manufacturer

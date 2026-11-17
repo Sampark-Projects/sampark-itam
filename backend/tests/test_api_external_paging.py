@@ -7,7 +7,6 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.database import get_db
-from app.models import ChangeRequest
 from app.routers import external_api
 from app.services import api_paging
 from app.services.api_auth import require_read_scope, require_write_scope
@@ -46,19 +45,6 @@ def _client(db, w, scopes=("read", "write")):
     api.dependency_overrides[require_read_scope] = lambda: key
     api.dependency_overrides[require_write_scope] = lambda: key
     return TestClient(api)
-
-
-def test_changes_are_paged(db):
-    w = World(db)
-    for n in range(1, 6):
-        db.add(ChangeRequest(id=uuid.uuid4(), tenant_id=w.tenant.id, number=n, title=f"CR {n}", status="draft",
-                             change_type="other", risk="low"))
-    db.commit()
-    c = _client(db, w)
-    first = c.get("/external/v1/changes", params={"limit": 2}).json()
-    assert first["total"] == 5 and first["has_more"] and [i["code"] for i in first["items"]] == ["CR-0005", "CR-0004"]
-    last = c.get("/external/v1/changes", params={"skip": 4, "limit": 2}).json()
-    assert [i["code"] for i in last["items"]] == ["CR-0001"] and last["has_more"] is False
 
 
 def test_lifecycle_write_is_conditional(db):

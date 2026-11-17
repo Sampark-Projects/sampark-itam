@@ -109,14 +109,13 @@ const { canDelete } = usePermissions()
 const canSetTargets = computed(() => canDelete('reports'))
 
 const metricKeys = ['assets_total', 'expired_support', 'obsolete_assets', 'baseline_coverage', 'config_drift',
-  'overdue_maintenance', 'open_changes', 'unapproved_changes', 'workflows_in_progress']
+  'overdue_maintenance', 'workflows_in_progress']
 
 const groupBy = ref('site')
 const siteId = ref(null)
 const sites = ref([])
 const rows = ref([])
 const totals = ref(null)
-const unapprovedDays = ref(30)
 const generatedAt = ref('')
 import ProgressSpinner from 'primevue/progressspinner'
 const loading = ref(false)
@@ -143,7 +142,7 @@ function formatValue(metric, value) {
 }
 
 function helpText(metric) {
-  return t(`reports.metricHelp.${metric}`, { days: unapprovedDays.value })
+  return t(`reports.metricHelp.${metric}`)
 }
 
 // --- trend (daily snapshots) ---
@@ -203,7 +202,6 @@ async function load() {
     const res = await api.getPlantDashboard(params)
     rows.value = res.data.rows || []
     totals.value = res.data.totals || null
-    unapprovedDays.value = res.data.unapproved_days || 30
     generatedAt.value = res.data.generated_at ? new Date(res.data.generated_at + 'Z').toLocaleString() : ''
   } catch (err) {
     message.value = { severity: 'error', text: apiErrorText(err, t) }

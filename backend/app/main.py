@@ -169,7 +169,6 @@ from app.routers import asset_types
 from app.routers import asset_tag_rules
 from app.routers import lifecycle
 from app.routers import workflows
-from app.routers import changes
 from app.routers import maintenance
 from app.routers import config_management
 from app.routers import integrations
@@ -262,7 +261,6 @@ app.include_router(asset_types.router, tags=["asset_type"])
 app.include_router(asset_tag_rules.router, tags=["asset_tag_rules"])
 app.include_router(lifecycle.router, tags=["lifecycle"])
 app.include_router(workflows.router, tags=["workflows"])
-app.include_router(changes.router, tags=["changes"])
 app.include_router(maintenance.router, tags=["maintenance"])
 app.include_router(config_management.router, tags=["config"])
 app.include_router(integrations.webhooks, tags=["webhooks"])

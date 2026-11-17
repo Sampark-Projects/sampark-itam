@@ -116,7 +116,7 @@ const menuSections = computed(() => {
   if (canRead('asset_reviews')) managementItems.push({ label: t('menu.navigation.assetReviews'), icon: 'pi-calendar', to: '/asset-reviews' })
   if (canRead('lifecycle')) managementItems.push({ label: t('menu.navigation.lifecycle'), icon: 'pi-history', to: '/lifecycle' })
   if (canRead('reports') || canRead('api_keys')) managementItems.push({ label: t('menu.navigation.reports'), icon: 'pi-chart-bar', to: '/reports' })
-  if (canRead('changes') || canRead('maintenance') || canRead('configurations')) managementItems.push({ label: t('menu.navigation.changes'), icon: 'pi-wrench', to: '/changes' })
+  if (canRead('maintenance') || canRead('configurations')) managementItems.push({ label: t('menu.navigation.changes'), icon: 'pi-wrench', to: '/changes' })
   if (canRead('vulnerabilities')) managementItems.push({ label: t('menu.navigation.vulnerabilities'), icon: 'pi-exclamation-triangle', to: '/vulnerabilities' })
   if (canRead('asset_types')) managementItems.push({ label: t('menu.navigation.assettypes'), icon: 'pi-tags', to: '/asset-types' })
   if (canRead('asset_statuses')) managementItems.push({ label: t('menu.navigation.assetstatuses'), icon: 'pi-list', to: '/asset-statuses' })
