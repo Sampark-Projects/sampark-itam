@@ -268,9 +268,8 @@ def download_report(application_id: uuid.UUID, vapt_id: uuid.UUID, current_user:
     row = _vapt(db, app, vapt_id)
     if not row.report_file_path or not _report_path(row).exists():
         raise _not_found("No report attached")
-    safe = row.report_file_name.replace('"', "")
-    return FileResponse(path=_report_path(row), filename=row.report_file_name, media_type="application/octet-stream",
-                        headers={"Content-Disposition": f'attachment; filename="{safe}"'})
+    # FileResponse builds Content-Disposition itself and encodes names with non-Latin-1 characters (RFC 5987)
+    return FileResponse(path=_report_path(row), filename=row.report_file_name, media_type="application/octet-stream")
 
 
 @router.delete("/vapt/{vapt_id}/report")

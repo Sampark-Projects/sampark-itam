@@ -244,9 +244,8 @@ def download_po_file(order_id: uuid.UUID, current_user: User = Depends(get_curre
     order = ps.get_order(db, current_user.tenant_id, order_id)
     if not order.po_file_path or not _po_path(order).exists():
         raise ErrorCodeException(status_code=404, error_code=ErrorCode.ASSET_DOCUMENT_NOT_FOUND)
-    safe = order.po_file_name.replace('"', "")
-    return FileResponse(path=_po_path(order), filename=order.po_file_name, media_type="application/octet-stream",
-                        headers={"Content-Disposition": f'attachment; filename="{safe}"'})
+    # FileResponse builds Content-Disposition itself and encodes names with non-Latin-1 characters (RFC 5987)
+    return FileResponse(path=_po_path(order), filename=order.po_file_name, media_type="application/octet-stream")
 
 
 @router.delete("/orders/{order_id}/po-file")

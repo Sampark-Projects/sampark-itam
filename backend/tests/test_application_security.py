@@ -134,6 +134,18 @@ def test_vapt_lifecycle_with_scorecard_and_audit(db):
     assert [a.action for a in _audit(db, "ApplicationVapt")] == ["create", "update", "create", "delete"]
 
 
+def test_report_with_a_non_latin_file_name_downloads(db, tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    w, c, app, base = _setup(db)
+    vapt = c.post(f"{base}/vapt", json={}).json()
+    pdf = b"%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n"
+    name = "VAPT – Q3 रिपोर्ट.pdf"  # en dash and Devanagari: outside Latin-1
+    assert c.post(f"{base}/vapt/{vapt['id']}/report", files={"file": (name, pdf, "application/pdf")}).status_code == 200
+    res = c.get(f"{base}/vapt/{vapt['id']}/report")
+    assert res.status_code == 200 and res.content == pdf
+    assert res.headers["content-disposition"].startswith("attachment; filename*=utf-8''")
+
+
 def test_report_upload_download_replace_and_remove(db, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     w, c, app, base = _setup(db)
