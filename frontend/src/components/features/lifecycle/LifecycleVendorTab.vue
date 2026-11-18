@@ -41,7 +41,8 @@
       <div class="grid">
         <div class="col-12 md:col-6">
           <label for="v_maker">{{ t('lifecycle.vendor.manufacturer') }}</label>
-          <InputText id="v_maker" v-model="form.manufacturer_name" maxlength="255" class="w-full" />
+          <Dropdown id="v_maker" v-model="form.manufacturer_name" :options="manufacturerOptions" filter showClear
+                    :placeholder="t('lifecycle.vendor.selectManufacturer')" class="w-full" />
         </div>
         <div class="col-12 md:col-6">
           <label for="v_model">{{ t('lifecycle.vendor.model') }}</label>
@@ -78,8 +79,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import Dropdown from 'primevue/dropdown'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
@@ -108,8 +110,27 @@ const showDialog = ref(false)
 const saving = ref(false)
 const editingId = ref(null)
 const formError = ref('')
-const blank = () => ({ manufacturer_name: '', model_pattern: '', end_of_sale_date: null, end_of_support_date: null, end_of_life_date: null, source: '', notes: '' })
+const blank = () => ({ manufacturer_name: null, model_pattern: '', end_of_sale_date: null, end_of_support_date: null, end_of_life_date: null, source: '', notes: '' })
 const form = ref(blank())
+
+// The manufacturers come from the manufacturer master. An entry whose manufacturer is not in the master
+// (for example from a CSV import) keeps its name in the list, so editing it does not lose the value.
+const masterNames = ref([])
+const manufacturerOptions = computed(() => {
+  const names = new Set(masterNames.value)
+  const current = (form.value.manufacturer_name || '').trim()
+  if (current) names.add(current)
+  return [...names].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+})
+
+async function loadManufacturers() {
+  try {
+    const res = await api.getManufacturers()
+    masterNames.value = (Array.isArray(res.data) ? res.data : []).map(m => m.name).filter(Boolean)
+  } catch (err) {
+    masterNames.value = []
+  }
+}
 
 async function load() {
   loading.value = true
@@ -148,7 +169,7 @@ function openEdit(entry) {
 async function save() {
   formError.value = ''
   const f = form.value
-  if (!f.manufacturer_name.trim() || !f.model_pattern.trim()) {
+  if (!(f.manufacturer_name || '').trim() || !f.model_pattern.trim()) {
     formError.value = t('lifecycle.vendor.required')
     return
   }
@@ -216,7 +237,7 @@ function downloadTemplate() {
   downloadText('vendor-lifecycle-template.csv', csv)
 }
 
-onMounted(load)
+onMounted(() => { load(); loadManufacturers() })
 </script>
 
 <style scoped>

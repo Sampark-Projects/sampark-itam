@@ -64,6 +64,7 @@
     "import": "Import CSV",
     "template": "Download template",
     "manufacturer": "Manufacturer",
+    "selectManufacturer": "Select a manufacturer",
     "model": "Model",
     "endOfSale": "End of sale",
     "endOfSupport": "End of support",
