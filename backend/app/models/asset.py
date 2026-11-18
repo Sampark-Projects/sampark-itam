@@ -103,6 +103,11 @@ class Asset(Base):
     last_update_date = Column(DateTime, nullable=True)
     description = Column(Text)
     custom_fields = Column(JSONB, default={})
+    # IPAM: the addresses that identify this asset (each must be assigned to one of its interfaces). use_alter: the IP
+    # address table points back at asset interfaces, so these keys are added after both tables exist.
+    primary_ip4_id = Column(UUID(as_uuid=True), ForeignKey("ipam_ip_addresses.id", ondelete="SET NULL", use_alter=True, name="fk_assets_primary_ip4"), nullable=True)
+    primary_ip6_id = Column(UUID(as_uuid=True), ForeignKey("ipam_ip_addresses.id", ondelete="SET NULL", use_alter=True, name="fk_assets_primary_ip6"), nullable=True)
+    oob_ip_id = Column(UUID(as_uuid=True), ForeignKey("ipam_ip_addresses.id", ondelete="SET NULL", use_alter=True, name="fk_assets_oob_ip"), nullable=True)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     last_seen = Column(DateTime)

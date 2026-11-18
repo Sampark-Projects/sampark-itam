@@ -76,6 +76,7 @@
   },
   "interfaces": {
     "ipAddress": "IP Address",
+    "ipam": "IPAM addresses",
     "macAddress": "MAC Address",
     "vlan": "VLAN",
     "status": "Status",
@@ -613,6 +614,8 @@
     "version": "Version",
     "installed": "Installed",
     "licenceExpiry": "Licence expiry",
+    "installPath": "Install path",
+    "licenseType": "Licence type",
     "add": "Add software",
     "edit": "Edit",
     "delete": "Remove",

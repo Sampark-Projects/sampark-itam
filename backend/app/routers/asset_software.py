@@ -18,7 +18,7 @@ from app.services.auth import get_current_user
 from app.services.rbac import require_section_access
 
 KINDS = ("os", "application", "runtime", "firmware_module", "library", "other")
-FIELDS = ("kind", "name", "vendor", "version", "install_date", "licence_expiry_date", "notes")
+FIELDS = ("kind", "name", "vendor", "version", "install_date", "licence_expiry_date", "install_path", "license_type", "notes")
 
 router = APIRouter(
     prefix="/assets/{asset_id}/software",
@@ -34,9 +34,11 @@ class SoftwareIn(BaseModel):
     version: Optional[str] = Field(None, max_length=100)
     install_date: Optional[date] = None
     licence_expiry_date: Optional[date] = None
+    install_path: Optional[str] = Field(None, max_length=500)
+    license_type: Optional[str] = Field(None, max_length=100)
     notes: Optional[str] = Field(None, max_length=2000)
 
-    @field_validator("name", "vendor", "version", "notes", mode="before")
+    @field_validator("name", "vendor", "version", "install_path", "license_type", "notes", mode="before")
     @classmethod
     def _trim(cls, v):
         return (v.strip() or None) if isinstance(v, str) else v

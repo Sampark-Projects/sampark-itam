@@ -114,6 +114,7 @@ const menuSections = computed(() => {
   // Sezione Management
   const managementItems = []
   if (canRead('asset_reviews')) managementItems.push({ label: t('menu.navigation.assetReviews'), icon: 'pi-calendar', to: '/asset-reviews' })
+  if (canRead('applications')) managementItems.push({ label: t('menu.navigation.applications'), icon: 'pi-desktop', to: '/applications' })
   if (canRead('lifecycle')) managementItems.push({ label: t('menu.navigation.lifecycle'), icon: 'pi-history', to: '/lifecycle' })
   if (canRead('reports') || canRead('api_keys')) managementItems.push({ label: t('menu.navigation.reports'), icon: 'pi-chart-bar', to: '/reports' })
   if (canRead('maintenance') || canRead('configurations')) managementItems.push({ label: t('menu.navigation.changes'), icon: 'pi-wrench', to: '/changes' })
@@ -126,6 +127,21 @@ const menuSections = computed(() => {
       label: t('menu.section.management'),
       items: managementItems
     })
+  }
+
+  // Sezione IPAM
+  const ipamItems = []
+  if (canRead('ipam')) {
+    ipamItems.push({ label: t('menu.navigation.ipamAggregates'), icon: 'pi-globe', to: '/ipam/aggregates' })
+    ipamItems.push({ label: t('menu.navigation.ipamPrefixes'), icon: 'pi-sitemap', to: '/ipam/prefixes' })
+    ipamItems.push({ label: t('menu.navigation.ipamAddresses'), icon: 'pi-list', to: '/ipam/ip-addresses' })
+    ipamItems.push({ label: t('menu.navigation.ipamRanges'), icon: 'pi-arrows-h', to: '/ipam/ip-ranges' })
+    ipamItems.push({ label: t('menu.navigation.ipamVlans'), icon: 'pi-share-alt', to: '/ipam/vlans' })
+    ipamItems.push({ label: t('menu.navigation.ipamVrfs'), icon: 'pi-server', to: '/ipam/vrfs' })
+    ipamItems.push({ label: t('menu.navigation.ipamAsns'), icon: 'pi-link', to: '/ipam/asns' })
+    ipamItems.push({ label: t('menu.navigation.ipamFhrp'), icon: 'pi-clone', to: '/ipam/fhrp-groups' })
+    ipamItems.push({ label: t('menu.navigation.ipamServices'), icon: 'pi-cog', to: '/ipam/services' })
+    sections.push({ label: t('menu.section.ipam'), items: ipamItems })
   }
 
   // Sezione Users rimossa - ora accessibile dal Setup

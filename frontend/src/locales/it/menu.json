@@ -31,10 +31,21 @@
     "setup": "Setup",
     "settings": "Impostazioni",
     "logout": "Esci",
-    "utility": "Utility"
+    "utility": "Utility",
+    "applications": "Applicazioni",
+    "ipamAggregates": "Aggregati e RIR",
+    "ipamAsns": "ASN",
+    "ipamPrefixes": "Prefissi",
+    "ipamAddresses": "Indirizzi IP",
+    "ipamRanges": "Intervalli IP",
+    "ipamVlans": "VLAN",
+    "ipamVrfs": "VRF e ruoli",
+    "ipamFhrp": "Gruppi FHRP",
+    "ipamServices": "Servizi"
   },
   "section": {
     "management": "Gestione",
+    "ipam": "IPAM",
     "registry": "Inventario",
     "utility": "Utility",
     "isa62443": "Industrial ISA/IEC"

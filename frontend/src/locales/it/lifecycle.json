@@ -64,6 +64,7 @@
     "import": "Importa CSV",
     "template": "Scarica modello",
     "manufacturer": "Produttore",
+    "selectManufacturer": "Seleziona un produttore",
     "model": "Modello",
     "endOfSale": "Fine vendita",
     "endOfSupport": "Fine supporto",

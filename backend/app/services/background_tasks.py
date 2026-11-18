@@ -168,6 +168,7 @@ class BackgroundTaskManager:
         def run():
             from app.services.lifecycle_service import run_expiry_alerts_all_tenants
             from app.services.config_service import run_stale_alerts_all_tenants
+            from app.services.application_alert_service import run_application_alerts_all_tenants
             db = SessionLocal()
             try:
                 from app.services.lifecycle_service import refresh_risk_scores_all_tenants
@@ -178,6 +179,7 @@ class BackgroundTaskManager:
                 return {
                     "expiry": run_expiry_alerts_all_tenants(db),
                     "config": run_stale_alerts_all_tenants(db),
+                    "applications": run_application_alerts_all_tenants(db),
                     "maintenance": run_maintenance_plans_all_tenants(db),
                     "risk": refresh_risk_scores_all_tenants(db),
                     "kpi_snapshots": kpi_snapshot_service.take_snapshots_all_tenants(db),

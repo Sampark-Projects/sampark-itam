@@ -178,6 +178,26 @@ NEW_SECTIONS = {
             4: "Full administration"
         }
     },
+    "applications": {
+        "description": "Application register: owners, URLs, hosting, software, security and VAPT records",
+        "levels": {
+            0: "No access",
+            1: "View applications",
+            2: "Create and edit applications",
+            3: "Delete applications",
+            4: "Full administration"
+        }
+    },
+    "ipam": {
+        "description": "IP address management: prefixes, IP addresses, IP ranges, VLANs and VRFs",
+        "levels": {
+            0: "No access",
+            1: "View IPAM data",
+            2: "Create and edit IPAM data",
+            3: "Delete IPAM data",
+            4: "Full administration"
+        }
+    },
     "network_probes": {
         "description": "Gestione sonde di rete e dispositivi scoperti",
         "levels": {
@@ -230,6 +250,8 @@ ADMIN_DEFAULT_PERMISSIONS = {
     "maintenance": 3,
     "configurations": 3,
     "reports": 3,
+    "applications": 3,
+    "ipam": 3,
 }
 
 # Permessi di default per ruolo editor
@@ -268,6 +290,8 @@ EDITOR_DEFAULT_PERMISSIONS = {
     "maintenance": 2,
     "configurations": 2,
     "reports": 2,
+    "applications": 2,
+    "ipam": 2,
 }
 
 # Permessi di default per ruolo viewer (solo lettura)
@@ -306,4 +330,6 @@ VIEWER_DEFAULT_PERMISSIONS = {
     "maintenance": 1,
     "configurations": 1,
     "reports": 1,
+    "applications": 1,
+    "ipam": 1,
 }

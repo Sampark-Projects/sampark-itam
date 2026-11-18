@@ -307,6 +307,8 @@ const permissionSections = {
   asset_reviews: { levels: createStandardLevels(), category: 'asset_management' },
   asset_dependencies: { levels: createStandardLevels(), category: 'asset_management' },
   lifecycle: { levels: createStandardLevels(), category: 'asset_management' },
+  applications: { levels: createStandardLevels(), category: 'asset_management' },
+  ipam: { levels: createStandardLevels(), category: 'asset_management' },
   maintenance: { levels: createStandardLevels(), category: 'asset_management' },
   configurations: { levels: createStandardLevels(), category: 'asset_management' },
   reports: { levels: createStandardLevels(), category: 'asset_management' },

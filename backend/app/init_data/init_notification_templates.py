@@ -335,6 +335,35 @@ def init_notification_templates(db: Session):
             Sampark
             ''',
             'variables': ['user_name', 'item_type', 'item_code', 'title', 'decision', 'decided_by', 'note', 'item_url']
+        },
+        {
+            'template_code': 'application_alert',
+            'name': 'Application Alert',
+            'description': 'Notification to the Applications administrators about SSL certificate expiry, the next VAPT, fix deadlines and risk-acceptance exceptions',
+            'subject_template': 'Application needs attention: {{application_name}} ({{application_code}})',
+            'body_template_html': '''
+            <html>
+            <body>
+                <p>Dear {{user_name}},</p>
+                <p>The application <strong>{{application_name}}</strong> ({{application_code}}) needs attention:</p>
+                {{message_html}}
+                <p><a href="{{application_url}}">Open Application</a></p>
+                <p>Best regards,<br>Sampark</p>
+            </body>
+            </html>
+            ''',
+            'body_template_text': '''
+            Dear {{user_name}},
+
+            The application {{application_name}} ({{application_code}}) needs attention:
+            {{message}}
+
+            Open Application: {{application_url}}
+
+            Best regards,
+            Sampark
+            ''',
+            'variables': ['user_name', 'application_name', 'application_code', 'application_url', 'message', 'message_html']
         }
     ]
 
