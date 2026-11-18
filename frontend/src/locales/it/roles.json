@@ -56,6 +56,7 @@
         "maintenance": "Manutenzione e ricambi",
         "configurations": "Gestione configurazioni",
         "reports": "Report e obiettivi KPI",
+        "applications": "Applicazioni",
         "evidence": "Evidence",
         "basicInfo": "Informazioni Base",
         "permissions": "Permessi"
@@ -110,6 +111,7 @@
         "maintenance": "Manutenzione e ricambi",
         "configurations": "Gestione configurazioni",
         "reports": "Report e obiettivi KPI",
+        "applications": "Applicazioni",
         "evidence": "Evidence",
         "noneDescription": "Nessun accesso alle risorse",
         "readDescription": "Può visualizzare le risorse ma non modificarle",

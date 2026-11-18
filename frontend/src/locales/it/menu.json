@@ -31,7 +31,8 @@
     "setup": "Setup",
     "settings": "Impostazioni",
     "logout": "Esci",
-    "utility": "Utility"
+    "utility": "Utility",
+    "applications": "Applicazioni"
   },
   "section": {
     "management": "Gestione",

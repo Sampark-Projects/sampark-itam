@@ -103,6 +103,8 @@ class AssetSoftware(Base):
     version = Column(String(100), nullable=True)
     install_date = Column(Date, nullable=True)
     licence_expiry_date = Column(Date, nullable=True)
+    install_path = Column(String(500), nullable=True)
+    license_type = Column(String(100), nullable=True)  # e.g. commercial subscription, GPLv2
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())

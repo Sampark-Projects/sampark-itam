@@ -50,6 +50,8 @@ const routes = [
   { path: '/asset-reviews', name: 'AssetReviews', component: AssetReviews, meta: { requiresAuth: true, requiresPermission: 'asset_reviews' } },
   { path: '/lifecycle', name: 'Lifecycle', component: () => import('./pages/Lifecycle.vue'), meta: { requiresAuth: true, requiresPermission: 'lifecycle' } },
   { path: '/reports', name: 'Reports', component: () => import('./pages/Reports.vue'), meta: { requiresAuth: true, requiresPermission: ['reports', 'api_keys'] } },
+  { path: '/applications', name: 'Applications', component: () => import('./pages/Applications.vue'), meta: { requiresAuth: true, requiresPermission: 'applications' } },
+  { path: '/applications/:id', name: 'ApplicationDetail', component: () => import('./pages/ApplicationDetail.vue'), meta: { requiresAuth: true, requiresPermission: 'applications' } },
   { path: '/changes', name: 'Changes', component: () => import('./pages/ChangesMaintenance.vue'), meta: { requiresAuth: true, requiresPermission: ['maintenance', 'configurations'] } },
   { path: '/notifications', name: 'Notifications', component: () => import('./pages/Notifications.vue'), meta: { requiresAuth: true } },
   { path: '/security-zones', name: 'SecurityZones', component: () => import('./pages/SecurityZones.vue'), meta: { requiresAuth: true, requiresIec62443: true } },

@@ -1310,6 +1310,104 @@ export default {
   transitionPurchaseOrder(id, data) {
     return api.post(`/procurement/orders/${id}/transition`, data)
   },
+  getApplications(params = {}) {
+    return api.get('/applications', { params })
+  },
+  getApplication(id) {
+    return api.get(`/applications/${id}`)
+  },
+  createApplication(data) {
+    return api.post('/applications', data)
+  },
+  updateApplication(id, data) {
+    return api.put(`/applications/${id}`, data)
+  },
+  deleteApplication(id) {
+    return api.delete(`/applications/${id}`)
+  },
+  getApplicationInfrastructure(id) {
+    return api.get(`/applications/${id}/infrastructure`)
+  },
+  searchApplicationAssets(id, q, includeLinked = false) {
+    return api.get(`/applications/${id}/asset-search`, { params: { q, include_linked: includeLinked } })
+  },
+  linkApplicationAsset(id, data) {
+    return api.post(`/applications/${id}/assets`, data)
+  },
+  updateApplicationAssetLink(id, linkId, data) {
+    return api.put(`/applications/${id}/assets/${linkId}`, data)
+  },
+  unlinkApplicationAsset(id, linkId) {
+    return api.delete(`/applications/${id}/assets/${linkId}`)
+  },
+  getApplicationsOverview() {
+    return api.get('/applications/overview')
+  },
+  getApplicationAlertSettings() {
+    return api.get('/application-alerts/settings')
+  },
+  saveApplicationAlertSettings(data) {
+    return api.put('/application-alerts/settings', data)
+  },
+  runApplicationAlerts() {
+    return api.post('/application-alerts/run')
+  },
+  getApplicationSecuritySummary(id) {
+    return api.get(`/applications/${id}/security-summary`)
+  },
+  getApplicationVapt(id) {
+    return api.get(`/applications/${id}/vapt`)
+  },
+  createApplicationVapt(id, data) {
+    return api.post(`/applications/${id}/vapt`, data)
+  },
+  updateApplicationVapt(id, vaptId, data) {
+    return api.put(`/applications/${id}/vapt/${vaptId}`, data)
+  },
+  deleteApplicationVapt(id, vaptId) {
+    return api.delete(`/applications/${id}/vapt/${vaptId}`)
+  },
+  uploadApplicationVaptReport(id, vaptId, file) {
+    const form = new FormData()
+    form.append('file', file)
+    return api.post(`/applications/${id}/vapt/${vaptId}/report`, form, { headers: { 'Content-Type': 'multipart/form-data' } })
+  },
+  downloadApplicationVaptReport(id, vaptId) {
+    return api.get(`/applications/${id}/vapt/${vaptId}/report`, { responseType: 'blob' })
+  },
+  deleteApplicationVaptReport(id, vaptId) {
+    return api.delete(`/applications/${id}/vapt/${vaptId}/report`)
+  },
+  getApplicationFindings(id, params = {}) {
+    return api.get(`/applications/${id}/findings`, { params })
+  },
+  createApplicationFinding(id, data) {
+    return api.post(`/applications/${id}/findings`, data)
+  },
+  updateApplicationFinding(id, findingId, data) {
+    return api.put(`/applications/${id}/findings/${findingId}`, data)
+  },
+  deleteApplicationFinding(id, findingId) {
+    return api.delete(`/applications/${id}/findings/${findingId}`)
+  },
+  getApplicationTopology(id, includeInferred = true) {
+    return api.get(`/applications/${id}/topology`, { params: { include_inferred: includeInferred } })
+  },
+  getApplicationSoftware(id) {
+    return api.get(`/applications/${id}/software`)
+  },
+  getApplicationIntegrations(id) {
+    return api.get(`/applications/${id}/integrations`)
+  },
+  addApplicationIntegration(id, data) {
+    return api.post(`/applications/${id}/integrations`, data)
+  },
+  updateApplicationIntegration(id, integrationId, data) {
+    return api.put(`/applications/${id}/integrations/${integrationId}`, data)
+  },
+  deleteApplicationIntegration(id, integrationId) {
+    return api.delete(`/applications/${id}/integrations/${integrationId}`)
+  },
   getPurchaseApprovalLevels() {
     return api.get('/procurement/approval-levels')
   },

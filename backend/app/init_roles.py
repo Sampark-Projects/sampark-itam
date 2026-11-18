@@ -42,6 +42,7 @@ def seed_roles(tenant_id=None):
                 "maintenance": 4,
                 "configurations": 4,
                 "reports": 4,
+                "applications": 4,
             },
         },
         {
@@ -78,6 +79,7 @@ def seed_roles(tenant_id=None):
                 "maintenance": 2,
                 "configurations": 2,
                 "reports": 2,
+                "applications": 2,
             },
         },
         {
@@ -114,6 +116,7 @@ def seed_roles(tenant_id=None):
                 "maintenance": 1,
                 "configurations": 1,
                 "reports": 1,
+                "applications": 1,
             },
         },
     ]

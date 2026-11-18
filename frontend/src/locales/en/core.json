@@ -680,6 +680,8 @@
   "PROCUREMENT_INVALID": "Invalid purchase request",
   "PROCUREMENT_NOT_ALLOWED": "You cannot do this on this purchase request",
   "PROCUREMENT_MISMATCH": "The asset does not match the order line",
+  "APPLICATION_NOT_FOUND": "Application not found",
+  "APPLICATION_INVALID": "Cannot save:",
   "SPARE_PART_NOT_FOUND": "Spare part not found",
   "SPARE_PART_STOCK": "Not enough spare parts in stock",
   "SPARE_PART_DUPLICATE": "A spare part with this part number already exists",

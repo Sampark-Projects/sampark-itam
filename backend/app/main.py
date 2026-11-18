@@ -173,6 +173,10 @@ from app.routers import maintenance
 from app.routers import config_management
 from app.routers import integrations
 from app.routers import procurement
+from app.routers import applications
+from app.routers import application_hosting
+from app.routers import application_security
+from app.routers import application_alerts
 from app.routers import asset_software
 from app.routers import dashboards
 from app.routers import pcap
@@ -266,6 +270,10 @@ app.include_router(config_management.router, tags=["config"])
 app.include_router(integrations.webhooks, tags=["webhooks"])
 app.include_router(integrations.reports, tags=["reports"])
 app.include_router(procurement.router, tags=["procurement"])
+app.include_router(applications.router, tags=["applications"])
+app.include_router(application_hosting.router, tags=["applications"])
+app.include_router(application_security.router, tags=["applications"])
+app.include_router(application_alerts.router, tags=["applications"])
 app.include_router(asset_software.router, tags=["assets"])
 app.include_router(sites.router, tags=["sites"])
 app.include_router(asset_interfaces.router, tags=["asset_interfaces"])
@@ -362,7 +370,7 @@ async def startup_event():
                 from app.init_data.init_notification_templates import init_notification_templates
                 template_count = db.query(NotificationTemplate).count()
                 # also add templates introduced later (the init upserts by template_code)
-                wanted_codes = {'asset_expiry_alert', 'lifecycle_task_assigned', 'lifecycle_run_finished', 'config_alert', 'maintenance_overdue'}
+                wanted_codes = {'asset_expiry_alert', 'lifecycle_task_assigned', 'lifecycle_run_finished', 'config_alert', 'maintenance_overdue', 'application_alert'}
                 have_codes = {c for (c,) in db.query(NotificationTemplate.template_code).filter(
                     NotificationTemplate.template_code.in_(wanted_codes)).all()}
                 if template_count == 0 or have_codes != wanted_codes:

@@ -31,7 +31,8 @@
     "setup": "Setup",
     "settings": "Settings",
     "logout": "Logout",
-    "utility": "Utility"
+    "utility": "Utility",
+    "applications": "Applications"
   },
   "section": {
     "management": "Management",

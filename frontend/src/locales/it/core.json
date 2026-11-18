@@ -298,6 +298,8 @@
   "PROCUREMENT_INVALID": "Richiesta di acquisto non valida",
   "PROCUREMENT_NOT_ALLOWED": "Non puoi eseguire questa azione su questa richiesta di acquisto",
   "PROCUREMENT_MISMATCH": "L'asset non corrisponde alla riga dell'ordine",
+  "APPLICATION_NOT_FOUND": "Applicazione non trovata",
+  "APPLICATION_INVALID": "Impossibile salvare:",
   "SPARE_PART_NOT_FOUND": "Ricambio non trovato",
   "SPARE_PART_STOCK": "Ricambi insufficienti in magazzino",
   "SPARE_PART_DUPLICATE": "Esiste già un ricambio con questo codice",

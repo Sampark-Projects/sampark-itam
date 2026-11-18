@@ -362,6 +362,11 @@ def build_audit_pack(db: Session, tenant_id, user: User, site_id=None, days: int
              "; ".join(f"{s.name}: {s.state}" + (f" ({names.get(s.acted_by)})" if s.acted_by else "")
                        for s in sorted(r.steps, key=lambda x: x.position))] for r in runs])
 
+    # applications (only when the register is in use), with their linked assets, VAPT records and findings
+    from app.services import application_report
+    for title, headers, rows in application_report.sheets(db, tenant_id, today, scope_sites or None):
+        _sheet(wb, title, headers, rows)
+
     buffer = io.BytesIO()
     wb.save(buffer)
     return buffer.getvalue()

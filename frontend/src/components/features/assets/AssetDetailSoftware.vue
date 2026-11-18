@@ -24,7 +24,7 @@
       </thead>
       <tbody>
         <tr v-for="s in items" :key="s.id">
-          <td>{{ s.name }}<small v-if="s.vendor" class="muted block">{{ s.vendor }}</small></td>
+          <td>{{ s.name }}<small v-if="s.vendor" class="muted block">{{ s.vendor }}</small><small v-if="s.install_path" class="muted block">{{ s.install_path }}</small><small v-if="s.license_type" class="muted block">{{ s.license_type }}</small></td>
           <td>{{ t(`assets.software.kinds.${s.kind}`) }}</td>
           <td>{{ s.version }}</td>
           <td>{{ formatDate(s.install_date) }}</td>
@@ -45,6 +45,8 @@
       <InputText v-model="form.name" maxlength="150" :placeholder="t('assets.software.name')" class="f-name" />
       <InputText v-model="form.vendor" maxlength="150" :placeholder="t('assets.software.vendor')" class="f-vendor" />
       <InputText v-model="form.version" maxlength="100" :placeholder="t('assets.software.version')" class="f-ver" />
+      <InputText v-model="form.install_path" maxlength="500" :placeholder="t('assets.software.installPath')" class="f-vendor" />
+      <InputText v-model="form.license_type" maxlength="100" :placeholder="t('assets.software.licenseType')" class="f-ver" />
       <Calendar v-model="form.install_date" dateFormat="dd/mm/yy" showIcon :placeholder="t('assets.software.installed')" class="f-date" />
       <Calendar v-model="form.licence_expiry_date" dateFormat="dd/mm/yy" showIcon :placeholder="t('assets.software.licenceExpiry')" class="f-date" />
       <Button :label="editingId ? t('common.actions.save') : t('assets.software.add')" :icon="editingId ? 'pi pi-save' : 'pi pi-plus'" :loading="saving" @click="save" />
@@ -77,7 +79,7 @@ const editable = computed(() => canWrite('assets') && !props.asset.archived_at)
 
 const KINDS = ['os', 'application', 'runtime', 'firmware_module', 'library', 'other']
 const kindOptions = computed(() => KINDS.map(k => ({ value: k, label: t(`assets.software.kinds.${k}`) })))
-const blank = () => ({ kind: 'application', name: '', vendor: '', version: '', install_date: null, licence_expiry_date: null })
+const blank = () => ({ kind: 'application', name: '', vendor: '', version: '', install_path: '', license_type: '', install_date: null, licence_expiry_date: null })
 const items = ref([])
 const form = ref(blank())
 const editingId = ref(null)
@@ -122,6 +124,7 @@ async function load(id) {
 function edit(item) {
   editingId.value = item.id
   form.value = { kind: item.kind, name: item.name, vendor: item.vendor || '', version: item.version || '',
+    install_path: item.install_path || '', license_type: item.license_type || '',
     install_date: parseLocalDate(item.install_date), licence_expiry_date: parseLocalDate(item.licence_expiry_date) }
 }
 
@@ -137,6 +140,7 @@ async function save() {
     return
   }
   const body = { ...form.value, vendor: form.value.vendor || null, version: form.value.version || null,
+    install_path: form.value.install_path || null, license_type: form.value.license_type || null,
     install_date: formatLocalDate(form.value.install_date), licence_expiry_date: formatLocalDate(form.value.licence_expiry_date) }
   saving.value = true
   try {

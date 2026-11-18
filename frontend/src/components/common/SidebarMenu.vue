@@ -114,6 +114,7 @@ const menuSections = computed(() => {
   // Sezione Management
   const managementItems = []
   if (canRead('asset_reviews')) managementItems.push({ label: t('menu.navigation.assetReviews'), icon: 'pi-calendar', to: '/asset-reviews' })
+  if (canRead('applications')) managementItems.push({ label: t('menu.navigation.applications'), icon: 'pi-desktop', to: '/applications' })
   if (canRead('lifecycle')) managementItems.push({ label: t('menu.navigation.lifecycle'), icon: 'pi-history', to: '/lifecycle' })
   if (canRead('reports') || canRead('api_keys')) managementItems.push({ label: t('menu.navigation.reports'), icon: 'pi-chart-bar', to: '/reports' })
   if (canRead('maintenance') || canRead('configurations')) managementItems.push({ label: t('menu.navigation.changes'), icon: 'pi-wrench', to: '/changes' })

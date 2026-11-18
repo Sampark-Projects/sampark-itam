@@ -58,7 +58,8 @@
     "reports": "Reports and KPI targets",
     "evidence": "Evidence",
     "basicInfo": "Basic Information",
-    "permissions": "Permissions"
+    "permissions": "Permissions",
+    "applications": "Applications"
   },
   "levels": {
     "none": "None",
@@ -117,6 +118,7 @@
     "deleteDescription": "Can delete resources",
     "bulkDescription": "Can perform operations on multiple resources at once",
     "resetPassword": "Reset Password",
-    "resetPasswordDescription": "Can reset passwords of other users"
+    "resetPasswordDescription": "Can reset passwords of other users",
+    "applications": "Applications"
   }
 }
