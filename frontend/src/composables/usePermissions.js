@@ -99,7 +99,7 @@ export function usePermissions() {
       'vulnerabilities', 'asset_reviews', 'asset_dependencies',
       'compliance', 'security_zones', 'notifications', 'sso',
       'api_keys', 'evidence', 'external_log', 'network_probes',
-      'lifecycle', 'applications', 'maintenance', 'configurations', 'reports'
+      'lifecycle', 'applications', 'ipam', 'maintenance', 'configurations', 'reports'
     ]
     
     return allSections.map(section => getPermissionInfo(section))

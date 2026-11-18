@@ -57,6 +57,7 @@
         "configurations": "Gestione configurazioni",
         "reports": "Report e obiettivi KPI",
         "applications": "Applicazioni",
+        "ipam": "IPAM",
         "evidence": "Evidence",
         "basicInfo": "Informazioni Base",
         "permissions": "Permessi"
@@ -112,6 +113,7 @@
         "configurations": "Gestione configurazioni",
         "reports": "Report e obiettivi KPI",
         "applications": "Applicazioni",
+        "ipam": "IPAM",
         "evidence": "Evidence",
         "noneDescription": "Nessun accesso alle risorse",
         "readDescription": "Può visualizzare le risorse ma non modificarle",

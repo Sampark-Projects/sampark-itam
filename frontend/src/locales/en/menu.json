@@ -32,10 +32,20 @@
     "settings": "Settings",
     "logout": "Logout",
     "utility": "Utility",
-    "applications": "Applications"
+    "applications": "Applications",
+    "ipamAggregates": "Aggregates and RIRs",
+    "ipamAsns": "ASNs",
+    "ipamPrefixes": "Prefixes",
+    "ipamAddresses": "IP addresses",
+    "ipamRanges": "IP ranges",
+    "ipamVlans": "VLANs",
+    "ipamVrfs": "VRFs and roles",
+    "ipamFhrp": "FHRP groups",
+    "ipamServices": "Services"
   },
   "section": {
     "management": "Management",
+    "ipam": "IPAM",
     "registry": "Registry",
     "utility": "Utility",
     "isa62443": "Industrial ISA/IEC"

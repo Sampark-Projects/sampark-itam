@@ -1,0 +1,477 @@
+{
+  "back": "Back",
+  "saved": "Saved.",
+  "none": "-",
+  "yes": "Yes",
+  "no": "No",
+  "fields": {
+    "status": "Status",
+    "vrf": "VRF",
+    "role": "Role",
+    "vlan": "VLAN",
+    "site": "Site",
+    "description": "Description",
+    "globalTable": "Global table",
+    "allVrfs": "All VRFs",
+    "allStatuses": "All statuses",
+    "allFamilies": "IPv4 and IPv6",
+    "comments": "Comments",
+    "slug": "Slug",
+    "slugAuto": "Made from the name when empty",
+    "location": "Location",
+    "wholeSite": "Whole site"
+  },
+  "statuses": {
+    "container": "Container",
+    "active": "Active",
+    "reserved": "Reserved",
+    "deprecated": "Deprecated",
+    "dhcp": "DHCP",
+    "slaac": "SLAAC"
+  },
+  "ipRoles": {
+    "loopback": "Loopback",
+    "secondary": "Secondary",
+    "anycast": "Anycast",
+    "vip": "VIP",
+    "vrrp": "VRRP",
+    "hsrp": "HSRP",
+    "glbp": "GLBP",
+    "carp": "CARP"
+  },
+  "aggregates": {
+    "title": "Aggregates and RIRs",
+    "hint": "An aggregate is a top-level block of address space assigned by a registry (a RIR, or a standard such as RFC 1918). Aggregates never overlap. Utilization is the share of the block covered by prefixes of any routing table.",
+    "aggregate": "Aggregate",
+    "new": "New aggregate",
+    "edit": "Edit aggregate",
+    "searchPlaceholder": "Search aggregate or description",
+    "allRirs": "All RIRs",
+    "empty": "No aggregates yet.",
+    "required": "The prefix and the RIR are required.",
+    "prefixHint": "IPv4 or IPv6 network with its mask. It may not overlap another aggregate.",
+    "deleteConfirm": "Delete the aggregate {name}? The prefixes inside it are kept.",
+    "fields": {
+      "prefix": "Aggregate",
+      "rir": "RIR",
+      "dateAdded": "Date added"
+    },
+    "tabs": {
+      "aggregates": "Aggregates",
+      "rirs": "RIRs"
+    }
+  },
+  "rirs": {
+    "new": "New RIR",
+    "edit": "Edit RIR",
+    "empty": "No RIRs yet.",
+    "private": "Private",
+    "privateHint": "Private (the space managed by this registry is private, for example RFC 1918)",
+    "nameRequired": "The name is required.",
+    "deleteConfirm": "Delete the RIR {name}?",
+    "fields": {
+      "name": "Name"
+    }
+  },
+  "asns": {
+    "title": "ASNs",
+    "hint": "Autonomous system numbers (16 or 32 bit, written 65000 or in ASDOT notation 1.10) and the ranges of AS numbers a registry handed out.",
+    "new": "New ASN",
+    "edit": "Edit ASN",
+    "newRange": "New ASN range",
+    "editRange": "Edit ASN range",
+    "searchPlaceholder": "Search number or description",
+    "allRoles": "All roles",
+    "empty": "No ASNs yet.",
+    "emptyRanges": "No ASN ranges yet.",
+    "required": "The AS number and the RIR are required.",
+    "rangeRequired": "Name, RIR, start and end are required.",
+    "asnHint": "A number from 1 to 4294967295, or ASDOT such as 1.10.",
+    "deleteConfirm": "Delete {name}?",
+    "deleteRangeConfirm": "Delete the ASN range {name}? The ASNs inside it are kept.",
+    "used": "Used",
+    "free": "Free",
+    "showFree": "Show free AS numbers",
+    "freeCount": "{n} free AS number(s). The first ones:",
+    "tabs": {
+      "asns": "ASNs",
+      "ranges": "ASN ranges"
+    },
+    "fields": {
+      "asn": "AS number",
+      "name": "Name",
+      "range": "Range",
+      "start": "First AS number",
+      "end": "Last AS number",
+      "sites": "Sites"
+    },
+    "noSites": "No site",
+    "sitesHint": "The sites that operate this AS number."
+  },
+  "overview": {
+    "prefixes": "Prefixes",
+    "containers": "Containers",
+    "addresses": "IP addresses",
+    "ranges": "IP ranges",
+    "vlans": "VLANs",
+    "vrfs": "VRFs"
+  },
+  "import": {
+    "title": "Import IP addresses from asset interfaces",
+    "hint": "Reads the IP addresses typed on the network interfaces of the assets and creates an IPAM address for each, assigned to that interface. The mask comes from the address, from the subnet mask of the interface, or is a single host. Nothing on the assets changes, and running it again skips what is already imported. Look at the preview first.",
+    "perSite": "One VRF per site",
+    "perSiteHint": "Plants often reuse the same private addresses. With this on, each site gets its own VRF (named after the site, created when missing) so the same address can exist in several sites. Assets without a site use the VRF above.",
+    "createPrefixes": "Also create the network of each address (for example 10.0.0.0/24)",
+    "preview": "Preview",
+    "run": "Import",
+    "done": "Imported: {created} created, {linked} linked to existing addresses, {prefixes} prefix(es) created.",
+    "found": "{addresses} address(es) on {interfaces} interface(s)",
+    "prefixes": "{n} prefix(es) to create",
+    "vrfs": "VRFs to create: {names}",
+    "nothing": "No address is typed on any asset interface.",
+    "truncated": "Only the first rows are listed; the import covers all of them.",
+    "columns": {
+      "action": "Result",
+      "asset": "Asset",
+      "interface": "Interface",
+      "reason": "Reason"
+    },
+    "actions": {
+      "create": "Create",
+      "link": "Link",
+      "already_imported": "Already imported",
+      "skipped_duplicate": "Duplicate",
+      "skipped_invalid": "Invalid"
+    }
+  },
+  "prefixes": {
+    "title": "Prefixes",
+    "hint": "The address space: IPv4 and IPv6 networks, nested by routing table. Utilization counts the IP addresses and ranges inside each prefix (a container counts its child prefixes).",
+    "new": "New prefix",
+    "edit": "Edit prefix",
+    "searchPlaceholder": "Search prefix or description",
+    "empty": "No prefixes yet.",
+    "required": "The prefix is required.",
+    "prefixHint": "IPv4 or IPv6 network with its mask. Host bits are cleared (10.0.0.5/24 is saved as 10.0.0.0/24).",
+    "deleteConfirm": "Delete the prefix {name}? The prefixes and addresses inside it are kept.",
+    "utilization": "Utilization",
+    "availableIps": "Free IPs",
+    "childPrefixes": "Child prefixes",
+    "addresses": "IP addresses",
+    "ranges": "IP ranges",
+    "available": "Available",
+    "showAvailable": "Show the free blocks",
+    "addChild": "Add child prefix",
+    "addHere": "Add here",
+    "noChildren": "No prefix inside this one.",
+    "nextFree": "Next free",
+    "fields": {
+      "prefix": "Prefix",
+      "isPool": "Is a pool (every address is usable)",
+      "markUtilized": "Treat as fully utilized"
+    },
+    "cards": {
+      "details": "Details",
+      "usage": "Usage"
+    },
+    "tabs": {
+      "prefixes": "Child prefixes",
+      "addresses": "IP addresses",
+      "ranges": "IP ranges"
+    }
+  },
+  "addresses": {
+    "title": "IP addresses",
+    "hint": "Individual addresses with their mask. An address can be assigned to an interface of an asset; the interface details on the asset are not changed.",
+    "new": "New IP address",
+    "edit": "Edit IP address",
+    "importButton": "Import from asset interfaces",
+    "allocate": "Next available address",
+    "allocateHint": "The lowest free address of {prefix} is taken.",
+    "searchPlaceholder": "Search address, DNS name or description",
+    "withinPlaceholder": "Inside network, e.g. 10.0.0.0/24",
+    "anyAssignment": "Assigned or not",
+    "assigned": "Assigned to an asset",
+    "unassigned": "Not assigned",
+    "empty": "No IP addresses yet.",
+    "required": "The address is required.",
+    "addressHint": "IPv4 or IPv6 address with its mask, for example 10.0.0.5/24.",
+    "assignHint": "Optional. Network IDs and broadcast addresses cannot be assigned to an interface.",
+    "searchInterface": "Search asset or interface",
+    "notAssigned": "Not assigned",
+    "deleteConfirm": "Delete the address {name}?",
+    "fields": {
+      "address": "Address",
+      "dnsName": "DNS name",
+      "assignedTo": "Assigned to",
+      "natInside": "NAT inside",
+      "fhrpGroup": "FHRP group"
+    },
+    "noFhrpGroup": "Not a virtual address",
+    "fhrpHint": "Optional. Makes this a virtual address shared by the group (the role follows the protocol). An address is assigned to an interface or to a group, not both."
+  },
+  "ranges": {
+    "title": "IP ranges",
+    "hint": "A run of addresses from a start to an end. Ranges in the same routing table cannot overlap. A range marked populated blocks new addresses inside it.",
+    "new": "New IP range",
+    "edit": "Edit IP range",
+    "searchPlaceholder": "Search address or description",
+    "empty": "No IP ranges yet.",
+    "required": "The start and end addresses are required.",
+    "deleteConfirm": "Delete the range {name}?",
+    "flags": "Marked",
+    "populated": "Populated",
+    "utilized": "Utilized",
+    "fields": {
+      "range": "Range",
+      "start": "Start address",
+      "end": "End address",
+      "size": "Size",
+      "markPopulated": "Mark populated (no addresses may be created inside)",
+      "markUtilized": "Mark utilized (counts as fully used)"
+    }
+  },
+  "vlans": {
+    "title": "VLANs",
+    "hint": "VLAN IDs 1-4094. A VLAN group holds ID ranges; inside a group the VLAN ID and name must be unique.",
+    "new": "New VLAN",
+    "edit": "Edit VLAN",
+    "newGroup": "New VLAN group",
+    "editGroup": "Edit VLAN group",
+    "searchPlaceholder": "Search name, ID or description",
+    "allGroups": "All groups",
+    "empty": "No VLANs yet.",
+    "emptyGroups": "No VLAN groups yet.",
+    "required": "The VLAN ID and name are required.",
+    "nameRequired": "The name is required.",
+    "deleteConfirm": "Delete the VLAN {name}? Prefixes that use it are kept.",
+    "deleteGroupConfirm": "Delete the VLAN group {name}?",
+    "rangesHint": "Allowed VLAN IDs, for example 1-99, 200-299, 500. Empty means 1-4094.",
+    "prefixes": "Prefixes",
+    "available": "Free IDs",
+    "next": "next",
+    "tabs": {
+      "vlans": "VLANs",
+      "groups": "VLAN groups",
+      "translation": "Translation policies"
+    },
+    "fields": {
+      "vid": "VLAN ID",
+      "name": "Name",
+      "group": "Group",
+      "ranges": "ID ranges",
+      "qinq": "Q-in-Q",
+      "qinqRole": "Q-in-Q role",
+      "svlan": "Service VLAN"
+    },
+    "qinqRoles": {
+      "svlan": "Service (S-VLAN)",
+      "cvlan": "Customer (C-VLAN)"
+    },
+    "noQinq": "Not Q-in-Q",
+    "svlanRequired": "A customer VLAN needs a service VLAN."
+  },
+  "vrfs": {
+    "title": "VRFs and roles",
+    "hint": "A VRF is a separate routing table; prefixes and addresses without a VRF are in the global table. Roles describe the function of a prefix, range or VLAN.",
+    "new": "New VRF",
+    "edit": "Edit VRF",
+    "newRole": "New role",
+    "editRole": "Edit role",
+    "searchPlaceholder": "Search name or route distinguisher",
+    "empty": "No VRFs yet.",
+    "emptyRoles": "No roles yet.",
+    "nameRequired": "The name is required.",
+    "deleteConfirm": "Delete the VRF {name}?",
+    "deleteRoleConfirm": "Delete the role {name}? Prefixes, ranges and VLANs that use it are kept.",
+    "rdHint": "For example 65000:100 or 10.0.0.1:100 (RFC 4364).",
+    "enforceHint": "Refuses duplicate prefixes and addresses inside this VRF.",
+    "tabs": {
+      "vrfs": "VRFs",
+      "roles": "Roles",
+      "routeTargets": "Route targets"
+    },
+    "fields": {
+      "name": "Name",
+      "rd": "Route distinguisher",
+      "enforceUnique": "Enforce unique space",
+      "weight": "Weight"
+    }
+  },
+  "routeTargets": {
+    "hint": "BGP route targets (RFC 4364) decide which routes a VRF imports and exports, for example 65000:100.",
+    "new": "New route target",
+    "edit": "Edit route target",
+    "empty": "No route targets yet.",
+    "none": "None",
+    "import": "Import targets",
+    "export": "Export targets",
+    "importedBy": "Imported by (VRFs)",
+    "exportedBy": "Exported by (VRFs)",
+    "nameRequired": "The route target is required.",
+    "deleteConfirm": "Delete the route target {name}? VRFs that use it are kept.",
+    "vrfHint": "Route targets are created on the Route targets tab.",
+    "fields": {
+      "name": "Route target"
+    }
+  },
+  "fhrp": {
+    "title": "FHRP groups",
+    "hint": "First hop redundancy groups (VRRP, HSRP, GLBP, CARP ...): a group shares virtual IP addresses between the interfaces of several assets. Assign the virtual addresses on the IP address form.",
+    "new": "New FHRP group",
+    "edit": "Edit FHRP group",
+    "searchPlaceholder": "Search name, group ID or description",
+    "allProtocols": "All protocols",
+    "empty": "No FHRP groups yet.",
+    "required": "The group ID is required.",
+    "deleteConfirm": "Delete {name}? Its services and interface assignments are deleted; its virtual addresses are kept.",
+    "virtualAddresses": "Virtual addresses",
+    "noAddresses": "No virtual address is assigned to this group.",
+    "addressHint": "Assigned on the IP address form.",
+    "interfaces": "Interfaces",
+    "chooseInterface": "Choose an interface",
+    "addInterface": "Add interface",
+    "noInterfaces": "No interface takes part in this group.",
+    "removeInterfaceConfirm": "Remove {name} from the group?",
+    "keyStored": "a key is stored",
+    "removeKey": "Remove the stored key",
+    "noAuth": "No authentication",
+    "fields": {
+      "protocol": "Protocol",
+      "groupId": "Group ID",
+      "name": "Name",
+      "authType": "Authentication",
+      "authKey": "Authentication key",
+      "asset": "Asset",
+      "interface": "Interface",
+      "priority": "Priority"
+    },
+    "protocols": {
+      "vrrp2": "VRRPv2",
+      "vrrp3": "VRRPv3",
+      "hsrp": "HSRP",
+      "glbp": "GLBP",
+      "carp": "CARP",
+      "clusterxl": "ClusterXL",
+      "other": "Other"
+    },
+    "authTypes": {
+      "plaintext": "Plain text",
+      "md5": "MD5"
+    }
+  },
+  "services": {
+    "title": "Services",
+    "hint": "A service is a name with TCP, UDP or SCTP ports, offered by an asset or by an FHRP group, optionally on some of its IP addresses. Templates hold the usual combinations (for example Web: tcp/80, tcp/443).",
+    "new": "New service",
+    "edit": "Edit service",
+    "newTemplate": "New service template",
+    "editTemplate": "Edit service template",
+    "searchPlaceholder": "Search name or description",
+    "empty": "No services yet.",
+    "emptyTemplates": "No service templates yet.",
+    "required": "The name and the ports are required.",
+    "parentRequired": "Choose the asset or the FHRP group that offers the service.",
+    "portsHint": "Protocol and port, separated by commas: tcp/80, udp/53, tcp/8000-8010.",
+    "fromTemplate": "Start from a template",
+    "noTemplate": "No template",
+    "parentAsset": "Asset",
+    "parentGroup": "FHRP group",
+    "chooseAsset": "Choose an asset",
+    "searchAsset": "Search asset name or tag",
+    "chooseGroup": "Choose an FHRP group",
+    "allAddresses": "All addresses",
+    "addressesHint": "Optional. Leave empty if the service is not tied to particular addresses.",
+    "deleteConfirm": "Delete the service {name}?",
+    "deleteTemplateConfirm": "Delete the template {name}? Services made from it are kept.",
+    "tabs": {
+      "services": "Services",
+      "templates": "Templates"
+    },
+    "fields": {
+      "name": "Name",
+      "ports": "Ports",
+      "parent": "Offered by",
+      "asset": "Asset",
+      "group": "FHRP group",
+      "addresses": "IP addresses"
+    }
+  },
+  "csv": {
+    "export": "Export CSV",
+    "import": "Import CSV",
+    "title": {
+      "prefixes": "Import prefixes from CSV",
+      "addresses": "Import IP addresses from CSV",
+      "vlans": "Import VLANs from CSV"
+    },
+    "hint": "Use the file of the export as the model: export, edit it in a spreadsheet (save as CSV UTF-8, comma or semicolon), and import it. Names (VRF, role, site, VLAN group, asset) are used instead of IDs. Look at the preview first; nothing is written until you import.",
+    "columnsLabel": "Columns:",
+    "columns": {
+      "prefixes": "prefix, vrf, status, role, vlan_group, vlan_vid, site, is_pool, mark_utilized, description",
+      "addresses": "address, vrf, status, role, dns_name, asset (tag or name), interface, fhrp_protocol, fhrp_group, description",
+      "vlans": "vid, name, group, status, site, role, description"
+    },
+    "updateExisting": "Update the ones that already exist",
+    "updateHint": "A row that matches an existing object (same prefix and VRF, same address and VRF, same VLAN ID and group) replaces it, blank cells included. Without this they are skipped.",
+    "skipInvalid": "Import the valid rows even if some rows are invalid",
+    "invalidBlocks": "Some rows are invalid, so nothing will be imported unless you tick \"Import the valid rows even if some rows are invalid\".",
+    "done": "Imported: {created} created, {updated} updated, {skipped} skipped.",
+    "rows": "{n} row(s) read",
+    "ignored": "ignored columns: {names}",
+    "line": "Line",
+    "item": "Row",
+    "nothing": "The file has no rows.",
+    "actions": {
+      "create": "Create",
+      "update": "Update",
+      "skipped_duplicate": "Skipped",
+      "skipped_invalid": "Invalid"
+    }
+  },
+  "translation": {
+    "hint": "A policy is a named set of rules that translate a local VLAN ID to a remote one. Apply it to an interface from the interface IPAM settings on the asset page.",
+    "new": "New translation policy",
+    "edit": "Edit translation policy",
+    "empty": "No VLAN translation policies yet.",
+    "rules": "Rules",
+    "interfaces": "Interfaces",
+    "rulesOf": "Rules of {name}",
+    "local": "Local VLAN ID",
+    "remote": "Remote VLAN ID",
+    "addRule": "Add rule",
+    "noRules": "No rules yet.",
+    "ruleRequired": "The local and remote VLAN IDs are required.",
+    "deleteConfirm": "Delete the policy {name} and its rules?"
+  },
+  "interfaceSettings": {
+    "title": "IPAM settings of {name}",
+    "hint": "Routing table, VLAN mode and VLANs of this interface. The IP address, mask and VLAN text typed on the interface are not changed.",
+    "column": "IPAM settings",
+    "edit": "Edit the IPAM settings",
+    "mode": "VLAN mode",
+    "noMode": "No VLAN mode",
+    "untagged": "Untagged VLAN",
+    "tagged": "Tagged VLANs",
+    "noVlan": "None",
+    "policy": "VLAN translation policy",
+    "noPolicy": "None",
+    "untaggedShort": "untagged",
+    "taggedShort": "tagged",
+    "modes": {
+      "access": "Access",
+      "tagged": "Tagged",
+      "tagged_all": "Tagged (all)",
+      "q_in_q": "Q-in-Q"
+    }
+  },
+  "assetAddresses": {
+    "title": "Primary addresses",
+    "hint": "Choose among the IPAM addresses assigned to the interfaces of this asset. An address can be primary for one asset only.",
+    "primary4": "Primary IPv4",
+    "primary6": "Primary IPv6",
+    "oob": "Out-of-band IP",
+    "none": "No IPAM address is assigned to an interface of this asset yet.",
+    "natOutside": "NAT outside"
+  }
+}

@@ -1,0 +1,477 @@
+{
+  "back": "Indietro",
+  "saved": "Salvato.",
+  "none": "-",
+  "yes": "Sì",
+  "no": "No",
+  "fields": {
+    "status": "Stato",
+    "vrf": "VRF",
+    "role": "Ruolo",
+    "vlan": "VLAN",
+    "site": "Sito",
+    "description": "Descrizione",
+    "globalTable": "Tabella globale",
+    "allVrfs": "Tutte le VRF",
+    "allStatuses": "Tutti gli stati",
+    "allFamilies": "IPv4 e IPv6",
+    "comments": "Commenti",
+    "slug": "Slug",
+    "slugAuto": "Ricavato dal nome se vuoto",
+    "location": "Ubicazione",
+    "wholeSite": "Tutto il sito"
+  },
+  "statuses": {
+    "container": "Contenitore",
+    "active": "Attivo",
+    "reserved": "Riservato",
+    "deprecated": "Obsoleto",
+    "dhcp": "DHCP",
+    "slaac": "SLAAC"
+  },
+  "ipRoles": {
+    "loopback": "Loopback",
+    "secondary": "Secondario",
+    "anycast": "Anycast",
+    "vip": "VIP",
+    "vrrp": "VRRP",
+    "hsrp": "HSRP",
+    "glbp": "GLBP",
+    "carp": "CARP"
+  },
+  "aggregates": {
+    "title": "Aggregati e RIR",
+    "hint": "Un aggregato è un blocco di indirizzi di primo livello assegnato da un registro (un RIR, o uno standard come RFC 1918). Gli aggregati non si sovrappongono. L'utilizzo è la quota del blocco coperta da prefissi di qualsiasi tabella di routing.",
+    "aggregate": "Aggregato",
+    "new": "Nuovo aggregato",
+    "edit": "Modifica aggregato",
+    "searchPlaceholder": "Cerca aggregato o descrizione",
+    "allRirs": "Tutti i RIR",
+    "empty": "Nessun aggregato.",
+    "required": "Prefisso e RIR sono obbligatori.",
+    "prefixHint": "Rete IPv4 o IPv6 con maschera. Non può sovrapporsi a un altro aggregato.",
+    "deleteConfirm": "Eliminare l'aggregato {name}? I prefissi al suo interno vengono mantenuti.",
+    "fields": {
+      "prefix": "Aggregato",
+      "rir": "RIR",
+      "dateAdded": "Data di inserimento"
+    },
+    "tabs": {
+      "aggregates": "Aggregati",
+      "rirs": "RIR"
+    }
+  },
+  "rirs": {
+    "new": "Nuovo RIR",
+    "edit": "Modifica RIR",
+    "empty": "Nessun RIR.",
+    "private": "Privato",
+    "privateHint": "Privato (lo spazio gestito da questo registro è privato, ad esempio RFC 1918)",
+    "nameRequired": "Il nome è obbligatorio.",
+    "deleteConfirm": "Eliminare il RIR {name}?",
+    "fields": {
+      "name": "Nome"
+    }
+  },
+  "asns": {
+    "title": "ASN",
+    "hint": "Numeri di sistema autonomo (16 o 32 bit, scritti 65000 oppure in notazione ASDOT 1.10) e gli intervalli di numeri AS assegnati da un registro.",
+    "new": "Nuovo ASN",
+    "edit": "Modifica ASN",
+    "newRange": "Nuovo intervallo ASN",
+    "editRange": "Modifica intervallo ASN",
+    "searchPlaceholder": "Cerca numero o descrizione",
+    "allRoles": "Tutti i ruoli",
+    "empty": "Nessun ASN.",
+    "emptyRanges": "Nessun intervallo ASN.",
+    "required": "Numero AS e RIR sono obbligatori.",
+    "rangeRequired": "Nome, RIR, inizio e fine sono obbligatori.",
+    "asnHint": "Un numero da 1 a 4294967295, oppure ASDOT come 1.10.",
+    "deleteConfirm": "Eliminare {name}?",
+    "deleteRangeConfirm": "Eliminare l'intervallo ASN {name}? Gli ASN al suo interno vengono mantenuti.",
+    "used": "Usati",
+    "free": "Liberi",
+    "showFree": "Mostra i numeri AS liberi",
+    "freeCount": "{n} numero/i AS libero/i. I primi:",
+    "tabs": {
+      "asns": "ASN",
+      "ranges": "Intervalli ASN"
+    },
+    "fields": {
+      "asn": "Numero AS",
+      "name": "Nome",
+      "range": "Intervallo",
+      "start": "Primo numero AS",
+      "end": "Ultimo numero AS",
+      "sites": "Siti"
+    },
+    "noSites": "Nessun sito",
+    "sitesHint": "I siti che gestiscono questo numero AS."
+  },
+  "overview": {
+    "prefixes": "Prefissi",
+    "containers": "Contenitori",
+    "addresses": "Indirizzi IP",
+    "ranges": "Intervalli IP",
+    "vlans": "VLAN",
+    "vrfs": "VRF"
+  },
+  "import": {
+    "title": "Importa indirizzi IP dalle interfacce degli asset",
+    "hint": "Legge gli indirizzi IP scritti sulle interfacce di rete degli asset e crea un indirizzo IPAM per ciascuno, assegnato a quell'interfaccia. La maschera viene dall'indirizzo, dalla subnet mask dell'interfaccia, oppure è un singolo host. Gli asset non vengono modificati e rilanciando si saltano gli indirizzi già importati. Guarda prima l'anteprima.",
+    "perSite": "Una VRF per sito",
+    "perSiteHint": "Gli impianti spesso riusano gli stessi indirizzi privati. Attivando questa opzione ogni sito ha la propria VRF (con il nome del sito, creata se manca), così lo stesso indirizzo può esistere in più siti. Gli asset senza sito usano la VRF scelta sopra.",
+    "createPrefixes": "Crea anche la rete di ogni indirizzo (ad esempio 10.0.0.0/24)",
+    "preview": "Anteprima",
+    "run": "Importa",
+    "done": "Importati: {created} creati, {linked} collegati a indirizzi esistenti, {prefixes} prefissi creati.",
+    "found": "{addresses} indirizzo/i su {interfaces} interfaccia/e",
+    "prefixes": "{n} prefissi da creare",
+    "vrfs": "VRF da creare: {names}",
+    "nothing": "Nessun indirizzo scritto sulle interfacce degli asset.",
+    "truncated": "Sono elencate solo le prime righe; l'importazione le comprende tutte.",
+    "columns": {
+      "action": "Esito",
+      "asset": "Asset",
+      "interface": "Interfaccia",
+      "reason": "Motivo"
+    },
+    "actions": {
+      "create": "Crea",
+      "link": "Collega",
+      "already_imported": "Già importato",
+      "skipped_duplicate": "Duplicato",
+      "skipped_invalid": "Non valido"
+    }
+  },
+  "prefixes": {
+    "title": "Prefissi",
+    "hint": "Lo spazio di indirizzamento: reti IPv4 e IPv6, annidate per tabella di routing. L'utilizzo conta gli indirizzi IP e gli intervalli dentro ogni prefisso (un contenitore conta i prefissi figli).",
+    "new": "Nuovo prefisso",
+    "edit": "Modifica prefisso",
+    "searchPlaceholder": "Cerca prefisso o descrizione",
+    "empty": "Nessun prefisso.",
+    "required": "Il prefisso è obbligatorio.",
+    "prefixHint": "Rete IPv4 o IPv6 con maschera. I bit host vengono azzerati (10.0.0.5/24 diventa 10.0.0.0/24).",
+    "deleteConfirm": "Eliminare il prefisso {name}? I prefissi e gli indirizzi al suo interno vengono mantenuti.",
+    "utilization": "Utilizzo",
+    "availableIps": "IP liberi",
+    "childPrefixes": "Prefissi figli",
+    "addresses": "Indirizzi IP",
+    "ranges": "Intervalli IP",
+    "available": "Disponibile",
+    "showAvailable": "Mostra i blocchi liberi",
+    "addChild": "Aggiungi prefisso figlio",
+    "addHere": "Aggiungi qui",
+    "noChildren": "Nessun prefisso al suo interno.",
+    "nextFree": "Prossimi liberi",
+    "fields": {
+      "prefix": "Prefisso",
+      "isPool": "È un pool (ogni indirizzo è utilizzabile)",
+      "markUtilized": "Considera completamente utilizzato"
+    },
+    "cards": {
+      "details": "Dettagli",
+      "usage": "Utilizzo"
+    },
+    "tabs": {
+      "prefixes": "Prefissi figli",
+      "addresses": "Indirizzi IP",
+      "ranges": "Intervalli IP"
+    }
+  },
+  "addresses": {
+    "title": "Indirizzi IP",
+    "hint": "Singoli indirizzi con la loro maschera. Un indirizzo può essere assegnato a un'interfaccia di un asset; i dettagli dell'interfaccia sull'asset non cambiano.",
+    "new": "Nuovo indirizzo IP",
+    "edit": "Modifica indirizzo IP",
+    "importButton": "Importa dalle interfacce degli asset",
+    "allocate": "Prossimo indirizzo disponibile",
+    "allocateHint": "Viene preso il primo indirizzo libero di {prefix}.",
+    "searchPlaceholder": "Cerca indirizzo, nome DNS o descrizione",
+    "withinPlaceholder": "Dentro la rete, es. 10.0.0.0/24",
+    "anyAssignment": "Assegnato o no",
+    "assigned": "Assegnato a un asset",
+    "unassigned": "Non assegnato",
+    "empty": "Nessun indirizzo IP.",
+    "required": "L'indirizzo è obbligatorio.",
+    "addressHint": "Indirizzo IPv4 o IPv6 con maschera, ad esempio 10.0.0.5/24.",
+    "assignHint": "Facoltativo. Gli ID di rete e gli indirizzi di broadcast non possono essere assegnati a un'interfaccia.",
+    "searchInterface": "Cerca asset o interfaccia",
+    "notAssigned": "Non assegnato",
+    "deleteConfirm": "Eliminare l'indirizzo {name}?",
+    "fields": {
+      "address": "Indirizzo",
+      "dnsName": "Nome DNS",
+      "assignedTo": "Assegnato a",
+      "natInside": "NAT interno",
+      "fhrpGroup": "Gruppo FHRP"
+    },
+    "noFhrpGroup": "Non è un indirizzo virtuale",
+    "fhrpHint": "Facoltativo. Ne fa un indirizzo virtuale condiviso dal gruppo (il ruolo segue il protocollo). Un indirizzo è assegnato a un'interfaccia o a un gruppo, non a entrambi."
+  },
+  "ranges": {
+    "title": "Intervalli IP",
+    "hint": "Una serie di indirizzi da un inizio a una fine. Gli intervalli della stessa tabella di routing non possono sovrapporsi. Un intervallo marcato popolato impedisce nuovi indirizzi al suo interno.",
+    "new": "Nuovo intervallo IP",
+    "edit": "Modifica intervallo IP",
+    "searchPlaceholder": "Cerca indirizzo o descrizione",
+    "empty": "Nessun intervallo IP.",
+    "required": "Indirizzo iniziale e finale sono obbligatori.",
+    "deleteConfirm": "Eliminare l'intervallo {name}?",
+    "flags": "Marcato",
+    "populated": "Popolato",
+    "utilized": "Utilizzato",
+    "fields": {
+      "range": "Intervallo",
+      "start": "Indirizzo iniziale",
+      "end": "Indirizzo finale",
+      "size": "Dimensione",
+      "markPopulated": "Marca come popolato (nessun indirizzo può essere creato al suo interno)",
+      "markUtilized": "Marca come utilizzato (conta come completamente usato)"
+    }
+  },
+  "vlans": {
+    "title": "VLAN",
+    "hint": "ID VLAN da 1 a 4094. Un gruppo VLAN contiene intervalli di ID; dentro un gruppo ID e nome della VLAN devono essere unici.",
+    "new": "Nuova VLAN",
+    "edit": "Modifica VLAN",
+    "newGroup": "Nuovo gruppo VLAN",
+    "editGroup": "Modifica gruppo VLAN",
+    "searchPlaceholder": "Cerca nome, ID o descrizione",
+    "allGroups": "Tutti i gruppi",
+    "empty": "Nessuna VLAN.",
+    "emptyGroups": "Nessun gruppo VLAN.",
+    "required": "ID e nome della VLAN sono obbligatori.",
+    "nameRequired": "Il nome è obbligatorio.",
+    "deleteConfirm": "Eliminare la VLAN {name}? I prefissi che la usano vengono mantenuti.",
+    "deleteGroupConfirm": "Eliminare il gruppo VLAN {name}?",
+    "rangesHint": "ID VLAN consentiti, ad esempio 1-99, 200-299, 500. Vuoto significa 1-4094.",
+    "prefixes": "Prefissi",
+    "available": "ID liberi",
+    "next": "prossimo",
+    "tabs": {
+      "vlans": "VLAN",
+      "groups": "Gruppi VLAN",
+      "translation": "Policy di traduzione"
+    },
+    "fields": {
+      "vid": "ID VLAN",
+      "name": "Nome",
+      "group": "Gruppo",
+      "ranges": "Intervalli di ID",
+      "qinq": "Q-in-Q",
+      "qinqRole": "Ruolo Q-in-Q",
+      "svlan": "VLAN di servizio"
+    },
+    "qinqRoles": {
+      "svlan": "Servizio (S-VLAN)",
+      "cvlan": "Cliente (C-VLAN)"
+    },
+    "noQinq": "Non Q-in-Q",
+    "svlanRequired": "Una VLAN cliente richiede una VLAN di servizio."
+  },
+  "vrfs": {
+    "title": "VRF e ruoli",
+    "hint": "Una VRF è una tabella di routing separata; prefissi e indirizzi senza VRF stanno nella tabella globale. I ruoli descrivono la funzione di un prefisso, intervallo o VLAN.",
+    "new": "Nuova VRF",
+    "edit": "Modifica VRF",
+    "newRole": "Nuovo ruolo",
+    "editRole": "Modifica ruolo",
+    "searchPlaceholder": "Cerca nome o route distinguisher",
+    "empty": "Nessuna VRF.",
+    "emptyRoles": "Nessun ruolo.",
+    "nameRequired": "Il nome è obbligatorio.",
+    "deleteConfirm": "Eliminare la VRF {name}?",
+    "deleteRoleConfirm": "Eliminare il ruolo {name}? Prefissi, intervalli e VLAN che lo usano vengono mantenuti.",
+    "rdHint": "Ad esempio 65000:100 oppure 10.0.0.1:100 (RFC 4364).",
+    "enforceHint": "Rifiuta prefissi e indirizzi duplicati dentro questa VRF.",
+    "tabs": {
+      "vrfs": "VRF",
+      "roles": "Ruoli",
+      "routeTargets": "Route target"
+    },
+    "fields": {
+      "name": "Nome",
+      "rd": "Route distinguisher",
+      "enforceUnique": "Imponi spazio unico",
+      "weight": "Peso"
+    }
+  },
+  "routeTargets": {
+    "hint": "I route target BGP (RFC 4364) stabiliscono quali rotte una VRF importa ed esporta, ad esempio 65000:100.",
+    "new": "Nuovo route target",
+    "edit": "Modifica route target",
+    "empty": "Nessun route target.",
+    "none": "Nessuno",
+    "import": "Route target in importazione",
+    "export": "Route target in esportazione",
+    "importedBy": "Importato da (VRF)",
+    "exportedBy": "Esportato da (VRF)",
+    "nameRequired": "Il route target è obbligatorio.",
+    "deleteConfirm": "Eliminare il route target {name}? Le VRF che lo usano vengono mantenute.",
+    "vrfHint": "I route target si creano nella scheda Route target.",
+    "fields": {
+      "name": "Route target"
+    }
+  },
+  "fhrp": {
+    "title": "Gruppi FHRP",
+    "hint": "Gruppi di ridondanza del primo hop (VRRP, HSRP, GLBP, CARP ...): un gruppo condivide indirizzi IP virtuali tra le interfacce di più asset. Gli indirizzi virtuali si assegnano nel modulo dell'indirizzo IP.",
+    "new": "Nuovo gruppo FHRP",
+    "edit": "Modifica gruppo FHRP",
+    "searchPlaceholder": "Cerca nome, ID gruppo o descrizione",
+    "allProtocols": "Tutti i protocolli",
+    "empty": "Nessun gruppo FHRP.",
+    "required": "L'ID del gruppo è obbligatorio.",
+    "deleteConfirm": "Eliminare {name}? Servizi e assegnazioni di interfacce vengono eliminati; gli indirizzi virtuali vengono mantenuti.",
+    "virtualAddresses": "Indirizzi virtuali",
+    "noAddresses": "Nessun indirizzo virtuale assegnato a questo gruppo.",
+    "addressHint": "Si assegnano nel modulo dell'indirizzo IP.",
+    "interfaces": "Interfacce",
+    "chooseInterface": "Scegli un'interfaccia",
+    "addInterface": "Aggiungi interfaccia",
+    "noInterfaces": "Nessuna interfaccia partecipa a questo gruppo.",
+    "removeInterfaceConfirm": "Rimuovere {name} dal gruppo?",
+    "keyStored": "una chiave è salvata",
+    "removeKey": "Rimuovi la chiave salvata",
+    "noAuth": "Nessuna autenticazione",
+    "fields": {
+      "protocol": "Protocollo",
+      "groupId": "ID gruppo",
+      "name": "Nome",
+      "authType": "Autenticazione",
+      "authKey": "Chiave di autenticazione",
+      "asset": "Asset",
+      "interface": "Interfaccia",
+      "priority": "Priorità"
+    },
+    "protocols": {
+      "vrrp2": "VRRPv2",
+      "vrrp3": "VRRPv3",
+      "hsrp": "HSRP",
+      "glbp": "GLBP",
+      "carp": "CARP",
+      "clusterxl": "ClusterXL",
+      "other": "Altro"
+    },
+    "authTypes": {
+      "plaintext": "Testo in chiaro",
+      "md5": "MD5"
+    }
+  },
+  "services": {
+    "title": "Servizi",
+    "hint": "Un servizio è un nome con porte TCP, UDP o SCTP, offerto da un asset o da un gruppo FHRP, eventualmente su alcuni dei suoi indirizzi IP. I modelli contengono le combinazioni più comuni (ad esempio Web: tcp/80, tcp/443).",
+    "new": "Nuovo servizio",
+    "edit": "Modifica servizio",
+    "newTemplate": "Nuovo modello di servizio",
+    "editTemplate": "Modifica modello di servizio",
+    "searchPlaceholder": "Cerca nome o descrizione",
+    "empty": "Nessun servizio.",
+    "emptyTemplates": "Nessun modello di servizio.",
+    "required": "Nome e porte sono obbligatori.",
+    "parentRequired": "Scegli l'asset o il gruppo FHRP che offre il servizio.",
+    "portsHint": "Protocollo e porta, separati da virgole: tcp/80, udp/53, tcp/8000-8010.",
+    "fromTemplate": "Parti da un modello",
+    "noTemplate": "Nessun modello",
+    "parentAsset": "Asset",
+    "parentGroup": "Gruppo FHRP",
+    "chooseAsset": "Scegli un asset",
+    "searchAsset": "Cerca nome o tag dell'asset",
+    "chooseGroup": "Scegli un gruppo FHRP",
+    "allAddresses": "Tutti gli indirizzi",
+    "addressesHint": "Facoltativo. Lascia vuoto se il servizio non è legato a indirizzi particolari.",
+    "deleteConfirm": "Eliminare il servizio {name}?",
+    "deleteTemplateConfirm": "Eliminare il modello {name}? I servizi creati con esso vengono mantenuti.",
+    "tabs": {
+      "services": "Servizi",
+      "templates": "Modelli"
+    },
+    "fields": {
+      "name": "Nome",
+      "ports": "Porte",
+      "parent": "Offerto da",
+      "asset": "Asset",
+      "group": "Gruppo FHRP",
+      "addresses": "Indirizzi IP"
+    }
+  },
+  "csv": {
+    "export": "Esporta CSV",
+    "import": "Importa CSV",
+    "title": {
+      "prefixes": "Importa prefissi da CSV",
+      "addresses": "Importa indirizzi IP da CSV",
+      "vlans": "Importa VLAN da CSV"
+    },
+    "hint": "Usa il file dell'esportazione come modello: esporta, modificalo in un foglio di calcolo (salva come CSV UTF-8, con virgola o punto e virgola) e importalo. Si usano i nomi (VRF, ruolo, sito, gruppo VLAN, asset) al posto degli ID. Guarda prima l'anteprima; non viene scritto nulla finché non importi.",
+    "columnsLabel": "Colonne:",
+    "columns": {
+      "prefixes": "prefix, vrf, status, role, vlan_group, vlan_vid, site, is_pool, mark_utilized, description",
+      "addresses": "address, vrf, status, role, dns_name, asset (tag o nome), interface, fhrp_protocol, fhrp_group, description",
+      "vlans": "vid, name, group, status, site, role, description"
+    },
+    "updateExisting": "Aggiorna quelli già esistenti",
+    "updateHint": "Una riga che corrisponde a un oggetto esistente (stesso prefisso e VRF, stesso indirizzo e VRF, stesso ID VLAN e gruppo) lo sostituisce, comprese le celle vuote. Senza questa opzione vengono saltate.",
+    "skipInvalid": "Importa le righe valide anche se alcune righe non sono valide",
+    "invalidBlocks": "Alcune righe non sono valide, quindi non verrà importato nulla a meno che tu non spunti \"Importa le righe valide anche se alcune righe non sono valide\".",
+    "done": "Importato: {created} creati, {updated} aggiornati, {skipped} saltati.",
+    "rows": "{n} riga/righe lette",
+    "ignored": "colonne ignorate: {names}",
+    "line": "Riga",
+    "item": "Elemento",
+    "nothing": "Il file non contiene righe.",
+    "actions": {
+      "create": "Crea",
+      "update": "Aggiorna",
+      "skipped_duplicate": "Saltata",
+      "skipped_invalid": "Non valida"
+    }
+  },
+  "translation": {
+    "hint": "Una policy è un insieme di regole con nome che traducono un ID VLAN locale in uno remoto. Si applica a un'interfaccia dalle impostazioni IPAM dell'interfaccia nella pagina dell'asset.",
+    "new": "Nuova policy di traduzione",
+    "edit": "Modifica policy di traduzione",
+    "empty": "Nessuna policy di traduzione VLAN.",
+    "rules": "Regole",
+    "interfaces": "Interfacce",
+    "rulesOf": "Regole di {name}",
+    "local": "ID VLAN locale",
+    "remote": "ID VLAN remoto",
+    "addRule": "Aggiungi regola",
+    "noRules": "Nessuna regola.",
+    "ruleRequired": "Gli ID VLAN locale e remoto sono obbligatori.",
+    "deleteConfirm": "Eliminare la policy {name} e le sue regole?"
+  },
+  "interfaceSettings": {
+    "title": "Impostazioni IPAM di {name}",
+    "hint": "Tabella di routing, modalità VLAN e VLAN di questa interfaccia. L'indirizzo IP, la maschera e il testo VLAN scritti sull'interfaccia non vengono modificati.",
+    "column": "Impostazioni IPAM",
+    "edit": "Modifica le impostazioni IPAM",
+    "mode": "Modalità VLAN",
+    "noMode": "Nessuna modalità VLAN",
+    "untagged": "VLAN untagged",
+    "tagged": "VLAN tagged",
+    "noVlan": "Nessuna",
+    "policy": "Policy di traduzione VLAN",
+    "noPolicy": "Nessuna",
+    "untaggedShort": "untagged",
+    "taggedShort": "tagged",
+    "modes": {
+      "access": "Access",
+      "tagged": "Tagged",
+      "tagged_all": "Tagged (tutte)",
+      "q_in_q": "Q-in-Q"
+    }
+  },
+  "assetAddresses": {
+    "title": "Indirizzi primari",
+    "hint": "Scegli tra gli indirizzi IPAM assegnati alle interfacce di questo asset. Un indirizzo può essere primario per un solo asset.",
+    "primary4": "IPv4 primario",
+    "primary6": "IPv6 primario",
+    "oob": "IP out-of-band",
+    "none": "Nessun indirizzo IPAM è ancora assegnato a un'interfaccia di questo asset.",
+    "natOutside": "NAT esterno"
+  }
+}

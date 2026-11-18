@@ -52,6 +52,7 @@ import enGlobalsearch from './en/globalsearch.json'
 import itAssetReviews from './it/assetReviews.json'
 import itLifecycle from './it/lifecycle.json'
 import itApplications from './it/applications.json'
+import itIpam from './it/ipam.json'
 import itWorkflows from './it/workflows.json'
 import itChanges from './it/changes.json'
 import itReports from './it/reports.json'
@@ -64,6 +65,7 @@ import enChanges from './en/changes.json'
 import enWorkflows from './en/workflows.json'
 import enLifecycle from './en/lifecycle.json'
 import enApplications from './en/applications.json'
+import enIpam from './en/ipam.json'
 import enAssetReviews from './en/assetReviews.json'
 import itNotifications from './it/notifications.json'
 import enNotifications from './en/notifications.json'
@@ -139,6 +141,7 @@ const messages = {
     assetReviews: itAssetReviews,
     lifecycle: itLifecycle,
     applications: itApplications,
+    ipam: itIpam,
     workflows: itWorkflows,
     changes: itChanges,
     reports: itReports,
@@ -184,6 +187,7 @@ const messages = {
     assetReviews: enAssetReviews,
     lifecycle: enLifecycle,
     applications: enApplications,
+    ipam: enIpam,
     workflows: enWorkflows,
     changes: enChanges,
     reports: enReports,

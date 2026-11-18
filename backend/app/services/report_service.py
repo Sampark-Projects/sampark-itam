@@ -367,6 +367,12 @@ def build_audit_pack(db: Session, tenant_id, user: User, site_id=None, days: int
     for title, headers, rows in application_report.sheets(db, tenant_id, today, scope_sites or None):
         _sheet(wb, title, headers, rows)
 
+    # IPAM (only for a user who may read it, and only for the kinds the tenant uses)
+    from app.services import ipam_report
+    if ipam_report.can_read(user):
+        for title, headers, rows in ipam_report.sheets(db, tenant_id, scope_sites or None):
+            _sheet(wb, title, headers, rows)
+
     buffer = io.BytesIO()
     wb.save(buffer)
     return buffer.getvalue()

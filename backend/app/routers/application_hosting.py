@@ -277,8 +277,11 @@ def topology(application_id: uuid.UUID, include_inferred: bool = True,
 
 @router.get("/software")
 def software(application_id: uuid.UUID, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """The software inventory of every linked asset, one row per item with its host."""
+    """The software inventory of every linked asset, one row per item with its host. Entries named after another
+    application of the tenant are left out: each application is listed only on its own page."""
     app = _application(db, current_user.tenant_id, application_id)
+    other_apps = {n.strip().lower() for (n,) in db.query(Application.name).filter(
+        Application.tenant_id == app.tenant_id, Application.id != app.id)}
     rows = (
         db.query(AssetSoftware, Asset.name, ApplicationAsset.role)
         .join(ApplicationAsset, ApplicationAsset.asset_id == AssetSoftware.asset_id)
@@ -287,6 +290,7 @@ def software(application_id: uuid.UUID, current_user: User = Depends(get_current
         .order_by(func.lower(Asset.name), AssetSoftware.kind, func.lower(AssetSoftware.name))
         .all()
     )
+    rows = [r for r in rows if (r[0].name or "").strip().lower() not in other_apps]
     return [{
         "id": s.id, "asset_id": s.asset_id, "host": host, "role": role, "kind": s.kind, "name": s.name, "vendor": s.vendor,
         "version": s.version, "install_path": s.install_path, "license_type": s.license_type,

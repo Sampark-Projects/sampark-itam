@@ -682,6 +682,8 @@
   "PROCUREMENT_MISMATCH": "The asset does not match the order line",
   "APPLICATION_NOT_FOUND": "Application not found",
   "APPLICATION_INVALID": "Cannot save:",
+  "IPAM_NOT_FOUND": "Not found",
+  "IPAM_INVALID": "Cannot save:",
   "SPARE_PART_NOT_FOUND": "Spare part not found",
   "SPARE_PART_STOCK": "Not enough spare parts in stock",
   "SPARE_PART_DUPLICATE": "A spare part with this part number already exists",

@@ -59,7 +59,8 @@
     "evidence": "Evidence",
     "basicInfo": "Basic Information",
     "permissions": "Permissions",
-    "applications": "Applications"
+    "applications": "Applications",
+    "ipam": "IPAM"
   },
   "levels": {
     "none": "None",
@@ -119,6 +120,7 @@
     "bulkDescription": "Can perform operations on multiple resources at once",
     "resetPassword": "Reset Password",
     "resetPasswordDescription": "Can reset passwords of other users",
-    "applications": "Applications"
+    "applications": "Applications",
+    "ipam": "IPAM"
   }
 }

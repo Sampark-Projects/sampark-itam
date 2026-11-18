@@ -174,6 +174,15 @@ from app.routers import config_management
 from app.routers import integrations
 from app.routers import procurement
 from app.routers import applications
+from app.routers import ipam_basics
+from app.routers import ipam_prefixes
+from app.routers import ipam_addresses
+from app.routers import ipam_export
+from app.routers import ipam_interfaces
+from app.routers import ipam_vlan_translation
+from app.routers import ipam_import
+from app.routers import ipam_registry
+from app.routers import ipam_routing
 from app.routers import application_hosting
 from app.routers import application_security
 from app.routers import application_alerts
@@ -274,6 +283,15 @@ app.include_router(applications.router, tags=["applications"])
 app.include_router(application_hosting.router, tags=["applications"])
 app.include_router(application_security.router, tags=["applications"])
 app.include_router(application_alerts.router, tags=["applications"])
+app.include_router(ipam_basics.router, tags=["ipam"])
+app.include_router(ipam_prefixes.router, tags=["ipam"])
+app.include_router(ipam_addresses.router, tags=["ipam"])
+app.include_router(ipam_export.router, tags=["ipam"])
+app.include_router(ipam_interfaces.router, tags=["ipam"])
+app.include_router(ipam_vlan_translation.router, tags=["ipam"])
+app.include_router(ipam_import.router, tags=["ipam"])
+app.include_router(ipam_registry.router, tags=["ipam"])
+app.include_router(ipam_routing.router, tags=["ipam"])
 app.include_router(asset_software.router, tags=["assets"])
 app.include_router(sites.router, tags=["sites"])
 app.include_router(asset_interfaces.router, tags=["asset_interfaces"])

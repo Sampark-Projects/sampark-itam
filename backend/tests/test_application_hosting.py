@@ -155,6 +155,20 @@ def test_software_of_the_linked_assets_with_install_path_and_licence(db):
         ("PROD-WEB-APP01", "Nginx", "/opt/billing-service/", "GPLv2", "web")]
 
 
+def test_software_named_after_another_application_is_not_listed(db):
+    w = World(db)
+    c = _client(db, w.user(ADMIN_DEFAULT_PERMISSIONS))
+    mine = _app(c, "My Eicher")
+    theirs = _app(c, "VTS")
+    host = _asset(db, w, "Eicher")
+    for a in (mine, theirs):
+        c.post(f"/applications/{a['id']}/assets", json={"asset_id": str(host.id), "role": "application"})
+    for name in ("Nginx", "My Eicher", "VTS"):
+        c.post(f"/assets/{host.id}/software", json={"kind": "application", "name": name})
+    names = lambda a: [r["name"] for r in c.get(f"/applications/{a['id']}/software").json()]
+    assert names(mine) == ["My Eicher", "Nginx"] and names(theirs) == ["Nginx", "VTS"]
+
+
 def test_integrations_crud(db):
     w = World(db)
     c = _client(db, w.user(ADMIN_DEFAULT_PERMISSIONS))

@@ -76,6 +76,7 @@
   },
   "interfaces": {
     "ipAddress": "IP Address",
+    "ipam": "IPAM addresses",
     "macAddress": "MAC Address",
     "vlan": "VLAN",
     "status": "Status",

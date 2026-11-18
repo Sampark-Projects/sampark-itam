@@ -24,4 +24,8 @@ class AssetInterface(Base):
     mac_address = Column(String(50), nullable=True)
     other = Column(String(255), nullable=True)
     protocols = Column(JSONB, default=list)  # Protocolli industriali supportati dall'interfaccia
+    # IPAM: routing table, VLAN tagging mode (access, tagged, tagged-all, q-in-q) and VLAN translation policy; the VLANs are in ipam_interface_vlans
+    vrf_id = Column(UUID(as_uuid=True), ForeignKey("ipam_vrfs.id", ondelete="SET NULL"), nullable=True, index=True)
+    vlan_mode = Column(String(10), nullable=True)
+    vlan_translation_policy_id = Column(UUID(as_uuid=True), ForeignKey("ipam_vlan_translation_policies.id", ondelete="RESTRICT"), nullable=True)
     asset = relationship("Asset", back_populates="interfaces")

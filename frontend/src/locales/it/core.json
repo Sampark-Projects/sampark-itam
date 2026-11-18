@@ -300,6 +300,8 @@
   "PROCUREMENT_MISMATCH": "L'asset non corrisponde alla riga dell'ordine",
   "APPLICATION_NOT_FOUND": "Applicazione non trovata",
   "APPLICATION_INVALID": "Impossibile salvare:",
+  "IPAM_NOT_FOUND": "Non trovato",
+  "IPAM_INVALID": "Impossibile salvare:",
   "SPARE_PART_NOT_FOUND": "Ricambio non trovato",
   "SPARE_PART_STOCK": "Ricambi insufficienti in magazzino",
   "SPARE_PART_DUPLICATE": "Esiste già un ricambio con questo codice",
