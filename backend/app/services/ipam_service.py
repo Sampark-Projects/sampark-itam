@@ -445,3 +445,47 @@ def free_addresses(db: Session, row: IpamPrefix, limit: int) -> List[str]:
         if len(out) >= limit:
             break
     return out
+
+
+# --- a free address for a new asset -----------------------------------------------------------
+
+FREE_ADDRESS_STATUSES = ("active", "reserved")
+
+
+def check_free_address(db: Session, tenant_id, address_id) -> IpamIpAddress:
+    """The address chosen for a new asset: it must be of this tenant, in use (active or reserved), on no interface and in no FHRP
+    group, and one that an interface can carry. Raises a 400 or 409 otherwise."""
+    row = get_owned(db, IpamIpAddress, tenant_id, address_id, "IP address")
+    if row.asset_interface_id or row.fhrp_group_id:
+        raise bad(f"IP address {row.address} is already assigned", 409)
+    if row.status not in FREE_ADDRESS_STATUSES:
+        raise bad(f"IP address {row.address} has status {row.status} and cannot be given to an asset")
+    try:
+        il.check_assignable(ipaddress.ip_interface(row.address))
+    except il.IpamInputError as exc:
+        raise bad(str(exc))
+    return row
+
+
+def assign_free_address(db: Session, tenant_id, asset, address_id, interface_name: Optional[str] = None) -> IpamIpAddress:
+    """Gives an asset a new interface carrying the address and marks the address as assigned to it. The interface is called LAN,
+    or LAN-2, LAN-3 ... when the asset already has one by that name. The address becomes the primary IPv4 or IPv6 of the
+    asset when the asset has none yet (always the case for a new asset). Commits."""
+    from app.models import AssetInterface
+    row = check_free_address(db, tenant_id, address_id)
+    iface = ipaddress.ip_interface(row.address)
+    if not interface_name:
+        taken = {n.lower() for (n,) in db.query(AssetInterface.name).filter(AssetInterface.asset_id == asset.id) if n}
+        interface_name = next(n for n in ["LAN"] + [f"LAN-{i}" for i in range(2, 1000)] if n.lower() not in taken)
+    interface = AssetInterface(asset_id=asset.id, tenant_id=tenant_id, name=interface_name, type="ethernet", ip_address=str(iface.ip),
+                               subnet_mask=str(iface.netmask) if iface.version == 4 else None)
+    db.add(interface)
+    db.flush()
+    row.asset_interface_id = interface.id
+    if iface.version == 4 and asset.primary_ip4_id is None:
+        asset.primary_ip4_id = row.id
+    elif iface.version == 6 and asset.primary_ip6_id is None:
+        asset.primary_ip6_id = row.id
+    db.commit()
+    db.refresh(row)
+    return row

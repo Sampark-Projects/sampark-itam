@@ -1,5 +1,17 @@
 {
   "title": "Dispositivi",
+  "freeIp": {
+    "title": "Indirizzo IP",
+    "label": "Indirizzo IP disponibile",
+    "placeholder": "Seleziona un indirizzo IP disponibile",
+    "search": "Cerca tra gli indirizzi disponibili",
+    "hint": "Facoltativo. Il dispositivo riceve un'interfaccia di rete con questo indirizzo, che diventa l'IP primario del dispositivo.",
+    "hintEdit": "Facoltativo. L'indirizzo viene aggiunto al dispositivo come nuova interfaccia di rete. Diventa l'IP primario solo se il dispositivo non ne ha ancora uno.",
+    "empty": "Nessun indirizzo IP disponibile trovato",
+    "needWrite": "Per assegnare un indirizzo IP serve l'accesso in scrittura a IPAM.",
+    "needRead": "Non hai accesso a IPAM, quindi qui non si può scegliere un indirizzo IP.",
+    "loadError": "Impossibile caricare gli indirizzi IP disponibili."
+  },
   "description": "Gestisci dispositivi e asset industriali",
   "actions": {
     "addProtocol": "Aggiungi protocollo"

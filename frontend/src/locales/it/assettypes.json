@@ -1,5 +1,6 @@
 {
     "title": "Tipi di Dispositivi",
+    "search": "Cerca tipi di dispositivo per nome o descrizione",
     "fields": {
         "purdueLevel": "Livello Purdue"
     },

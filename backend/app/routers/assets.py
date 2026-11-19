@@ -48,6 +48,18 @@ router = APIRouter(
 )
 
 
+def _check_free_ip(db: Session, current_user: User, address_id) -> None:
+    """The IPAM address picked in the asset form (if any): the user must be able to write IPAM and the address must still be free."""
+    if not address_id:
+        return
+    from fastapi import HTTPException
+    from app.services import ipam_service
+    from app.services.rbac import check_permission
+    if not check_permission(current_user, "ipam", 2):
+        raise HTTPException(status_code=403, detail="Permission denied for ipam (required: 2)")
+    ipam_service.check_free_address(db, current_user.tenant_id, address_id)
+
+
 # Create asset
 @router.post("", response_model=AssetSchema)
 @audit_log_action("create", "Asset", model_class=Asset)
@@ -60,8 +72,21 @@ def create_asset(
     # Inserisco tenant_id nel body
     data = asset_in.model_dump()
     data["tenant_id"] = current_user.tenant_id
+    free_ip_id = asset_in.ipam_ip_address_id
+    # checked before the asset exists, so a refused address leaves nothing behind
+    _check_free_ip(db, current_user, free_ip_id)
     result = crud_assets.create_asset(db, AssetCreate(**data), current_user.tenant_id)
-    
+    if free_ip_id:
+        from app.services import ipam_service
+        try:
+            ipam_service.assign_free_address(db, current_user.tenant_id, result, free_ip_id)
+        except Exception:
+            # lost a race for the address: do not keep an asset the user thinks failed
+            db.rollback()
+            db.delete(result)
+            db.commit()
+            raise
+
     # Invalida cache dashboard dopo creazione asset
     from app.services.dashboard_cache import invalidate_dashboard_cache
     invalidate_dashboard_cache(str(current_user.tenant_id))
@@ -1494,8 +1519,14 @@ def update_asset(
     update_dict = asset_update.model_dump(exclude_unset=True)
     risk_fields_changed = any(field in update_dict for field in risk_affecting_fields)
     
+    free_ip_id = asset_update.ipam_ip_address_id
+    _check_free_ip(db, current_user, free_ip_id)
     result = crud_assets.update_asset(db, asset_id, asset_update, current_user.tenant_id)
-    
+    if free_ip_id:
+        # a new interface with the chosen address, next to the interfaces the form sent
+        from app.services import ipam_service
+        ipam_service.assign_free_address(db, current_user.tenant_id, result, free_ip_id)
+
     # Refresh asset to get updated values
     db.refresh(result)
     

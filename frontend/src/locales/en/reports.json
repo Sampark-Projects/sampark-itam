@@ -2,7 +2,7 @@
   "title": "Reports & integrations",
   "tabs": {
     "dashboard": "Site dashboard",
-    "audit": "Audit pack",
+    "audit": "Audit report",
     "integrations": "Integrations"
   },
   "trend": {
@@ -70,8 +70,8 @@
     "allSites": "All sites",
     "days": "Period (days)",
     "daysHelp": "Maintenance and workflow history from this many days back.",
-    "download": "Download audit pack",
-    "done": "The audit pack has been downloaded."
+    "download": "Download audit report",
+    "done": "The audit report has been downloaded."
   },
   "integrations": {
     "hint": "Webhooks send an event to your CMDB, ITSM or any other system when something happens. Each request is signed so the receiver can check it came from here.",

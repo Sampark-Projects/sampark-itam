@@ -1010,11 +1010,13 @@ async function createAsset(assetData) {
     close()
     await fetchAssets()
   } catch (error) {
+    // say why when the server did (for example the chosen IP address was taken in the meantime)
+    const reason = error?.response?.data?.detail
     toast.add({
       severity: 'error',
       summary: t('common.messages.error'),
-      detail: t('assets.messages.createError'),
-      life: 3000
+      detail: typeof reason === 'string' ? `${t('assets.messages.createError')} ${reason}` : t('assets.messages.createError'),
+      life: 5000
     })
   }
 }
@@ -1025,7 +1027,8 @@ async function updateAsset(assetData) {
     close()
     await fetchAssets()
   } catch (error) {
-    toast.add({ severity: 'error', summary: t('common.messages.error'), detail: t('assets.messages.updateError'), life: 3000 })
+    const reason = error?.response?.data?.detail
+    toast.add({ severity: 'error', summary: t('common.messages.error'), detail: typeof reason === 'string' ? `${t('assets.messages.updateError')} ${reason}` : t('assets.messages.updateError'), life: 5000 })
   }
 }
 

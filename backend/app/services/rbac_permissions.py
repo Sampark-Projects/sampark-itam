@@ -169,11 +169,11 @@ NEW_SECTIONS = {
         }
     },
     "reports": {
-        "description": "Site dashboard, KPI targets and audit pack",
+        "description": "Site dashboard, KPI targets and audit report",
         "levels": {
             0: "No access",
             1: "View the site dashboard",
-            2: "Download the audit pack",
+            2: "Download the audit report",
             3: "Set KPI targets",
             4: "Full administration"
         }

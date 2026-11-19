@@ -2,7 +2,7 @@
   "title": "Report e integrazioni",
   "tabs": {
     "dashboard": "Dashboard sito",
-    "audit": "Pacchetto audit",
+    "audit": "Report di audit",
     "integrations": "Integrazioni"
   },
   "trend": {
@@ -70,8 +70,8 @@
     "allSites": "Tutti i siti",
     "days": "Periodo (giorni)",
     "daysHelp": "Cronologia di modifiche, manutenzione e workflow degli ultimi giorni indicati.",
-    "download": "Scarica il pacchetto audit",
-    "done": "Il pacchetto audit è stato scaricato."
+    "download": "Scarica il report di audit",
+    "done": "Il report di audit è stato scaricato."
   },
   "integrations": {
     "hint": "I webhook inviano un evento al tuo CMDB, ITSM o a qualsiasi altro sistema quando succede qualcosa. Ogni richiesta è firmata, così il destinatario può verificarne la provenienza.",

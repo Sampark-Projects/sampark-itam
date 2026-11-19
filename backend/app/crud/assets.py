@@ -231,6 +231,7 @@ def create_asset(db: Session, asset_in: AssetCreate, tenant_id: uuid.UUID) -> As
         asset_in.model_dump(
             exclude={
                 "interfaces",
+                "ipam_ip_address_id",
                 "asset_type",
                 "site",
                 "location",
@@ -289,7 +290,7 @@ def update_asset(
         "photos",
     }
     update_data = sanitize_text_fields(
-        asset_in.model_dump(exclude_unset=True, exclude={"interfaces", *RELATIONSHIP_FIELDS}),
+        asset_in.model_dump(exclude_unset=True, exclude={"interfaces", "ipam_ip_address_id", *RELATIONSHIP_FIELDS}),
         ["description", "notes"],
     )
     if "parent_asset_id" in update_data:

@@ -339,8 +339,9 @@ export default {
   emptySitesTrash() {
     return api.delete('/sites/trash/empty')
   },
-  getAssetTypes() {
-    return api.get('/asset-types')
+  // params: { search, skip, limit }; the search runs on the server
+  getAssetTypes(params = {}) {
+    return api.get('/asset-types', { params })
   },
   getDashboardStats(params = {}) {
     return api.get('/dashboard/stats', { params })

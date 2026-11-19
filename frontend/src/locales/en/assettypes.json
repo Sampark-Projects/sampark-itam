@@ -1,5 +1,6 @@
 {
     "title": "Asset Types",
+    "search": "Search asset types by name or description",
     "fields": {
         "purdueLevel": "Purdue Level"
     },

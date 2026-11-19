@@ -459,7 +459,8 @@ async function onAssetEditSubmit(updatedAsset) {
     showEditDialog.value = false
     await fetchAsset()
   } catch (err) {
-    toast.add({ severity: 'error', summary: t('common.messages.error'), detail: t('assets.messages.updateError') })
+    const reason = err?.response?.data?.detail // say why when the server did (for example the chosen IP address is no longer available)
+    toast.add({ severity: 'error', summary: t('common.messages.error'), detail: typeof reason === 'string' ? `${t('assets.messages.updateError')} ${reason}` : t('assets.messages.updateError'), life: 5000 })
   }
 }
 

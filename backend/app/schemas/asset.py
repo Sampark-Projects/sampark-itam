@@ -183,6 +183,8 @@ class AssetUpdate(AssetRiskFieldsMixin, AssetLifecycleFields):
     business_criticality: Optional[str] = Field(None, max_length=50, description="Business criticality")
     protocols: Optional[List[str]] = None
     interfaces: Optional[List[AssetInterfaceUpdate]] = None
+    # a free address of the IPAM module, added to the asset as a new interface
+    ipam_ip_address_id: Optional[uuid.UUID] = None
 
     site_id: Optional[uuid.UUID] = None
     asset_type_id: Optional[uuid.UUID] = None
@@ -219,6 +221,8 @@ class AssetCreate(AssetRiskFieldsMixin, AssetLifecycleFields):
     business_criticality: Optional[str] = Field(None, max_length=50, description="Business criticality")
     protocols: Optional[List[str]] = []
     interfaces: Optional[List[AssetInterfaceCreate]] = None
+    # a free address of the IPAM module: the asset gets an interface with it and it becomes its primary IP
+    ipam_ip_address_id: Optional[uuid.UUID] = None
     site_id: uuid.UUID
     asset_type_id: Optional[uuid.UUID] = None
     location_id: Optional[uuid.UUID] = None

@@ -47,7 +47,10 @@
           </div>
         </template>
         <template #content>
+          <!-- An available address from IPAM can be given to a new asset or added to an existing one -->
+          <AssetFreeIpSelect v-model="form.ipam_ip_address_id" :editing="!!props.asset" :class="{ 'mb-3': props.asset }" />
           <AssetInterfacesForm
+            v-if="props.asset"
             v-model:interfaces="form.interfaces"
             :editable="true"
             :asset-id="form.id || props.asset?.id"
@@ -85,6 +88,7 @@ import { useForm } from '../../composables/useForm'
 import BaseForm from '../base/BaseForm.vue'
 import Card from 'primevue/card'
 import AssetInterfacesForm from './AssetInterfacesForm.vue'
+import AssetFreeIpSelect from './AssetFreeIpSelect.vue'
 import AssetBasicInfoForm from './AssetBasicInfoForm.vue'
 import AssetLocationForm from './AssetLocationForm.vue'
 import AssetTechnicalDetailsForm from './AssetTechnicalDetailsForm.vue'
@@ -209,7 +213,8 @@ const {
   business_criticality: 'low',
   description: '',
   interfaces: props.asset?.interfaces ? [...props.asset.interfaces] : [],
-  protocols: [] 
+  ipam_ip_address_id: null, // a free IPAM address for a new asset
+  protocols: []
 })
 
 
@@ -288,6 +293,8 @@ async function handleSubmit() {
       ...Object.fromEntries(LIFECYCLE_DATE_FIELDS.map(f => [f, formatDate(formData[f])])),
       ...Object.fromEntries(LIFECYCLE_TEXT_FIELDS.map(f => [f, formData[f] === '' ? null : formData[f]]))
     }
+    // sent only when an available address was picked
+    if (!dataWithFormattedDates.ipam_ip_address_id) delete dataWithFormattedDates.ipam_ip_address_id
     emit('submit', dataWithFormattedDates)
   }, {
     successMessage: props.asset ? null : t('assets.messages.created'), // Non mostrare toast per update

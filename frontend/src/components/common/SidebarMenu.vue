@@ -74,6 +74,7 @@ const menuSections = computed(() => {
   if (canRead('manufacturers')) inventoryItems.push({ label: t('menu.navigation.manufacturers'), icon: 'pi-cog', to: '/manufacturers' })
   if (canRead('contacts')) inventoryItems.push({ label: t('menu.navigation.contacts'), icon: 'pi-id-card', to: '/contacts' })
   if (canRead('assets')) inventoryItems.push({ label: t('menu.navigation.assets'), icon: 'pi-server', to: '/assets' })
+  if (canRead('applications')) inventoryItems.push({ label: t('menu.navigation.applications'), icon: 'pi-desktop', to: '/applications' })
 
   // Network Probes
   if (canRead('network_probes')) {
@@ -114,7 +115,6 @@ const menuSections = computed(() => {
   // Sezione Management
   const managementItems = []
   if (canRead('asset_reviews')) managementItems.push({ label: t('menu.navigation.assetReviews'), icon: 'pi-calendar', to: '/asset-reviews' })
-  if (canRead('applications')) managementItems.push({ label: t('menu.navigation.applications'), icon: 'pi-desktop', to: '/applications' })
   if (canRead('lifecycle')) managementItems.push({ label: t('menu.navigation.lifecycle'), icon: 'pi-history', to: '/lifecycle' })
   if (canRead('reports') || canRead('api_keys')) managementItems.push({ label: t('menu.navigation.reports'), icon: 'pi-chart-bar', to: '/reports' })
   if (canRead('maintenance') || canRead('configurations')) managementItems.push({ label: t('menu.navigation.changes'), icon: 'pi-wrench', to: '/changes' })

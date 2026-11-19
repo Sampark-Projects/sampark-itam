@@ -1,5 +1,17 @@
 {
   "title": "Assets",
+  "freeIp": {
+    "title": "IP address",
+    "label": "Available IP address",
+    "placeholder": "Select an available IP address",
+    "search": "Search the available addresses",
+    "hint": "Optional. The asset gets a network interface with this address and it becomes the primary IP of the asset.",
+    "hintEdit": "Optional. The address is added to the asset as a new network interface. It becomes the primary IP only if the asset has none yet.",
+    "empty": "No available IP addresses found",
+    "needWrite": "Assigning an IP address needs write access to IPAM.",
+    "needRead": "You have no access to IPAM, so no IP address can be chosen here.",
+    "loadError": "The available IP addresses could not be loaded."
+  },
   "description": "Manage industrial devices and assets",
   "create": "Create new asset",
   "edit": "Edit asset",

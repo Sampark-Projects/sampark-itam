@@ -13,9 +13,10 @@ def get_asset_type(db: Session, asset_type_id: uuid.UUID) -> Optional[AssetTypeB
 
 
 def get_asset_types(
-    db: Session, tenant_id: Optional[uuid.UUID] = None, skip: int = 0, limit: int = 100
+    db: Session, tenant_id: Optional[uuid.UUID] = None, skip: int = 0, limit: int = 100, search: Optional[str] = None
 ):
-    """List all asset types of a tenant with pagination"""
+    """List the asset types of a tenant with pagination. `search` keeps the types whose name or description
+    contains the text (case-insensitive); it is applied in the query, before the page is cut."""
     from sqlalchemy import func
     from app.models import Asset
 
@@ -26,7 +27,14 @@ def get_asset_types(
         )
     else:
         query = query.filter(AssetType.tenant_id.is_(None))
-    asset_types = query.offset(skip).limit(limit).all()
+    term = (search or "").strip().lower()
+    if term:
+        like = "%" + term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
+        query = query.filter(or_(
+            func.lower(AssetType.name).like(like, escape="\\"),
+            func.lower(AssetType.description).like(like, escape="\\"),
+        ))
+    asset_types = query.order_by(func.lower(AssetType.name)).offset(skip).limit(limit).all()
     # Calculate the asset count for each type
     result = []
     for at in asset_types:

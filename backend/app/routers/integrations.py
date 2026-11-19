@@ -1,4 +1,4 @@
-"""Outbound webhooks (integrations) and the plant dashboard / audit pack (reports)."""
+"""Outbound webhooks (integrations) and the plant dashboard / audit report (reports)."""
 import hashlib
 import uuid
 from datetime import datetime
@@ -192,10 +192,10 @@ def audit_pack(
 ):
     """An Excel workbook for an audit: register, vendor support, maintenance, software, purchase requests, configuration, workflows."""
     data = rs.build_audit_pack(db, current_user.tenant_id, current_user, site_id, days)
-    name = f"audit-pack-{datetime.utcnow():%Y%m%d}.xlsx"
+    name = f"audit-report-{datetime.utcnow():%Y%m%d}.xlsx"
     digest = hashlib.sha256(data).hexdigest()
     # the export of the whole register is recorded with the file checksum, so a copy can be checked later
-    audit.log("export", "AuditPack", None, f"Downloaded the audit pack ({days} days)", None,
+    audit.log("export", "AuditPack", None, f"Downloaded the audit report ({days} days)", None,
               {"site_id": site_id, "days": days, "file": name, "sha256": digest, "bytes": len(data)})
     return Response(
         content=data,

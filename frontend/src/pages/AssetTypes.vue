@@ -19,8 +19,13 @@
       </div>
     </div>
 
-    <DataTable 
-      :value="assettypes" 
+    <span class="p-input-icon-left search-box">
+      <i class="pi pi-search" />
+      <InputText v-model="search" :placeholder="t('assettypes.search')" class="w-full" />
+    </span>
+
+    <DataTable
+      :value="assettypes"
       :loading="loading" 
       paginator 
       :rows="10" 
@@ -85,7 +90,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { useI18n } from 'vue-i18n'
@@ -98,6 +103,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
+import InputText from 'primevue/inputtext'
 
 const toast = useToast()
 const showTagRules = ref(false)
@@ -113,14 +119,26 @@ const editingAssetType = ref(null)
 
 const tenantId = ref('...') 
 
+const search = ref('')
+let searchTimer = null
+
 onMounted(() => {
   fetchAssetTypes()
 })
 
+// the search runs on the server: ask again shortly after the user stops typing
+watch(search, () => {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(fetchAssetTypes, 300)
+})
+onBeforeUnmount(() => clearTimeout(searchTimer))
+
 async function fetchAssetTypes() {
   loading.value = true
+  const asked = search.value.trim()
   try {
-    const response = await api.getAssetTypes()
+    const response = await api.getAssetTypes(asked ? { search: asked } : {})
+    if (asked !== search.value.trim()) return // a newer search is already on its way
     assettypes.value = response.data
   } catch (error) {
     toast.add({ severity: 'error', summary: t('common.messages.error'), detail: t('assettypes.messages.fetchError'), life: 3000 })
@@ -177,6 +195,11 @@ async function deleteAssetType(id) {
 <style scoped>
 .assettypes-page {
   padding: 0;
+}
+.search-box {
+  display: block;
+  max-width: 24rem;
+  margin-bottom: 0.75rem;
 }
 .page-header {
   display: flex;

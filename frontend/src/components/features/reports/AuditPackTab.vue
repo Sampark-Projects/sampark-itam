@@ -43,7 +43,7 @@ async function download() {
     if (siteId.value) params.site_id = siteId.value
     const res = await api.downloadAuditPack(params)
     const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '')
-    downloadBlob(res.data, `audit-pack-${stamp}.xlsx`)
+    downloadBlob(res.data, `audit-report-${stamp}.xlsx`)
     message.value = { severity: 'success', text: t('reports.audit.done') }
   } catch (err) {
     // a failed blob download carries the error body as a Blob: read it so the code can be translated
