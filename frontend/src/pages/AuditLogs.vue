@@ -81,7 +81,7 @@
         <Button 
           :label="t('common.actions.search')" 
           icon="pi pi-search" 
-          @click="fetchAuditLogs" 
+          @click="searchAuditLogs" 
         />
         <Button 
           :label="t('common.actions.clear')" 
@@ -128,9 +128,17 @@
     <!-- Vista Tabella -->
     <div v-else>
       <BaseDataTable
-        :data="auditLogs"
+        :data="logRows"
         :loading="loading"
         :columns="columnOptions"
+        lazy
+        :first="pageFirst"
+        :rows="pageRows"
+        :totalRecords="totalRecords"
+        sortField="timestamp"
+        :sortOrder="sortOrder"
+        @page="onPage"
+        @sort="onSort"
         :filters="tableFilters"
         :globalFilterFields="['description','entity','action','user_name']"
         :showExport="false"
@@ -270,7 +278,9 @@ import Avatar from 'primevue/avatar'
 const { t } = useI18n()
 const router = useRouter()
 
-const { loading, execute } = useApi()
+const { execute } = useApi()
+// the table spinner follows the log request only: useApi's flag is shared with the user list request
+const loading = ref(false)
 const { filters: tableFilters, updateFilter } = useFilters({
   global: { value: null, matchMode: 'contains' }
 }, 'auditLogs')
@@ -318,9 +328,10 @@ const columnOptions = [
   { field: 'actions', header: t('common.strings.actions'), sortable: false }
 ]
 
-onMounted(async () => {
-  await fetchUsers()
-  await fetchAuditLogs()
+onMounted(() => {
+  // both start at once: the log rows show as soon as they arrive, the user names fill in when the user list does
+  fetchUsers().catch(() => {})
+  fetchAuditLogs().catch(() => {})
 })
 
 async function fetchUsers() {
@@ -334,32 +345,75 @@ async function fetchUsers() {
   })
 }
 
+// Server-side paging: one API call per page, page-size, sort or filter change
+const pageFirst = ref(0)
+const pageRows = ref(15)
+const totalRecords = ref(0)
+const sortOrder = ref(-1) // newest first
+
+// The rows the table shows. The user names are looked up here, so they appear as soon as the user list arrives
+// without waiting for it before the log rows can be shown.
+const logRows = computed(() =>
+  auditLogs.value.map(log => ({
+    ...log,
+    user_name: getUserName(log.user_id),
+    entity_label: getEntityLabel(log.entity)
+  }))
+)
+
+let fetchRequestId = 0
+
+function onPage(event) {
+  pageFirst.value = event.first
+  pageRows.value = event.rows
+  fetchAuditLogs()
+}
+
+function onSort(event) {
+  if (event.sortField !== 'timestamp') return
+  sortOrder.value = event.sortOrder === 1 ? 1 : -1
+  pageFirst.value = 0
+  fetchAuditLogs()
+}
+
+// a new search always starts again from the first page
+function searchAuditLogs() {
+  pageFirst.value = 0
+  return fetchAuditLogs()
+}
+
 async function fetchAuditLogs() {
-  await execute(async () => {
+  // a response that is no longer the newest request (filter, page or sort moved on) is ignored
+  const requestId = ++fetchRequestId
+  loading.value = true
+  try {
     const params = {
       from: filters.value.dateRange && filters.value.dateRange[0] ? filters.value.dateRange[0].toISOString() : undefined,
       to: filters.value.dateRange && filters.value.dateRange[1] ? filters.value.dateRange[1].toISOString() : undefined,
       action: filters.value.action,
       entity: filters.value.entity,
       user_id: filters.value.user_id,
-      skip: 0,
-      limit: 100
+      skip: pageFirst.value,
+      limit: pageRows.value,
+      sort_order: sortOrder.value === 1 ? 'asc' : 'desc'
     }
-    
-    const response = await api.getAuditLogs(params)
-    
-    // Aggiungi campi derivati per la visualizzazione
-    auditLogs.value = response.data.map(log => ({
-      ...log,
-      user_name: getUserName(log.user_id),
-      entity_label: getEntityLabel(log.entity)
-    }))
-    
-    return response
-  }, {
-    errorContext: t('auditlog.strings.fetchError'),
-    showToast: false
-  })
+    const response = await api.getAuditLogsPaged(params)
+    if (requestId !== fetchRequestId) return
+    const body = response.data || {}
+    const rows = Array.isArray(body.data) ? body.data : []
+    const total = body.total ?? rows.length
+    // the current page no longer exists (the filter now matches fewer rows): go back to the last one
+    if (rows.length === 0 && total > 0 && pageFirst.value > 0) {
+      pageFirst.value = Math.floor((total - 1) / pageRows.value) * pageRows.value
+      return fetchAuditLogs()
+    }
+    auditLogs.value = rows
+    totalRecords.value = total
+  } catch (error) {
+    if (requestId === fetchRequestId) console.error('Audit log fetch failed', error)
+  } finally {
+    if (requestId === fetchRequestId) loading.value = false
+  }
 }
 
 function clearFilters() {
@@ -369,7 +423,7 @@ function clearFilters() {
     entity: null,
     user_id: null
   }
-  fetchAuditLogs()
+  searchAuditLogs()
 }
 
 function showDetails(log) {

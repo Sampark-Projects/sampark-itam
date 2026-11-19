@@ -102,167 +102,67 @@ def clean_dict(obj: Any) -> dict:
     return result
 
 
+# entity -> (module, class, columns read, label from a row, whether the lookup is limited to the tenant)
+_NAME_LOOKUPS = {
+    "Asset": ("app.models.asset", "Asset", ("name",), lambda r: r.name, True),
+    "Site": ("app.models.site", "Site", ("name",), lambda r: r.name, True),
+    "Location": ("app.models.location", "Location", ("name",), lambda r: r.name, True),
+    "AssetType": ("app.models.asset_type", "AssetType", ("name",), lambda r: r.name, True),
+    "AssetStatus": ("app.models.asset_status", "AssetStatus", ("name",), lambda r: r.name, True),
+    "Manufacturer": ("app.models.manufacturer", "Manufacturer", ("name",), lambda r: r.name, True),
+    "Supplier": ("app.models.supplier", "Supplier", ("name",), lambda r: r.name, True),
+    "Contact": ("app.models.contact", "Contact", ("first_name", "last_name"), lambda r: f"{r.first_name} {r.last_name}", True),
+    "User": ("app.models.user", "User", ("name", "email"), lambda r: r.name or r.email, True),
+    "Role": ("app.models.role", "Role", ("name",), lambda r: r.name, True),
+    "NetworkProbe": ("app.models.network_probe", "NetworkProbe", ("name",), lambda r: r.name, True),
+    "DiscoveredDevice": ("app.models.discovered_device", "DiscoveredDevice", ("hostname", "mac_address"),
+                         lambda r: r.hostname or r.mac_address or str(r.id), True),
+    "SecurityZone": ("app.models.security_zone", "SecurityZone", ("name",), lambda r: r.name, True),
+    "Conduit": ("app.models.conduit", "Conduit", ("name",), lambda r: r.name, True),
+    "ApiKey": ("app.models.api_key", "ApiKey", ("name",), lambda r: r.name, True),
+    "Tenant": ("app.models.tenant", "Tenant", ("name",), lambda r: r.name, False),
+}
+
+
+def get_entity_names_bulk(db: Session, refs, tenant_id: uuid.UUID) -> dict:
+    """The names of many entities at once: {(entity, entity_id): name}. One query per entity type present,
+    instead of one per row. An entity that is gone, of another tenant or of an unknown type has no key."""
+    import importlib
+
+    wanted: dict = {}
+    for entity_type, entity_id in refs:
+        if entity_id and entity_type in _NAME_LOOKUPS:
+            try:
+                wanted.setdefault(entity_type, set()).add(uuid.UUID(str(entity_id)))
+            except ValueError:
+                continue
+
+    names: dict = {}
+    for entity_type, ids in wanted.items():
+        module, cls_name, columns, label, per_tenant = _NAME_LOOKUPS[entity_type]
+        try:
+            model = getattr(importlib.import_module(module), cls_name)
+            query = db.query(model.id, *[getattr(model, c) for c in columns]).filter(model.id.in_(ids))
+            if per_tenant:
+                query = query.filter(model.tenant_id == tenant_id)
+            for row in query.all():
+                names[(entity_type, row.id)] = label(row)
+        except Exception:
+            db.rollback()
+    return names
+
+
 def get_entity_name_by_id(
     db: Session, entity_type: str, entity_id: uuid.UUID, tenant_id: uuid.UUID
 ) -> Optional[str]:
     """Recupera il nome di un'entità dal suo ID"""
     if not entity_id:
         return None
-
     try:
-        if entity_type == "Asset":
-            from app.models.asset import Asset
-
-            obj = (
-                db.query(Asset)
-                .filter(Asset.id == entity_id, Asset.tenant_id == tenant_id)
-                .first()
-            )
-            return obj.name if obj else None
-        elif entity_type == "Site":
-            from app.models.site import Site
-
-            obj = (
-                db.query(Site)
-                .filter(Site.id == entity_id, Site.tenant_id == tenant_id)
-                .first()
-            )
-            return obj.name if obj else None
-        elif entity_type == "Location":
-            from app.models.location import Location
-
-            obj = (
-                db.query(Location)
-                .filter(Location.id == entity_id, Location.tenant_id == tenant_id)
-                .first()
-            )
-            return obj.name if obj else None
-        elif entity_type == "AssetType":
-            from app.models.asset_type import AssetType
-
-            obj = (
-                db.query(AssetType)
-                .filter(AssetType.id == entity_id, AssetType.tenant_id == tenant_id)
-                .first()
-            )
-            return obj.name if obj else None
-        elif entity_type == "AssetStatus":
-            from app.models.asset_status import AssetStatus
-
-            obj = (
-                db.query(AssetStatus)
-                .filter(AssetStatus.id == entity_id, AssetStatus.tenant_id == tenant_id)
-                .first()
-            )
-            return obj.name if obj else None
-        elif entity_type == "Manufacturer":
-            from app.models.manufacturer import Manufacturer
-
-            obj = (
-                db.query(Manufacturer)
-                .filter(
-                    Manufacturer.id == entity_id, Manufacturer.tenant_id == tenant_id
-                )
-                .first()
-            )
-            return obj.name if obj else None
-        elif entity_type == "Supplier":
-            from app.models.supplier import Supplier
-
-            obj = (
-                db.query(Supplier)
-                .filter(Supplier.id == entity_id, Supplier.tenant_id == tenant_id)
-                .first()
-            )
-            return obj.name if obj else None
-        elif entity_type == "Contact":
-            from app.models.contact import Contact
-
-            obj = (
-                db.query(Contact)
-                .filter(Contact.id == entity_id, Contact.tenant_id == tenant_id)
-                .first()
-            )
-            return f"{obj.first_name} {obj.last_name}" if obj else None
-        elif entity_type == "User":
-            from app.models.user import User
-
-            obj = (
-                db.query(User)
-                .filter(User.id == entity_id, User.tenant_id == tenant_id)
-                .first()
-            )
-            return obj.name or obj.email if obj else None
-        elif entity_type == "Role":
-            from app.models.role import Role
-
-            obj = (
-                db.query(Role)
-                .filter(Role.id == entity_id, Role.tenant_id == tenant_id)
-                .first()
-            )
-            return obj.name if obj else None
-        elif entity_type == "NetworkProbe":
-            from app.models.network_probe import NetworkProbe
-
-            obj = (
-                db.query(NetworkProbe)
-                .filter(NetworkProbe.id == entity_id, NetworkProbe.tenant_id == tenant_id)
-                .first()
-            )
-            return obj.name if obj else None
-        elif entity_type == "DiscoveredDevice":
-            from app.models.discovered_device import DiscoveredDevice
-
-            obj = (
-                db.query(DiscoveredDevice)
-                .filter(
-                    DiscoveredDevice.id == entity_id,
-                    DiscoveredDevice.tenant_id == tenant_id,
-                )
-                .first()
-            )
-            if not obj:
-                return None
-            return obj.hostname or obj.mac_address or str(entity_id)
-        elif entity_type == "SecurityZone":
-            from app.models.security_zone import SecurityZone
-
-            obj = (
-                db.query(SecurityZone)
-                .filter(
-                    SecurityZone.id == entity_id, SecurityZone.tenant_id == tenant_id
-                )
-                .first()
-            )
-            return obj.name if obj else None
-        elif entity_type == "Conduit":
-            from app.models.conduit import Conduit
-
-            obj = (
-                db.query(Conduit)
-                .filter(Conduit.id == entity_id, Conduit.tenant_id == tenant_id)
-                .first()
-            )
-            return obj.name if obj else None
-        elif entity_type == "ApiKey":
-            from app.models.api_key import ApiKey
-
-            obj = (
-                db.query(ApiKey)
-                .filter(ApiKey.id == entity_id, ApiKey.tenant_id == tenant_id)
-                .first()
-            )
-            return obj.name if obj else None
-        elif entity_type == "Tenant":
-            from app.models.tenant import Tenant
-
-            obj = db.query(Tenant).filter(Tenant.id == entity_id).first()
-            return obj.name if obj else None
-    except Exception:
+        key = (entity_type, uuid.UUID(str(entity_id)))
+    except ValueError:
         return None
-
-    return None
+    return get_entity_names_bulk(db, [key], tenant_id).get(key)
 
 
 def resolve_audit_language(user=None, request=None) -> str:

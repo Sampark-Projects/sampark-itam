@@ -343,6 +343,10 @@ export default {
   getAssetTypes(params = {}) {
     return api.get('/asset-types', { params })
   },
+  // One page: params { search, skip, limit, sort_by, sort_order }; answers { data, total, skip, limit }
+  getAssetTypesPaged(params = {}) {
+    return api.get('/asset-types/paged', { params })
+  },
   getDashboardStats(params = {}) {
     return api.get('/dashboard/stats', { params })
   },
@@ -945,6 +949,10 @@ export default {
   },
   getAuditLogs(params = {}) {
     return api.get('/audit-logs', { params })
+  },
+  // One page: params { from, to, action, entity, user_id, skip, limit, sort_order }; answers { data, total, skip, limit }
+  getAuditLogsPaged(params = {}) {
+    return api.get('/audit-logs/paged', { params })
   },
   exportAuditLogs(params = {}) {
     return api.get('/audit-logs/export', { params, responseType: 'blob' })
