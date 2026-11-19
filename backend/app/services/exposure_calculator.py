@@ -89,17 +89,7 @@ class ExposureCalculator:
         ) or 0
         
         # 4. Missing Critical Dependencies
-        connections = (
-            db.query(AssetConnection)
-            .filter(AssetConnection.tenant_id == tenant_id)
-            .all()
-        )
-        
-        missing_critical_dependencies = 0
-        for conn in connections:
-            status = ConnectionDependencyAnalyzer.get_connection_dependency_status(db, conn)
-            if status.get('status') == 'missing' and status.get('severity') == 'critical':
-                missing_critical_dependencies += 1
+        missing_critical_dependencies = ConnectionDependencyAnalyzer.dependency_gap_counts(db, tenant_id)["critical_missing"]
         
         # 5. Total Assets (per normalizzazione)
         total_assets = (

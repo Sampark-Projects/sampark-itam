@@ -4,6 +4,8 @@ Ottimizza le performance riducendo le query al database
 """
 import json
 import hashlib
+import threading
+import time
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 from sqlalchemy.orm import Session
@@ -17,6 +19,10 @@ class DashboardCache:
     def __init__(self):
         self._cache: Dict[str, Dict[str, Any]] = {}
         self._cache_ttl = 300  # 5 minuti
+        # Heavier dashboard summaries (exposure, reviews, compliance ...), one entry per (tenant, name)
+        self._summaries: Dict[tuple, tuple] = {}
+        self._summary_ttl = 120  # seconds
+        self._lock = threading.Lock()
     
     def _get_cache_key(self, tenant_id: str) -> str:
         """Genera una chiave di cache unica per il tenant"""
@@ -59,15 +65,37 @@ class DashboardCache:
             'cached_at': datetime.utcnow().isoformat()
         }
     
+    def get_or_compute(self, tenant_id: str, name: str, compute, ttl: Optional[int] = None):
+        """Return the cached summary `name` of a tenant, or run compute() and keep its result for `ttl` seconds.
+
+        The cache lives in this process: with several workers each one keeps its own copy, so a change can show up
+        on the dashboard up to `ttl` seconds late there. Asset changes clear it at once (invalidate_cache).
+        A failing compute() is not cached."""
+        key = (str(tenant_id), name)
+        now = time.monotonic()
+        with self._lock:
+            hit = self._summaries.get(key)
+        if hit and hit[0] > now:
+            return hit[1]
+        value = compute()
+        with self._lock:
+            self._summaries[key] = (time.monotonic() + (ttl or self._summary_ttl), value)
+        return value
+
     def invalidate_cache(self, tenant_id: str) -> None:
         """Invalida la cache per un tenant specifico"""
         cache_key = self._get_cache_key(tenant_id)
         if cache_key in self._cache:
             del self._cache[cache_key]
+        with self._lock:
+            for key in [k for k in self._summaries if k[0] == str(tenant_id)]:
+                del self._summaries[key]
     
     def clear_all_cache(self) -> None:
         """Pulisce tutta la cache"""
         self._cache.clear()
+        with self._lock:
+            self._summaries.clear()
 
 
 # Istanza globale del cache

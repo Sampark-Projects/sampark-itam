@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta
 from typing import List, Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, func, or_
 from app.models import Asset, Tenant, Site
 import uuid
 import logging
@@ -205,6 +205,62 @@ class AssetReviewService:
         logger.info(f"Returning {len(due_assets)} assets due for review")
         return due_assets
     
+    @staticmethod
+    def dashboard_summary(db: Session, tenant_id: uuid.UUID, top: int = 5) -> dict:
+        """Counts and the first few rows of the overdue and due-soon assets, for the dashboard.
+
+        Applies the same rules as get_overdue_assets / update_review_status, but in SQL: the full asset list with all
+        its relations is not loaded. Only the assets that still have no next review date are loaded and calculated
+        (normally none), and the review status of the others is brought up to date with two bulk updates."""
+        now = datetime.utcnow()
+        live = and_(Asset.tenant_id == tenant_id, Asset.deleted_at.is_(None))
+
+        changed = False
+        for asset in db.query(Asset).filter(live, Asset.next_review_date.is_(None)).all():
+            calculated = AssetReviewService.calculate_next_review_date(asset, db)
+            if calculated:
+                asset.next_review_date = calculated
+                AssetReviewService.update_review_status(asset, db)
+                changed = True
+
+        not_skipped = or_(Asset.review_status.is_(None), Asset.review_status != 'skipped')
+        # past the review date and not skipped -> overdue; before it and not reviewed/skipped -> pending
+        stale_overdue = db.query(Asset).filter(
+            live, Asset.next_review_date < now, not_skipped, or_(Asset.review_status.is_(None), Asset.review_status != 'overdue')
+        ).update({Asset.review_status: 'overdue'}, synchronize_session=False)
+        stale_pending = db.query(Asset).filter(
+            live, Asset.next_review_date >= now,
+            or_(Asset.review_status.is_(None), Asset.review_status.notin_(['reviewed', 'skipped', 'pending']))
+        ).update({Asset.review_status: 'pending'}, synchronize_session=False)
+        if changed or stale_overdue or stale_pending:
+            db.commit()
+
+        tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
+        days_ahead = tenant.review_due_days_ahead if tenant and tenant.review_due_days_ahead else 30
+        overdue_filter = and_(live, Asset.next_review_date.isnot(None), Asset.next_review_date < now, not_skipped)
+        due_filter = and_(live, Asset.next_review_date.isnot(None), Asset.next_review_date >= now,
+                          Asset.next_review_date <= now + timedelta(days=days_ahead),
+                          or_(Asset.review_status.is_(None), Asset.review_status == 'pending'))
+
+        def rows(flt):
+            return (db.query(Asset.id, Asset.name, Asset.next_review_date, Asset.review_status)
+                    .filter(flt).order_by(Asset.next_review_date.asc()).limit(top).all())
+
+        def counted(flt):
+            return db.query(func.count(Asset.id)).filter(flt).scalar() or 0
+
+        def item(r):
+            return {"id": str(r.id), "name": r.name,
+                    "next_review_date": r.next_review_date.isoformat() if r.next_review_date else None,
+                    "review_status": r.review_status}
+
+        return {
+            "overdue_count": counted(overdue_filter),
+            "due_count": counted(due_filter),
+            "overdue_assets": [item(r) for r in rows(overdue_filter)],
+            "due_assets": [item(r) for r in rows(due_filter)],
+        }
+
     @staticmethod
     def get_overdue_assets(
         db: Session,

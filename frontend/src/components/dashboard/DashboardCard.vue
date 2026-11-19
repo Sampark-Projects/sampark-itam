@@ -6,7 +6,8 @@
     </div>
     <div class="card-body">
       <div class="card-main">
-        <div class="card-value">{{ formattedValue }}</div>
+        <div v-if="loading" class="card-value card-value-loading" aria-busy="true"></div>
+        <div v-else class="card-value">{{ formattedValue }}</div>
         <div v-if="subtitle" class="card-subtitle">{{ subtitle }}</div>
       </div>
       <i class="pi pi-arrow-right card-arrow"></i>
@@ -42,6 +43,11 @@ const props = defineProps({
   clickAction: {
     type: String,
     required: true
+  },
+  // true until the data of this card has arrived: shows a placeholder instead of a misleading 0
+  loading: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -120,6 +126,20 @@ const severityClass = computed(() => {
   font-weight: 500;
   color: #1f2d25;
   line-height: 1.1;
+}
+
+.card-value-loading {
+  width: 3.2rem;
+  height: 2rem;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #e8eeea 25%, #f4f7f5 50%, #e8eeea 75%);
+  background-size: 200% 100%;
+  animation: card-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes card-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
 }
 
 .card-subtitle {

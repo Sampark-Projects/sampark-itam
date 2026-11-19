@@ -20,7 +20,34 @@ class ConnectionDependencyAnalyzer:
     """
     
     CRITICAL_CONNECTION_TYPES = ['control', 'safety', 'operational', 'critical']
-    
+
+    @staticmethod
+    def dependency_gap_counts(db: Session, tenant_id) -> Dict[str, int]:
+        """Count the connections of a tenant and those with no matching dependency, in two queries in total.
+
+        Same rule as get_connection_dependency_status: a connection with both assets is 'missing' when no dependency
+        links the two assets in either direction and its type is critical. Used by the dashboard, which would
+        otherwise run one query per connection."""
+        connections = (
+            db.query(AssetConnection.parent_asset_id, AssetConnection.child_asset_id, AssetConnection.connection_type)
+            .filter(AssetConnection.tenant_id == tenant_id)
+            .all()
+        )
+        linked = {
+            (dep, on) for dep, on in db.query(AssetDependency.dependent_asset_id, AssetDependency.dependency_asset_id)
+            .filter(AssetDependency.tenant_id == tenant_id).all()
+        }
+        missing = 0
+        for parent, child, kind in connections:
+            if not parent or not child:
+                continue
+            if (parent, child) in linked or (child, parent) in linked:
+                continue
+            if kind in ConnectionDependencyAnalyzer.CRITICAL_CONNECTION_TYPES:
+                missing += 1
+        # a 'missing' connection is always critical, so the two counts are the same
+        return {"total_connections": len(connections), "missing": missing, "critical_missing": missing}
+
     @staticmethod
     def get_connection_dependency_status(
         db: Session,
