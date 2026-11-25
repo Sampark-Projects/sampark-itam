@@ -33,8 +33,36 @@
             "number": "Numero",
             "date": "Data",
             "select": "Scelta",
-            "boolean": "Sì / No"
+            "boolean": "Sì / No",
+            "url": "Link web"
         }
+    },
+    "import": {
+        "title": "Importa tipi di asset",
+        "downloadTemplate": "Scarica il modello",
+        "importantInfo": "Informazioni importanti",
+        "requiredFields": "Obbligatori",
+        "nameRequired": "name: il nome del tipo di asset",
+        "labelRequired": "field_label: quando una riga ha un field_key",
+        "validFormats": "Formati validi",
+        "purdueFormat": "purdue_level: 0, 1, 1.5, 2, 3 o 4",
+        "keyFormat": "field_key: lettere minuscole, cifre e _, che inizia con una lettera",
+        "typeFormat": "field_type: text, number, date, select, boolean o url; field_required: yes o no",
+        "optionsFormat": "field_options (campi select): scelte separate da |",
+        "rowsNote": "Una riga per campo: ripeti il nome del tipo su ogni riga dei suoi campi. Una riga senza field_key è un tipo senza campi.",
+        "existingNote": "Un tipo già esistente viene aggiornato: i campi del file vengono aggiunti o modificati (il tipo di un campo non può cambiare) e gli altri campi restano.",
+        "blankNote": "Una cella vuota non cancella mai un valore salvato. Un tipo con una riga errata viene escluso per intero.",
+        "fileInput": "File dei tipi di asset",
+        "toCreate": "Da creare",
+        "toUpdate": "Da aggiornare",
+        "differences": "Differenze",
+        "errors": "Errori",
+        "row": "Riga",
+        "confirm": "Conferma",
+        "readError": "Errore nella lettura del file",
+        "nothingToDo": "Il file non contiene novità: ogni tipo di asset è già come indicato nel file.",
+        "done": "Tipi di asset importati: {created} creati, {updated} aggiornati, {errors} errori",
+        "failed": "Nessuna importazione: {errors} errori"
     },
     "tagRules": {
         "button": "Regole di denominazione",

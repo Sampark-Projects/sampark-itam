@@ -252,6 +252,10 @@ export default {
   getAssetComponents(id) {
     return api.get(`/assets/${id}/components`)
   },
+  // the assets that this asset (a PLC or controller) controls
+  getAssetControlled(id) {
+    return api.get(`/assets/${id}/controlled`)
+  },
   createAsset(assetData) {
     return api.post('/assets', assetData)
   },
@@ -476,6 +480,16 @@ export default {
   },
   getAssetType(id) {
     return api.get(`/asset-types/${id}`)
+  },
+  previewAssetTypeImportXlsx(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/asset-types/import/xlsx/preview', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+  confirmAssetTypeImportXlsx(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/asset-types/import/xlsx/confirm', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
   },
   createAssetType(assettypeData) {
     return api.post('/asset-types', assettypeData)
@@ -1370,6 +1384,53 @@ export default {
     form.append('file', file)
     for (const [key, value] of Object.entries(options)) form.append(key, value ? 'true' : 'false')
     return api.post(`/ipam/import/csv/${kind}`, form, { headers: { 'Content-Type': 'multipart/form-data' } })
+  },
+  // DCIM: racks, rack roles, device types and the place of an asset in a rack
+  getDcimOverview() { return api.get('/dcim/overview') },
+  getDcimRackRoles() { return api.get('/dcim/rack-roles') },
+  createDcimRackRole(data) { return api.post('/dcim/rack-roles', data) },
+  updateDcimRackRole(id, data) { return api.put(`/dcim/rack-roles/${id}`, data) },
+  deleteDcimRackRole(id) { return api.delete(`/dcim/rack-roles/${id}`) },
+  getDcimRacks(params = {}) { return api.get('/dcim/racks', { params }) },
+  getDcimRack(id) { return api.get(`/dcim/racks/${id}`) },
+  getDcimRackElevation(id) { return api.get(`/dcim/racks/${id}/elevation`) },
+  createDcimRack(data) { return api.post('/dcim/racks', data) },
+  updateDcimRack(id, data) { return api.put(`/dcim/racks/${id}`, data) },
+  deleteDcimRack(id) { return api.delete(`/dcim/racks/${id}`) },
+  getDcimDeviceTypes(params = {}) { return api.get('/dcim/device-types', { params }) },
+  createDcimDeviceType(data) { return api.post('/dcim/device-types', data) },
+  updateDcimDeviceType(id, data) { return api.put(`/dcim/device-types/${id}`, data) },
+  deleteDcimDeviceType(id) { return api.delete(`/dcim/device-types/${id}`) },
+  getDcimPlacement(assetId) { return api.get(`/dcim/assets/${assetId}/placement`) },
+  setDcimPlacement(assetId, data) { return api.put(`/dcim/assets/${assetId}/placement`, data) },
+  getDcimOptions() { return api.get('/dcim/options') },
+  getDcimInterfaces(params = {}) { return api.get('/dcim/interfaces', { params }) },
+  getDcimAssetInterfaces(assetId) { return api.get(`/dcim/assets/${assetId}/interfaces`) },
+  updateDcimInterface(id, data) { return api.put(`/dcim/interfaces/${id}`, data) },
+  traceDcimInterface(id) { return api.get(`/dcim/interfaces/${id}/trace`) },
+  getDcimCableOverview() { return api.get('/dcim/cables/overview') },
+  getDcimCables(params = {}) { return api.get('/dcim/cables', { params }) },
+  createDcimCable(data) { return api.post('/dcim/cables', data) },
+  updateDcimCable(id, data) { return api.put(`/dcim/cables/${id}`, data) },
+  deleteDcimCable(id) { return api.delete(`/dcim/cables/${id}`) },
+  getDcimPoe(params = {}) { return api.get('/dcim/poe', { params }) },
+  getDcimTopology(params = {}) { return api.get('/dcim/topology', { params }) },
+  // the assets of a PLC or controller type, for the "controlled by" field
+  getControllerCandidates(params = {}) { return api.get('/assets/controller-candidates', { params }) },
+  getDcimInterfaceMacs(interfaceId) { return api.get(`/dcim/interfaces/${interfaceId}/macs`) },
+  addDcimInterfaceMac(interfaceId, data) { return api.post(`/dcim/interfaces/${interfaceId}/macs`, data) },
+  updateDcimMac(id, data) { return api.put(`/dcim/macs/${id}`, data) },
+  deleteDcimMac(id) { return api.delete(`/dcim/macs/${id}`) },
+  getDcimMacOverview() { return api.get('/dcim/macs/overview') },
+  getDcimMacBindings(params = {}) { return api.get('/dcim/mac-bindings', { params }) },
+  getDcimPurdueReport(params = {}) { return api.get('/dcim/purdue/report', { params }) },
+  createDcimPurdueRoles() { return api.post('/dcim/purdue/roles') },
+  exportDcimCsv(kind) { return api.get(`/dcim/export/csv/${kind}`, { responseType: 'blob' }) },
+  importDcimCsv(kind, file, options = {}) {
+    const form = new FormData()
+    form.append('file', file)
+    for (const [key, value] of Object.entries(options)) form.append(key, value ? 'true' : 'false')
+    return api.post(`/dcim/import/csv/${kind}`, form, { headers: { 'Content-Type': 'multipart/form-data' } })
   },
   getIpamRirs() { return api.get('/ipam/rirs') },
   createIpamRir(data) { return api.post('/ipam/rirs', data) },

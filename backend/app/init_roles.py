@@ -44,6 +44,7 @@ def seed_roles(tenant_id=None):
                 "reports": 4,
                 "applications": 4,
                 "ipam": 4,
+                "dcim": 4,
             },
         },
         {
@@ -82,6 +83,7 @@ def seed_roles(tenant_id=None):
                 "reports": 2,
                 "applications": 2,
                 "ipam": 2,
+                "dcim": 2,
             },
         },
         {
@@ -120,6 +122,7 @@ def seed_roles(tenant_id=None):
                 "reports": 1,
                 "applications": 1,
                 "ipam": 1,
+                "dcim": 1,
             },
         },
     ]

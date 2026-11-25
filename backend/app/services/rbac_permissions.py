@@ -198,6 +198,16 @@ NEW_SECTIONS = {
             4: "Full administration"
         }
     },
+    "dcim": {
+        "description": "Data centre and plant infrastructure: racks, device types and the place of devices in racks",
+        "levels": {
+            0: "No access",
+            1: "View racks and device types",
+            2: "Create and edit racks, device types and placements",
+            3: "Delete racks and device types",
+            4: "Full administration (CSV import)"
+        }
+    },
     "network_probes": {
         "description": "Gestione sonde di rete e dispositivi scoperti",
         "levels": {
@@ -252,6 +262,7 @@ ADMIN_DEFAULT_PERMISSIONS = {
     "reports": 3,
     "applications": 3,
     "ipam": 3,
+    "dcim": 3,
 }
 
 # Permessi di default per ruolo editor
@@ -292,6 +303,7 @@ EDITOR_DEFAULT_PERMISSIONS = {
     "reports": 2,
     "applications": 2,
     "ipam": 2,
+    "dcim": 2,
 }
 
 # Permessi di default per ruolo viewer (solo lettura)
@@ -332,4 +344,5 @@ VIEWER_DEFAULT_PERMISSIONS = {
     "reports": 1,
     "applications": 1,
     "ipam": 1,
+    "dcim": 1,
 }

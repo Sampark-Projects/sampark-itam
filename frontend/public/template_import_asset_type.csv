@@ -1,0 +1,12 @@
+name,description,purdue_level,field_key,field_label,field_type,field_required,field_options
+Conventional Machine,Machine without a network connection,0,voltage,Supply voltage (V),number,yes,
+Conventional Machine,,,amperage,Rated current (A),number,no,
+Conventional Machine,,,power_kw,Rated power (kW),number,no,
+Conventional Machine,,,mechanical_schematic_url,Mechanical schematic,url,no,
+Conventional Machine,,,electrical_schematic_url,Electrical schematic,url,no,
+Operator Panel,HMI operator panel,2,,,,,
+Industrial Switch,Managed or unmanaged network switch,3,port_count,Number of ports,number,no,
+Industrial Switch,,,managed,Managed switch,boolean,no,
+Industrial Switch,,,mounting,Mounting,select,no,DIN rail|Rack|Wall
+Industrial Switch,,,commissioned_on,Commissioned on,date,no,
+Industrial Switch,,,location_note,Location note,text,no,

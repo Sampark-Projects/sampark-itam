@@ -4,11 +4,23 @@
   - Hidden when the asset has neither.
 -->
 <template>
-  <section v-if="asset.parent || components.length || loading" class="dcard">
+  <section v-if="asset.parent || asset.controller || components.length || controlled.length || loading" class="dcard">
     <h3 class="dcard-title">
       <span class="dcard-icon"><i class="pi pi-share-alt"></i></span>{{ t('assets.lifecycle.components.title') }}
       <span v-if="components.length" class="dcard-count">{{ components.length }}</span>
     </h3>
+
+    <div v-if="asset.controller" class="component-row">
+      <span class="component-label">{{ t('assets.lifecycle.components.controlledBy') }}</span>
+      <router-link :to="`/assets/${asset.controller.id}`" class="component-link">{{ asset.controller.name }}</router-link>
+    </div>
+
+    <div v-if="controlled.length" class="component-row">
+      <span class="component-label">{{ t('assets.lifecycle.components.controls', { count: controlled.length }) }}</span>
+      <span class="component-list">
+        <router-link v-for="c in controlled" :key="c.id" :to="`/assets/${c.id}`" class="component-link">{{ c.name }}</router-link>
+      </span>
+    </div>
 
     <div v-if="loading" class="loader-row" role="status" aria-live="polite">
       <ProgressSpinner style="width: 1.5rem; height: 1.5rem" strokeWidth="6" /><span>{{ t('common.loading') }}</span>
@@ -40,22 +52,25 @@ const props = defineProps({
 
 const { t } = useI18n()
 const components = ref([])
+const controlled = ref([])
 const loading = ref(false)
 
 watch(
   () => props.asset?.id,
-  async (id) => {
+  (id) => {
     components.value = []
+    controlled.value = []
     if (!id) return
+    // both lists are asked at once; each one shows as soon as its own answer is in
     loading.value = true
-    try {
-      const res = await api.getAssetComponents(id)
-      if (props.asset?.id === id) components.value = Array.isArray(res.data) ? res.data : []
-    } catch (e) {
-      components.value = []
-    } finally {
-      if (props.asset?.id === id) loading.value = false
-    }
+    const list = (request, target) =>
+      request
+        .then(res => { if (props.asset?.id === id) target.value = Array.isArray(res.data) ? res.data : [] })
+        .catch(() => { if (props.asset?.id === id) target.value = [] })
+    Promise.allSettled([
+      list(api.getAssetComponents(id), components),
+      list(api.getAssetControlled(id), controlled)
+    ]).finally(() => { if (props.asset?.id === id) loading.value = false })
   },
   { immediate: true }
 )

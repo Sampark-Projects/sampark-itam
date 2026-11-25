@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, ForeignKey, DateTime
+from sqlalchemy import BigInteger, Boolean, Column, Integer, Numeric, String, ForeignKey, DateTime
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -28,4 +28,14 @@ class AssetInterface(Base):
     vrf_id = Column(UUID(as_uuid=True), ForeignKey("ipam_vrfs.id", ondelete="SET NULL"), nullable=True, index=True)
     vlan_mode = Column(String(10), nullable=True)
     vlan_translation_policy_id = Column(UUID(as_uuid=True), ForeignKey("ipam_vlan_translation_policies.id", ondelete="RESTRICT"), nullable=True)
+    # DCIM: the kind of port, its state and PoE (rules in app.services.dcim_logic; the free text `type` above is kept)
+    port_type = Column(String(50), nullable=True)
+    enabled = Column(Boolean, nullable=False, default=True, server_default="true")
+    mtu = Column(Integer, nullable=True)
+    speed_kbps = Column(BigInteger, nullable=True)
+    duplex = Column(String(5), nullable=True)
+    mgmt_only = Column(Boolean, nullable=False, default=False, server_default="false")
+    poe_mode = Column(String(3), nullable=True, index=True)  # pse: powers the device on the other end; pd: is powered
+    poe_type = Column(String(20), nullable=True)
+    poe_power_draw_w = Column(Numeric(6, 1), nullable=True)
     asset = relationship("Asset", back_populates="interfaces")

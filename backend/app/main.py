@@ -183,6 +183,11 @@ from app.routers import ipam_vlan_translation
 from app.routers import ipam_import
 from app.routers import ipam_registry
 from app.routers import ipam_routing
+from app.routers import dcim_racks
+from app.routers import dcim_device_types
+from app.routers import dcim_import
+from app.routers import dcim_cables
+from app.routers import dcim_macs
 from app.routers import application_hosting
 from app.routers import application_security
 from app.routers import application_alerts
@@ -292,6 +297,11 @@ app.include_router(ipam_vlan_translation.router, tags=["ipam"])
 app.include_router(ipam_import.router, tags=["ipam"])
 app.include_router(ipam_registry.router, tags=["ipam"])
 app.include_router(ipam_routing.router, tags=["ipam"])
+app.include_router(dcim_racks.router, tags=["dcim"])
+app.include_router(dcim_device_types.router, tags=["dcim"])
+app.include_router(dcim_import.router, tags=["dcim"])
+app.include_router(dcim_cables.router, tags=["dcim"])
+app.include_router(dcim_macs.router, tags=["dcim"])
 app.include_router(asset_software.router, tags=["assets"])
 app.include_router(sites.router, tags=["sites"])
 app.include_router(asset_interfaces.router, tags=["asset_interfaces"])

@@ -60,7 +60,8 @@
     "basicInfo": "Basic Information",
     "permissions": "Permissions",
     "applications": "Applications",
-    "ipam": "IPAM"
+    "ipam": "IPAM",
+    "dcim": "DCIM"
   },
   "levels": {
     "none": "None",
@@ -121,6 +122,7 @@
     "resetPassword": "Reset Password",
     "resetPasswordDescription": "Can reset passwords of other users",
     "applications": "Applications",
-    "ipam": "IPAM"
+    "ipam": "IPAM",
+    "dcim": "DCIM"
   }
 }

@@ -10,7 +10,8 @@ import pandas as pd
 from sqlalchemy.exc import IntegrityError
 
 from app.database import get_db
-from app.models import User, Asset, AssetCommunication, AssetZoneMembership
+from app.models import User, Asset, AssetCommunication, AssetZoneMembership, DcimRack
+from app.services import asset_import_extra
 from app.services.audit_decorator import audit_log_action
 from app.schemas import (
     AssetRead as AssetSchema,
@@ -827,6 +828,7 @@ def import_assets_xlsx_preview(
     except Exception as e:
         return {"error": f"Error reading file: {str(e)}"}
     to_create, to_update, errors = [], [], []
+    pending_controllers = {}  # tag -> asset type of the rows read so far, so a controller in the same file can be named
     for idx, row in df.iterrows():
         name = row.get("nome") or row.get("name")
         tag = row.get("tag")
@@ -948,6 +950,15 @@ def import_assets_xlsx_preview(
             )
         else:
             asset = None
+        # lifecycle, controller, rack and custom-field columns (the same rules as the confirm step)
+        extra = asset_import_extra.parse_row(
+            db, current_user.tenant_id, row, site_id=site_id, asset_type_id=asset_type_id, asset=asset,
+            manufacturer_id=manufacturer_id, model=asset_import_extra.cell(row, "model"), name=str(name).strip(), pending=pending_controllers)
+        if extra.errors:
+            errors.append({"row": int(idx) + 2, "error": "; ".join(extra.errors)})
+            continue
+        if tag is not None and not pd.isna(tag) and str(tag).strip() != "":
+            pending_controllers[str(tag).strip().lower()] = asset_type_name
         # Prepare preview of interfaces
         interfaces = []
         if ip_address and not pd.isna(ip_address) and str(ip_address).strip() != "":
@@ -1001,6 +1012,22 @@ def import_assets_xlsx_preview(
                     if str(old_value) != str(new_value):
                         diff[field] = {"old": old_value, "new": new_value}
             
+            for key, value in extra.lifecycle.items():
+                if str(getattr(asset, key, None)) != str(value):
+                    diff[key] = {"old": getattr(asset, key, None), "new": value}
+            for key, value in extra.custom_fields.items():
+                old_value = (asset.custom_fields or {}).get(key)
+                if str(old_value) != str(value):
+                    diff[f"cf_{key}"] = {"old": old_value, "new": value}
+            if extra.controller is not None and extra.controller.id != asset.controller_asset_id:
+                diff["controller"] = {"old": asset.controller.name if asset.controller else None, "new": extra.controller.name}
+            elif extra.controller_pending:
+                diff["controller"] = {"old": asset.controller.name if asset.controller else None, "new": extra.shown.get("controller")}
+            if extra.has_rack and (asset.rack_id, asset.rack_position, asset.rack_face) != (extra.rack.id, extra.position, extra.face):
+                diff["rack"] = {"old": asset.rack_id and (db.query(DcimRack.name).filter(DcimRack.id == asset.rack_id).scalar()),
+                                "new": extra.shown.get("rack_position") and f"{extra.shown['rack']} / {extra.shown['rack_position']}" or extra.shown.get("rack")}
+            if extra.airflow and extra.airflow != asset.airflow:
+                diff["airflow"] = {"old": asset.airflow, "new": extra.airflow}
             if diff or interfaces:
                 to_update.append(
                     {
@@ -1029,6 +1056,7 @@ def import_assets_xlsx_preview(
                     "installation_date": row.get("installation_date"),
                     "manufacturer_action": manufacturer_action,
                     "interfaces": interfaces,
+                    "extra": extra.shown,
                 }
             )
     return sanitize_for_json(
@@ -1069,6 +1097,7 @@ def import_assets_xlsx_confirm(
     except Exception as e:
         return {"error": f"Error reading file: {str(e)}"}
     created, updated, errors = [], [], []
+    pending_controllers = {}  # tag -> asset type of the rows read so far, so a controller in the same file can be named
     for idx, row in df.iterrows():
         name = row.get("nome") or row.get("name")
         tag = row.get("tag")
@@ -1198,6 +1227,15 @@ def import_assets_xlsx_confirm(
             )
         else:
             asset = None
+        # lifecycle, controller, rack and custom-field columns (checked before anything is written)
+        extra = asset_import_extra.parse_row(
+            db, current_user.tenant_id, row, site_id=site_id, asset_type_id=asset_type_id, asset=asset,
+            manufacturer_id=manufacturer_id, model=asset_import_extra.cell(row, "model"), name=str(name).strip(), pending=pending_controllers)
+        if extra.errors:
+            errors.append({"row": int(idx) + 2, "error": "; ".join(extra.errors)})
+            continue
+        if tag is not None and not pd.isna(tag) and str(tag).strip() != "":
+            pending_controllers[str(tag).strip().lower()] = asset_type_name
         try:
             if asset:
                 # Parse installation_date if provided
@@ -1229,6 +1267,10 @@ def import_assets_xlsx_confirm(
                 asset.physical_access_ease = row.get("physical_access_ease")
                 asset.purdue_level = purdue_level
                 asset.installation_date = installation_date
+                asset_import_extra.apply_fields(asset, extra)
+                asset_import_extra.apply_controller_pending(db, current_user.tenant_id, asset, extra, extra.controller_pending)
+                _link_device_type_for_import(db, asset)
+                asset_import_extra.apply_placement(db, current_user.tenant_id, asset, extra)
                 db.commit()
                 updated.append(tag)
                 # If ip_address present, create LAN interface if not already present
@@ -1292,6 +1334,10 @@ def import_assets_xlsx_confirm(
                     installation_date=installation_date,
                 )
                 db.add(new_asset)
+                asset_import_extra.apply_fields(new_asset, extra)
+                asset_import_extra.apply_controller_pending(db, current_user.tenant_id, new_asset, extra, extra.controller_pending)
+                _link_device_type_for_import(db, new_asset)
+                asset_import_extra.apply_placement(db, current_user.tenant_id, new_asset, extra)
                 db.commit()
                 created.append(tag)
                 # If ip_address present, create LAN interface if not already present
@@ -1320,9 +1366,21 @@ def import_assets_xlsx_confirm(
     return sanitize_for_json({"created": created, "updated": updated, "errors": errors})
 
 
+def _link_device_type_for_import(db: Session, asset: Asset) -> None:
+    """DCIM: the device type of an imported asset follows its manufacturer and model. A refusal ends the row like any other
+    import error (the caller rolls the row back)."""
+    from app.services import dcim_service
+    try:
+        dcim_service.link_device_type(db, asset)
+    except ErrorCodeException as exc:
+        raise ValueError(exc.detail)
+
+
 BULK_UPDATE_BLOCKED_FIELDS = frozenset({
     "id", "tenant_id", "created_at", "updated_at", "deleted_at", "tag", "parent_asset_id", "archived_at", "archived_by",
     "tag_legacy_duplicate",
+    # DCIM: the place in a rack, the device type and the controller are checked by their own endpoints
+    "rack_id", "rack_position", "rack_face", "device_type_id", "airflow", "controller_asset_id",
 })
 
 
@@ -1363,6 +1421,10 @@ def bulk_update_assets(
                 errors.append({"id": str(asset_id), "error": exc.detail or "WORKFLOW_STATUS_LOCKED"})
                 continue
 
+        if asset.rack_id and "site_id" in req.fields and str(req.fields["site_id"]) != str(asset.site_id):
+            errors.append({"id": str(asset_id), "error": "The asset is in a rack. Remove it from the rack before moving it to another site"})
+            continue
+
         # Prepare old data with names
         old_data = {}
         for field in req.fields.keys():
@@ -1373,6 +1435,16 @@ def bulk_update_assets(
         for field, value in req.fields.items():
             if hasattr(asset, field):
                 setattr(asset, field, value)
+
+        if "manufacturer_id" in req.fields or "model" in req.fields:
+            # DCIM: the device type follows the manufacturer and model
+            from app.services import dcim_service
+            try:
+                dcim_service.link_device_type(db, asset)
+            except ErrorCodeException as exc:
+                db.rollback()
+                errors.append({"id": str(asset_id), "error": exc.detail})
+                continue
 
         try:
             db.commit()
@@ -1453,6 +1525,34 @@ def bulk_soft_delete_assets(
 
 
 # Get single asset
+@router.get("/controller-candidates")
+def controller_candidates(
+    search: Optional[str] = None,
+    site_id: Optional[uuid.UUID] = None,
+    limit: int = 30,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """The assets that can be the controller of a machine: live assets of a PLC or controller type (optionally of one site)."""
+    from sqlalchemy import func, or_
+    from app.models.asset_type import AssetType
+    type_ids = crud_assets.controller_type_ids(db, current_user.tenant_id)
+    if not type_ids:
+        return []
+    query = db.query(Asset.id, Asset.name, Asset.tag, AssetType.name.label("type_name")).join(
+        AssetType, AssetType.id == Asset.asset_type_id).filter(
+        Asset.tenant_id == current_user.tenant_id, Asset.deleted_at.is_(None), Asset.asset_type_id.in_(type_ids))
+    if site_id:
+        query = query.filter(Asset.site_id == site_id)
+    term = (search or "").strip()
+    if term:
+        like = f"%{term}%"
+        query = query.filter(or_(Asset.name.ilike(like), Asset.tag.ilike(like)))
+    # the type and tag come with the name: machines and their controllers often share a name
+    return [{"id": r.id, "name": r.name, "tag": r.tag, "type_name": r.type_name}
+            for r in query.order_by(func.lower(Asset.name), Asset.tag).limit(max(1, min(limit, 100))).all()]
+
+
 @router.get("/next-tag")
 def preview_next_tag(
     asset_type_id: Optional[uuid.UUID] = None,
@@ -1490,7 +1590,20 @@ def get_asset(
             # Assegna direttamente i campi dell'area all'asset
             asset.area_name = area.name
             asset.area_code = area.code
-    
+
+    # DCIM: the names of the rack and the device type (two small queries, only when the asset has them)
+    if asset.rack_id:
+        from app.models import DcimRack
+        asset.rack_name = db.query(DcimRack.name).filter(DcimRack.id == asset.rack_id).scalar()
+    if asset.device_type_id:
+        from app.models import DcimDeviceType, Manufacturer
+        row = (db.query(DcimDeviceType.model, DcimDeviceType.u_height, Manufacturer.name)
+               .join(Manufacturer, Manufacturer.id == DcimDeviceType.manufacturer_id)
+               .filter(DcimDeviceType.id == asset.device_type_id).first())
+        if row:
+            asset.device_type_name = f"{row[2]} {row[0]}"
+            asset.device_type_u_height = float(row[1]) if row[1] is not None else None
+
     return asset
 
 
@@ -1733,6 +1846,28 @@ def list_asset_components(
         db.query(Asset.id, Asset.name)
         .filter(
             Asset.parent_asset_id == asset_id,
+            Asset.tenant_id == current_user.tenant_id,
+            Asset.deleted_at.is_(None),
+        )
+        .order_by(Asset.name)
+        .all()
+    )
+
+
+@router.get("/{asset_id}/controlled", response_model=List[AssetSummary])
+def list_controlled_assets(
+    asset_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """The machines this asset (a PLC or controller) runs, direct links only."""
+    asset = db.query(Asset.id, Asset.tenant_id).filter(Asset.id == asset_id).first()
+    if not asset or asset.tenant_id != current_user.tenant_id:
+        raise ErrorCodeException(status_code=404, error_code=ErrorCode.ASSET_NOT_FOUND)
+    return (
+        db.query(Asset.id, Asset.name)
+        .filter(
+            Asset.controller_asset_id == asset_id,
             Asset.tenant_id == current_user.tenant_id,
             Asset.deleted_at.is_(None),
         )

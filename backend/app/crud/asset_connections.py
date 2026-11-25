@@ -7,11 +7,26 @@ from app.schemas.asset_connection import AssetConnectionCreate, AssetConnectionU
 from sqlalchemy.orm import Session
 
 
+def check_ports_free(db: Session, tenant_id: uuid.UUID, interface_ids, exclude_id: Optional[uuid.UUID] = None) -> None:
+    """DCIM rule, the same as on the cable screens: a port carries one cable. Refuses (409, naming the far end) a port that has
+    another cable, and a port that cannot take a cable (virtual, wireless or channel ports)."""
+    ids = [i for i in interface_ids if i]
+    if not ids:
+        return
+    from app.routers import dcim_cables
+    ends = dcim_cables._ends(db, tenant_id, ids)
+    for interface_id in ids:
+        if interface_id in ends:
+            dcim_cables._free(db, tenant_id, interface_id, ends[interface_id], exclude_id)
+
+
 def create_asset_connection(
     db: Session, connection_in: AssetConnectionCreate, tenant_id: uuid.UUID
 ) -> AssetConnection:
     """Create a new connection between assets"""
     from app.models.asset_interface import AssetInterface
+
+    check_ports_free(db, tenant_id, [connection_in.local_interface_id, connection_in.remote_interface_id])
 
     # Retrieve interfaces
     local_iface = (
@@ -97,7 +112,11 @@ def update_asset_connection(
     db: Session, connection: AssetConnection, update_data: AssetConnectionUpdate
 ) -> AssetConnection:
     """Update an existing connection"""
-    for key, value in update_data.model_dump(exclude_unset=True).items():
+    changes = update_data.model_dump(exclude_unset=True)
+    # only a port that is newly given to the cable is checked, so a cable that already breaks the rule can still be edited
+    moved = [changes[k] for k in ("local_interface_id", "remote_interface_id") if k in changes and changes[k] != getattr(connection, k)]
+    check_ports_free(db, connection.tenant_id, moved, exclude_id=connection.id)
+    for key, value in changes.items():
         setattr(connection, key, value)
     db.commit()
     db.refresh(connection)

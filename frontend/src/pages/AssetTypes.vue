@@ -10,9 +10,16 @@
           outlined
           @click="showTagRules = true"
         />
-        <Button 
-          v-if="canWrite('asset_types')" 
-          :label="t('common.actions.create')" 
+        <Button
+          v-if="canBulkOperate('asset_types')"
+          :label="t('common.actions.import')"
+          icon="pi pi-upload"
+          severity="info"
+          @click="showImportDialog = true"
+        />
+        <Button
+          v-if="canWrite('asset_types')"
+          :label="t('common.actions.create')"
           icon="pi pi-plus" 
           @click="showDialog = true" 
         />
@@ -95,6 +102,7 @@
       />
     </Dialog>
     <TagRulesDialog v-model:visible="showTagRules" :can-write="canWrite('asset_types')" />
+    <AssetTypeImportDialog :visible="showImportDialog" @close="showImportDialog = false" @imported="onImported" />
   </div>
 </template>
 
@@ -108,6 +116,7 @@ import api from '../api/api'
 
 import AssetTypeForm from '../components/forms/AssetTypeForm.vue'
 import TagRulesDialog from '../components/forms/TagRulesDialog.vue'
+import AssetTypeImportDialog from '../components/dialogs/AssetTypeImportDialog.vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
@@ -118,7 +127,8 @@ const toast = useToast()
 const showTagRules = ref(false)
 const router = useRouter()
 const { t } = useI18n()
-const { canWrite, canDelete } = usePermissions()
+const { canWrite, canDelete, canBulkOperate } = usePermissions()
+const showImportDialog = ref(false)
 
 const assettypes = ref([])
 const loading = ref(false)
@@ -197,6 +207,21 @@ async function fetchAssetTypes() {
     toast.add({ severity: 'error', summary: t('common.messages.error'), detail: t('assettypes.messages.fetchError'), life: 3000 })
   } finally {
     if (requestId === fetchRequestId) loading.value = false
+  }
+}
+
+function onImported(result) {
+  showImportDialog.value = false
+  const created = result?.created?.length || 0
+  const updated = result?.updated?.length || 0
+  const errors = result?.errors?.length || 0
+  if (created || updated) {
+    toast.add({ severity: 'success', summary: t('common.messages.success'), detail: t('assettypes.import.done', { created, updated, errors }), life: 4000 })
+    fetchAssetTypes()
+  } else if (errors) {
+    toast.add({ severity: 'warn', summary: t('common.messages.warning'), detail: t('assettypes.import.failed', { errors }), life: 4000 })
+  } else {
+    toast.add({ severity: 'info', summary: t('common.actions.import'), detail: t('assettypes.import.nothingToDo'), life: 4000 })
   }
 }
 

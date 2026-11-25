@@ -144,6 +144,20 @@ const menuSections = computed(() => {
     sections.push({ label: t('menu.section.ipam'), items: ipamItems })
   }
 
+  // Sezione DCIM
+  if (canRead('dcim')) {
+    sections.push({
+      label: t('menu.section.dcim'),
+      items: [
+        { label: t('menu.navigation.dcimRacks'), icon: 'pi-server', to: '/dcim/racks' },
+        { label: t('menu.navigation.dcimDeviceTypes'), icon: 'pi-box', to: '/dcim/device-types' },
+        { label: t('menu.navigation.dcimCables'), icon: 'pi-link', to: '/dcim/cables' },
+        { label: t('menu.navigation.dcimTopology'), icon: 'pi-sitemap', to: '/dcim/topology' },
+        { label: t('menu.navigation.dcimMacs'), icon: 'pi-share-alt', to: '/dcim/macs' }
+      ]
+    })
+  }
+
   // Sezione Users rimossa - ora accessibile dal Setup
 
   // Sezione Utility

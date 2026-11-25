@@ -38,6 +38,18 @@
         </div>
         <div class="col-12 md:col-4">
           <div class="p-field">
+            <label for="controller_asset_id">{{ t('assets.lifecycle.fields.controlledBy') }}</label>
+            <AssetParentPicker
+              v-model="form.controller_asset_id"
+              :initial="form.controller"
+              :exclude-id="form.id"
+              controllers-only
+              :placeholder="t('assets.lifecycle.fields.controlledByNone')"
+            />
+          </div>
+        </div>
+        <div class="col-12 md:col-4">
+          <div class="p-field">
             <label for="plant_owner">{{ t('assets.lifecycle.fields.plantOwner') }}</label>
             <InputText id="plant_owner" v-model="form.plant_owner" maxlength="255" class="w-full" />
           </div>

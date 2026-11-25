@@ -108,6 +108,14 @@ class Asset(Base):
     primary_ip4_id = Column(UUID(as_uuid=True), ForeignKey("ipam_ip_addresses.id", ondelete="SET NULL", use_alter=True, name="fk_assets_primary_ip4"), nullable=True)
     primary_ip6_id = Column(UUID(as_uuid=True), ForeignKey("ipam_ip_addresses.id", ondelete="SET NULL", use_alter=True, name="fk_assets_primary_ip6"), nullable=True)
     oob_ip_id = Column(UUID(as_uuid=True), ForeignKey("ipam_ip_addresses.id", ondelete="SET NULL", use_alter=True, name="fk_assets_oob_ip"), nullable=True)
+    # DCIM: the model of the device and its place in a rack (rules in app.services.dcim_logic)
+    device_type_id = Column(UUID(as_uuid=True), ForeignKey("dcim_device_types.id", ondelete="SET NULL"), nullable=True, index=True)
+    rack_id = Column(UUID(as_uuid=True), ForeignKey("dcim_racks.id", ondelete="SET NULL"), nullable=True, index=True)
+    rack_position = Column(Numeric(5, 1), nullable=True)  # the lowest unit the device uses
+    rack_face = Column(String(5), nullable=True)  # front or rear
+    airflow = Column(String(20), nullable=True)
+    # the PLC or controller that runs this machine (parent_asset_id is "component of", a physical part)
+    controller_asset_id = Column(UUID(as_uuid=True), ForeignKey("assets.id", ondelete="SET NULL", name="fk_assets_controller_asset_id"), nullable=True, index=True)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     last_seen = Column(DateTime)
@@ -186,6 +194,8 @@ class Asset(Base):
     status = relationship("AssetStatus", back_populates="assets")
     parent = relationship("Asset", remote_side=[id], back_populates="components", foreign_keys=[parent_asset_id])
     components = relationship("Asset", back_populates="parent", foreign_keys=[parent_asset_id])
+    controller = relationship("Asset", remote_side=[id], back_populates="controlled_assets", foreign_keys=[controller_asset_id])
+    controlled_assets = relationship("Asset", back_populates="controller", foreign_keys=[controller_asset_id])
     site = relationship("Site", back_populates="assets")
     asset_type = relationship("AssetType", back_populates="assets")
     photos = relationship("AssetPhoto", back_populates="asset", cascade="all, delete")

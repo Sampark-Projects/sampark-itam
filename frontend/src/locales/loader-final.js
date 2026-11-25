@@ -53,6 +53,7 @@ import itAssetReviews from './it/assetReviews.json'
 import itLifecycle from './it/lifecycle.json'
 import itApplications from './it/applications.json'
 import itIpam from './it/ipam.json'
+import itDcim from './it/dcim.json'
 import itWorkflows from './it/workflows.json'
 import itChanges from './it/changes.json'
 import itReports from './it/reports.json'
@@ -66,6 +67,7 @@ import enWorkflows from './en/workflows.json'
 import enLifecycle from './en/lifecycle.json'
 import enApplications from './en/applications.json'
 import enIpam from './en/ipam.json'
+import enDcim from './en/dcim.json'
 import enAssetReviews from './en/assetReviews.json'
 import itNotifications from './it/notifications.json'
 import enNotifications from './en/notifications.json'
@@ -142,6 +144,7 @@ const messages = {
     lifecycle: itLifecycle,
     applications: itApplications,
     ipam: itIpam,
+    dcim: itDcim,
     workflows: itWorkflows,
     changes: itChanges,
     reports: itReports,
@@ -188,6 +191,7 @@ const messages = {
     lifecycle: enLifecycle,
     applications: enApplications,
     ipam: enIpam,
+    dcim: enDcim,
     workflows: enWorkflows,
     changes: enChanges,
     reports: enReports,

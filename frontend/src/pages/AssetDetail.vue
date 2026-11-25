@@ -40,6 +40,8 @@
 
     <AssetDetailComponents :asset="asset" class="asset-lifecycle" />
 
+    <DcimAssetRack :asset="asset" class="asset-lifecycle" />
+
     <AssetDetailSpares v-if="canRead('lifecycle')" :asset="asset" class="asset-lifecycle" />
 
     <AssetDetailCosts v-if="canRead('lifecycle')" :asset="asset" class="asset-lifecycle" />
@@ -223,6 +225,7 @@ import AssetDetailSpares from '../components/features/assets/AssetDetailSpares.v
 import AssetDetailSoftware from '../components/features/assets/AssetDetailSoftware.vue'
 import AssetArchivedBanner from '../components/features/assets/AssetArchivedBanner.vue'
 import AssetDetailComponents from '../components/features/assets/AssetDetailComponents.vue'
+import DcimAssetRack from '../components/features/dcim/DcimAssetRack.vue'
 import AssetDetailCosts from '../components/features/assets/AssetDetailCosts.vue'
 import AssetDetailWorkflow from '../components/features/assets/AssetDetailWorkflow.vue'
 import AssetDetailMaintenance from '../components/features/assets/AssetDetailMaintenance.vue'

@@ -55,9 +55,11 @@
             <InputText
               v-else
               :id="`cf_${field.key}`"
+              :type="field.type === 'url' ? 'url' : 'text'"
+              :placeholder="field.type === 'url' ? 'https://' : undefined"
               :modelValue="values[field.key] ?? ''"
               @update:modelValue="setValue(field.key, $event)"
-              maxlength="255"
+              :maxlength="field.type === 'url' ? 500 : 255"
               class="w-full"
             />
             <small v-if="field.help" class="field-help">{{ field.help }}</small>

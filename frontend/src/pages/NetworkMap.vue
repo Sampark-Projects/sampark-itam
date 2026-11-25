@@ -268,6 +268,12 @@ const filteredConnections = computed(() => {
   })
 })
 
+const CABLE_EDGE_STYLE = {
+  connected: { color: '#2196f3', dashes: false },
+  planned: { color: '#9e9e9e', dashes: true },
+  decommissioning: { color: '#fb8c00', dashes: [4, 4] }
+}
+
 // Funzioni per il grafo
 function buildNetworkData() {
   const nodes = []
@@ -294,12 +300,21 @@ function buildNetworkData() {
   // Aggiungi archi per le connessioni
   filteredConnections.value.forEach(conn => {
     if (conn.parent_asset && conn.child_asset) {
+      // A cable shows its two ports; the colour and the dashes follow the cable status (planned = grey dashed, decommissioning = orange)
+      const localPort = conn.local_interface?.name
+      const remotePort = conn.remote_interface?.name
+      const ports = localPort && remotePort ? `${localPort} ↔ ${remotePort}` : ''
+      const status = conn.cable_status || 'connected'
+      const style = CABLE_EDGE_STYLE[status] || CABLE_EDGE_STYLE.connected
+      const cableLine = [conn.cable_type, conn.cable_label, conn.cable_length != null ? `${conn.cable_length} ${conn.cable_length_unit || ''}`.trim() : '']
+        .filter(Boolean).join(' · ')
       edges.push({
         from: conn.parent_asset.id,
         to: conn.child_asset.id,
-        label: conn.connection_type || '',
-        title: `${conn.parent_asset.name} ↔ ${conn.child_asset.name}\n${conn.connection_type || ''}`,
-        color: { color: '#2196f3', width: 2 },
+        label: ports || conn.connection_type || '',
+        title: [`${conn.parent_asset.name} ↔ ${conn.child_asset.name}`, ports, conn.connection_type, cableLine, status !== 'connected' ? status : ''].filter(Boolean).join('\n'),
+        color: { color: conn.cable_color || style.color, width: 2 },
+        dashes: style.dashes,
         arrows: 'to',
         smooth: { type: 'dynamic' }
       })

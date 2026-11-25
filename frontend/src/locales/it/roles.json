@@ -58,6 +58,7 @@
         "reports": "Report e obiettivi KPI",
         "applications": "Applicazioni",
         "ipam": "IPAM",
+    "dcim": "DCIM",
         "evidence": "Evidence",
         "basicInfo": "Informazioni Base",
         "permissions": "Permessi"
@@ -114,6 +115,7 @@
         "reports": "Report e obiettivi KPI",
         "applications": "Applicazioni",
         "ipam": "IPAM",
+    "dcim": "DCIM",
         "evidence": "Evidence",
         "noneDescription": "Nessun accesso alle risorse",
         "readDescription": "Può visualizzare le risorse ma non modificarle",

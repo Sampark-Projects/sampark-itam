@@ -36,7 +36,9 @@ const props = defineProps({
   // {id, name} of the current parent, when the asset already has one
   initial: { type: Object, default: null },
   excludeId: { type: String, default: null },
-  placeholder: { type: String, default: null }
+  placeholder: { type: String, default: null },
+  // offer only the assets of a PLC or controller type (the controller of a machine)
+  controllersOnly: { type: Boolean, default: false }
 })
 const emit = defineEmits(['update:modelValue'])
 
@@ -58,10 +60,20 @@ async function search(term) {
   const seq = ++requestSeq
   loading.value = true
   try {
-    const res = await api.getAssets({ global_search: term || undefined, limit: 30 })
+    const res = props.controllersOnly
+      ? await api.getControllerCandidates({ search: term || undefined, limit: 30 })
+      : await api.getAssets({ global_search: term || undefined, limit: 30 })
     if (seq !== requestSeq) return
-    const rows = res.data && Array.isArray(res.data.data) ? res.data.data : []
-    options.value = withCurrent(rows.map(a => ({ id: a.id, name: a.name })))
+    const rows = props.controllersOnly
+      ? (Array.isArray(res.data) ? res.data : [])
+      : (res.data && Array.isArray(res.data.data) ? res.data.data : [])
+    // a controller is shown with its type and tag, because a machine and its PLC often have the same name
+    options.value = withCurrent(rows.map(a => ({
+      id: a.id,
+      name: props.controllersOnly && a.type_name
+        ? `${a.name} (${[a.type_name, a.tag].filter(Boolean).join(', ')})`
+        : a.name
+    })))
   } catch (e) {
     if (seq === requestSeq) options.value = withCurrent([])
   } finally {

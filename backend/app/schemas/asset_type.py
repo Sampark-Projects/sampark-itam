@@ -16,7 +16,7 @@ class AssetFieldDef(BaseModel):
 
     key: str = Field(..., description="Stable machine name: lower-case letters, digits, underscore")
     label: str = Field(..., min_length=1, max_length=100)
-    type: Literal["text", "number", "date", "select", "boolean"] = "text"
+    type: Literal["text", "number", "date", "select", "boolean", "url"] = "text"
     required: bool = False
     options: List[str] = Field(default_factory=list, description="Choices for a select field")
     help: Optional[str] = Field(None, max_length=255)

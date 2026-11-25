@@ -19,6 +19,13 @@ class AssetConnection(BaseModel):
     protocol: Optional[str] = None
     description: Optional[str] = None
     created_at: Optional[datetime] = None
+    # DCIM: the cable details (the network map shows them)
+    cable_type: Optional[str] = None
+    cable_status: Optional[str] = None
+    cable_label: Optional[str] = None
+    cable_color: Optional[str] = None
+    cable_length: Optional[float] = None
+    cable_length_unit: Optional[str] = None
     parent_asset: Optional[AssetSummary] = None
     child_asset: Optional[AssetSummary] = None
     local_interface_id: Optional[uuid.UUID] = None

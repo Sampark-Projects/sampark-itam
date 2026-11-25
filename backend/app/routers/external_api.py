@@ -287,9 +287,208 @@ async def config_status_external(
     return api_paging.page_list(config_service.overview(db, api_key.tenant_id, "all"), skip, limit)
 
 
+# --- DCIM and IPAM data (read only): devices, racks, interfaces, cables, topology, MAC bindings, prefixes, addresses, VLANs, VRFs ---
+# The lists are the ones of the application itself (same rules, same fields, same paged shape {total, skip, limit, has_more, items}),
+# for the tenant of the API key, with the main filters.
+
+def _run_list(fn, api_key, db: Session, **given):
+    """Call a list function of the application for the tenant of the API key. `given` holds the filters; every other parameter
+    keeps the default of the function."""
+    import inspect
+    from types import SimpleNamespace
+    kwargs = {}
+    for name, param in inspect.signature(fn).parameters.items():
+        if name == "current_user":
+            kwargs[name] = SimpleNamespace(tenant_id=api_key.tenant_id)
+        elif name == "db":
+            kwargs[name] = db
+        elif name in given:
+            kwargs[name] = given[name]
+        else:
+            default = param.default
+            kwargs[name] = None if default is inspect.Parameter.empty else getattr(default, "default", default)
+    return fn(**kwargs)
+
+
+@router.get("/dcim/devices")
+async def dcim_devices_external(
+    search: Optional[str] = None,
+    site_id: Optional[uuid.UUID] = None,
+    rack_id: Optional[uuid.UUID] = None,
+    role: Optional[str] = None,
+    skip: int = 0,
+    limit: int = api_paging.DEFAULT_LIMIT,
+    api_key=Depends(require_read_scope),
+    db: Session = Depends(get_db),
+    request: Request = None,
+):
+    """Devices (the assets) with their role (asset type), manufacturer, model, device type, serial number, asset tag, site, location,
+    rack, rack unit and face, controller (parent PLC) and custom fields (voltage, amperage, kW, schematic links ...)."""
+    from sqlalchemy import func, or_
+    from app.models import AssetType, DcimDeviceType, DcimRack, Location, Manufacturer, Site
+
+    _guard(request, api_key, "/dcim/devices")
+    skip, limit = api_paging.clamp(skip, limit)
+    query = (
+        db.query(Asset, AssetType.name, Manufacturer.name, Site.name, Location.name, DcimRack.name, DcimDeviceType.model, DcimDeviceType.u_height)
+        .outerjoin(AssetType, AssetType.id == Asset.asset_type_id)
+        .outerjoin(Manufacturer, Manufacturer.id == Asset.manufacturer_id)
+        .outerjoin(Site, Site.id == Asset.site_id)
+        .outerjoin(Location, Location.id == Asset.location_id)
+        .outerjoin(DcimRack, DcimRack.id == Asset.rack_id)
+        .outerjoin(DcimDeviceType, DcimDeviceType.id == Asset.device_type_id)
+        .filter(Asset.tenant_id == api_key.tenant_id, Asset.deleted_at.is_(None))
+    )
+    if search and search.strip():
+        like = f"%{search.strip().lower()}%"
+        query = query.filter(or_(func.lower(Asset.name).like(like), func.lower(Asset.tag).like(like), func.lower(Asset.serial_number).like(like)))
+    if site_id:
+        query = query.filter(Asset.site_id == site_id)
+    if rack_id:
+        query = query.filter(Asset.rack_id == rack_id)
+    if role and role.strip():
+        query = query.filter(func.lower(AssetType.name) == role.strip().lower())
+    total = query.count()
+    rows = query.order_by(func.lower(Asset.name), Asset.id).offset(skip).limit(limit).all()
+    items = [{
+        "id": a.id, "name": a.name, "asset_tag": a.tag, "serial_number": a.serial_number, "role": type_name,
+        "manufacturer": maker, "model": a.model,
+        "device_type": {"id": a.device_type_id, "model": dtype_model, "u_height": float(u_height) if u_height is not None else None} if a.device_type_id else None,
+        "site": {"id": a.site_id, "name": site_name}, "location": {"id": a.location_id, "name": location_name} if a.location_id else None,
+        "rack": {"id": a.rack_id, "name": rack_name} if a.rack_id else None,
+        "rack_position": float(a.rack_position) if a.rack_position is not None else None, "rack_face": a.rack_face, "airflow": a.airflow,
+        "controller_asset_id": a.controller_asset_id, "custom_fields": a.custom_fields or {},
+    } for a, type_name, maker, site_name, location_name, rack_name, dtype_model, u_height in rows]
+    return api_paging.page(items, total, skip, limit)
+
+
+@router.get("/dcim/racks")
+async def dcim_racks_external(
+    search: Optional[str] = None, site_id: Optional[uuid.UUID] = None, status: Optional[str] = None,
+    skip: int = 0, limit: int = api_paging.DEFAULT_LIMIT,
+    api_key=Depends(require_read_scope), db: Session = Depends(get_db), request: Request = None,
+):
+    """Racks with their height, status and utilization."""
+    from app.routers import dcim_racks
+    _guard(request, api_key, "/dcim/racks")
+    skip, limit = api_paging.clamp(skip, limit)
+    return _run_list(dcim_racks.list_racks, api_key, db, search=search, site_id=site_id, status=status, skip=skip, limit=limit)
+
+
+@router.get("/dcim/interfaces")
+async def dcim_interfaces_external(
+    search: Optional[str] = None, asset_id: Optional[uuid.UUID] = None, site_id: Optional[uuid.UUID] = None, port_type: Optional[str] = None,
+    enabled: Optional[bool] = None, poe_mode: Optional[str] = None, has_cable: Optional[bool] = None,
+    skip: int = 0, limit: int = api_paging.DEFAULT_LIMIT,
+    api_key=Depends(require_read_scope), db: Session = Depends(get_db), request: Request = None,
+):
+    """Interfaces with port type, enabled state, MTU, speed, PoE, MAC addresses and the far end of their cable."""
+    from app.routers import dcim_cables
+    _guard(request, api_key, "/dcim/interfaces")
+    skip, limit = api_paging.clamp(skip, limit)
+    return _run_list(dcim_cables.list_interfaces, api_key, db, search=search, asset_id=asset_id, site_id=site_id, port_type=port_type,
+                     enabled=enabled, poe_mode=poe_mode, has_cable=has_cable, skip=skip, limit=limit)
+
+
+@router.get("/dcim/cables")
+async def dcim_cables_external(
+    search: Optional[str] = None, asset_id: Optional[uuid.UUID] = None, site_id: Optional[uuid.UUID] = None,
+    cable_status: Optional[str] = None, cable_type: Optional[str] = None, incomplete: bool = False,
+    skip: int = 0, limit: int = api_paging.DEFAULT_LIMIT,
+    api_key=Depends(require_read_scope), db: Session = Depends(get_db), request: Request = None,
+):
+    """Cables: termination A (device and port) to termination B (device and port), with type, status, label, colour and length."""
+    from app.routers import dcim_cables
+    _guard(request, api_key, "/dcim/cables")
+    skip, limit = api_paging.clamp(skip, limit)
+    return _run_list(dcim_cables.list_cables, api_key, db, search=search, asset_id=asset_id, site_id=site_id, cable_status=cable_status,
+                     cable_type=cable_type, incomplete=incomplete, skip=skip, limit=limit)
+
+
+@router.get("/dcim/topology")
+async def dcim_topology_external(
+    site_id: Optional[uuid.UUID] = None,
+    api_key=Depends(require_read_scope), db: Session = Depends(get_db), request: Request = None,
+):
+    """The physical topology built from the cables: devices as nodes, every complete cable as an edge with both ports and its PoE."""
+    from app.services import dcim_topology
+    _guard(request, api_key, "/dcim/topology")
+    return dcim_topology.build_topology(db, api_key.tenant_id, site_id)
+
+
+@router.get("/dcim/mac-bindings")
+async def dcim_mac_bindings_external(
+    search: Optional[str] = None, site_id: Optional[uuid.UUID] = None, asset_id: Optional[uuid.UUID] = None,
+    duplicate: Optional[bool] = None, has_ip: Optional[bool] = None, primary_only: bool = False,
+    skip: int = 0, limit: int = api_paging.DEFAULT_LIMIT,
+    api_key=Depends(require_read_scope), db: Session = Depends(get_db), request: Request = None,
+):
+    """MAC addresses with the IP addresses on the same interface (the MAC to IP bindings)."""
+    from app.routers import dcim_macs
+    _guard(request, api_key, "/dcim/mac-bindings")
+    skip, limit = api_paging.clamp(skip, limit)
+    return _run_list(dcim_macs.mac_bindings, api_key, db, search=search, site_id=site_id, asset_id=asset_id, duplicate=duplicate,
+                     has_ip=has_ip, primary_only=primary_only, skip=skip, limit=limit)
+
+
+@router.get("/ipam/prefixes")
+async def ipam_prefixes_external(
+    search: Optional[str] = None, vrf_id: Optional[uuid.UUID] = None, status: Optional[str] = None, family: Optional[int] = None,
+    role_id: Optional[uuid.UUID] = None, site_id: Optional[uuid.UUID] = None, vlan_id: Optional[uuid.UUID] = None,
+    skip: int = 0, limit: int = api_paging.DEFAULT_LIMIT,
+    api_key=Depends(require_read_scope), db: Session = Depends(get_db), request: Request = None,
+):
+    """Prefixes (subnets) with VRF, role (for the Purdue levels), VLAN, status and utilization."""
+    from app.routers import ipam_prefixes
+    _guard(request, api_key, "/ipam/prefixes")
+    skip, limit = api_paging.clamp(skip, limit)
+    return _run_list(ipam_prefixes.list_prefixes, api_key, db, search=search, vrf_id=vrf_id, status=status, family=family, role_id=role_id,
+                     site_id=site_id, vlan_id=vlan_id, skip=skip, limit=limit)
+
+
+@router.get("/ipam/ip-addresses")
+async def ipam_addresses_external(
+    search: Optional[str] = None, vrf_id: Optional[uuid.UUID] = None, status: Optional[str] = None, role: Optional[str] = None,
+    family: Optional[int] = None, asset_id: Optional[uuid.UUID] = None, assigned: Optional[bool] = None,
+    skip: int = 0, limit: int = api_paging.DEFAULT_LIMIT,
+    api_key=Depends(require_read_scope), db: Session = Depends(get_db), request: Request = None,
+):
+    """IP addresses with VRF, status, DNS name and the asset interface they are assigned to."""
+    from app.routers import ipam_addresses
+    _guard(request, api_key, "/ipam/ip-addresses")
+    skip, limit = api_paging.clamp(skip, limit)
+    return _run_list(ipam_addresses.list_addresses, api_key, db, search=search, vrf_id=vrf_id, status=status, role=role, family=family,
+                     asset_id=asset_id, assigned=assigned, skip=skip, limit=limit)
+
+
+@router.get("/ipam/vlans")
+async def ipam_vlans_external(
+    search: Optional[str] = None, site_id: Optional[uuid.UUID] = None, group_id: Optional[uuid.UUID] = None, status: Optional[str] = None,
+    vid: Optional[int] = None, skip: int = 0, limit: int = api_paging.DEFAULT_LIMIT,
+    api_key=Depends(require_read_scope), db: Session = Depends(get_db), request: Request = None,
+):
+    """VLANs with VLAN ID, name, group, site, role and status."""
+    from app.routers import ipam_basics
+    _guard(request, api_key, "/ipam/vlans")
+    skip, limit = api_paging.clamp(skip, limit)
+    return _run_list(ipam_basics.list_vlans, api_key, db, search=search, site_id=site_id, group_id=group_id, status=status, vid=vid, skip=skip, limit=limit)
+
+
+@router.get("/ipam/vrfs")
+async def ipam_vrfs_external(
+    search: Optional[str] = None, skip: int = 0, limit: int = api_paging.DEFAULT_LIMIT,
+    api_key=Depends(require_read_scope), db: Session = Depends(get_db), request: Request = None,
+):
+    """VRFs (routing tables) with their route distinguisher and route targets."""
+    from app.routers import ipam_basics
+    _guard(request, api_key, "/ipam/vrfs")
+    skip, limit = api_paging.clamp(skip, limit)
+    return _run_list(ipam_basics.list_vrfs, api_key, db, search=search, skip=skip, limit=limit)
+
+
 def _lifecycle_values(asset) -> dict:
     from app.schemas.asset import AssetLifecycleFields
-    return {k: getattr(asset, k, None) for k in AssetLifecycleFields.model_fields if k != "parent_asset_id"}
+    return {k: getattr(asset, k, None) for k in AssetLifecycleFields.model_fields if k not in ("parent_asset_id", "controller_asset_id")}
 
 
 @router.get("/assets/{asset_id}/lifecycle")
@@ -327,7 +526,7 @@ async def update_asset_lifecycle_external(
     from pydantic import ValidationError
 
     _guard(request, api_key, f"/assets/{asset_id}/lifecycle")
-    allowed = set(AssetLifecycleFields.model_fields) - {"parent_asset_id"}
+    allowed = set(AssetLifecycleFields.model_fields) - {"parent_asset_id", "controller_asset_id"}
     unknown = sorted(set(data) - allowed)
     if unknown:
         raise ErrorCodeException(status_code=400, error_code=ErrorCode.INVALID_ASSET_UPDATE, detail="Unknown field(s): " + ", ".join(unknown))

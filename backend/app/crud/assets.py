@@ -225,6 +225,92 @@ def validate_parent_asset(
         current = db.query(Asset.parent_asset_id).filter(Asset.id == current).scalar()
 
 
+import re as _re
+
+# An asset type is a controller type when its name has one of these words (PLC, Safety PLC, Robot Controller, DCS, RTU, Industrial PC ...)
+_CONTROLLER_TYPE = _re.compile(r"\b(plc|controller|dcs|rtu|ipc)\b|industrial pc", _re.IGNORECASE)
+
+
+def is_controller_type_name(name: Optional[str]) -> bool:
+    return bool(name and _CONTROLLER_TYPE.search(name))
+
+
+def controller_type_ids(db: Session, tenant_id: uuid.UUID) -> List[uuid.UUID]:
+    """The asset types of the tenant (and the shared ones) that can run a machine."""
+    from sqlalchemy import or_
+    from app.models.asset_type import AssetType
+    rows = db.query(AssetType.id, AssetType.name).filter(or_(AssetType.tenant_id == tenant_id, AssetType.tenant_id.is_(None))).all()
+    return [r.id for r in rows if is_controller_type_name(r.name)]
+
+
+def validate_controller_asset(
+    db: Session,
+    tenant_id: uuid.UUID,
+    controller_asset_id: Optional[uuid.UUID],
+    site_id: Optional[uuid.UUID],
+    asset_id: Optional[uuid.UUID] = None,
+) -> None:
+    """The controller of a machine must be another live asset of the same tenant and the same site, of a PLC or controller type."""
+    if controller_asset_id is None:
+        return
+    invalid = ErrorCodeException(status_code=400, error_code=ErrorCode.INVALID_CONTROLLER_ASSET)
+    if asset_id is not None and controller_asset_id == asset_id:
+        raise invalid
+    from app.models.asset_type import AssetType
+    controller = (
+        db.query(Asset.tenant_id, Asset.site_id, Asset.deleted_at, AssetType.name.label("type_name"))
+        .outerjoin(AssetType, AssetType.id == Asset.asset_type_id)
+        .filter(Asset.id == controller_asset_id).first()
+    )
+    if not controller or controller.tenant_id != tenant_id or controller.deleted_at is not None:
+        raise invalid
+    if site_id is not None and controller.site_id != site_id:
+        raise invalid
+    if not is_controller_type_name(controller.type_name):
+        raise invalid
+
+
+def clean_url_value(value) -> Optional[str]:
+    """A link as typed in a field of type "url": trimmed, http or https, with a host, no spaces, at most 500 characters.
+    Empty means not set (None). Raises ValueError for anything else."""
+    from urllib.parse import urlparse
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise ValueError("must be a web link")
+    text = value.strip()
+    if not text:
+        return None
+    parsed = urlparse(text)
+    if len(text) > 500 or any(ch.isspace() for ch in text) or parsed.scheme.lower() not in ("http", "https") or not parsed.hostname:
+        raise ValueError("must be a web link starting with http:// or https://")
+    return text
+
+
+def check_url_fields(db: Session, asset_type_id, custom_fields: Optional[dict], keep_empty: bool = False) -> None:
+    """The values of the fields of type "url" of the asset type must be web links (they are cleaned in place). An empty value is
+    removed, or kept as None when it is a change that clears the field (keep_empty)."""
+    if not custom_fields or not asset_type_id:
+        return
+    from app.models.asset_type import AssetType
+    schema = db.query(AssetType.fields_schema).filter(AssetType.id == asset_type_id).scalar() or []
+    for field in schema:
+        key = field.get("key") if isinstance(field, dict) else None
+        if key not in custom_fields or field.get("type") != "url":
+            continue
+        try:
+            cleaned = clean_url_value(custom_fields[key])
+        except ValueError as exc:
+            raise ErrorCodeException(status_code=400, error_code=ErrorCode.INVALID_ASSET_UPDATE, detail=f"{field.get('label') or key}: {exc}")
+        if cleaned is None:
+            if keep_empty:
+                custom_fields[key] = None
+            else:
+                custom_fields.pop(key)
+        else:
+            custom_fields[key] = cleaned
+
+
 def create_asset(db: Session, asset_in: AssetCreate, tenant_id: uuid.UUID) -> Asset:
     """Create a new asset"""
     data = sanitize_text_fields(
@@ -245,6 +331,8 @@ def create_asset(db: Session, asset_in: AssetCreate, tenant_id: uuid.UUID) -> As
         ["description", "notes"],
     )
     validate_parent_asset(db, tenant_id, data.get("parent_asset_id"))
+    validate_controller_asset(db, tenant_id, data.get("controller_asset_id"), data.get("site_id"))
+    check_url_fields(db, data.get("asset_type_id"), data.get("custom_fields"))
     from app.services.workflow_service import check_manual_status_change
     check_manual_status_change(db, tenant_id, None, data.get("status_id"))
     # naming standard: a typed tag is checked, an empty one is generated when a rule applies
@@ -256,6 +344,9 @@ def create_asset(db: Session, asset_in: AssetCreate, tenant_id: uuid.UUID) -> As
     data["tag"] = tag
     db_asset = Asset(**data, tenant_id=tenant_id)
     db.add(db_asset)
+    # DCIM: the device type follows the manufacturer and model
+    from app.services import dcim_service
+    dcim_service.link_device_type(db, db_asset)
     _commit_asset(db)
     db.refresh(db_asset)
     # Handle interfaces
@@ -295,6 +386,18 @@ def update_asset(
     )
     if "parent_asset_id" in update_data:
         validate_parent_asset(db, tenant_id, update_data["parent_asset_id"], asset_id=db_asset.id)
+    if "controller_asset_id" in update_data or ("site_id" in update_data and db_asset.controller_asset_id):
+        # moving a machine to another site must not leave it with a controller of the old site
+        validate_controller_asset(
+            db, tenant_id, update_data.get("controller_asset_id", db_asset.controller_asset_id),
+            update_data.get("site_id", db_asset.site_id), asset_id=db_asset.id,
+        )
+    if update_data.get("custom_fields"):
+        check_url_fields(db, update_data.get("asset_type_id", db_asset.asset_type_id), update_data["custom_fields"])
+    if db_asset.rack_id and "site_id" in update_data and update_data["site_id"] != db_asset.site_id:
+        # a rack belongs to a site: the asset leaves its rack first (DCIM placement), then moves
+        from app.services.dcim_service import bad
+        raise bad("The asset is in a rack. Remove it from the rack before moving it to another site", 409)
     if "status_id" in update_data:
         from app.services.workflow_service import check_manual_status_change
         check_manual_status_change(db, tenant_id, db_asset.id, update_data["status_id"], db_asset.status_id)
@@ -314,6 +417,14 @@ def update_asset(
             db_asset.tag_legacy_duplicate = False
     for field, value in update_data.items():
         setattr(db_asset, field, value)
+    if "manufacturer_id" in update_data or "model" in update_data:
+        # DCIM: the device type follows the manufacturer and model (refused when the new type does not fit the rack place)
+        from app.services import dcim_service
+        try:
+            dcim_service.link_device_type(db, db_asset)
+        except Exception:
+            db.rollback()
+            raise
     _commit_asset(db)
     db.refresh(db_asset)
     # Handle interfaces
@@ -412,6 +523,7 @@ def update_asset_custom_fields(
     if not db_asset:
         return None
     ensure_not_archived(db_asset)
+    check_url_fields(db, db_asset.asset_type_id, update_data.custom_fields, keep_empty=True)
 
     if not db_asset.custom_fields:
         db_asset.custom_fields = {}

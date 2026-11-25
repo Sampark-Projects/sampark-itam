@@ -1,7 +1,7 @@
 import uuid
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Query, status, Request
+from fastapi import APIRouter, Depends, File, Query, UploadFile, status, Request
 from sqlalchemy.orm import Session
 
 from app.errors.exceptions import ErrorCodeException
@@ -13,6 +13,7 @@ from app.schemas import AssetType as AssetTypeSchema, AssetTypeCreate, AssetType
 from app.services.auth import get_current_user
 from app.services.rbac import require_section_access
 from app.crud import asset_types as crud_asset_types
+from app.services import asset_type_import
 
 
 def _asset_type_visible(asset_type: AssetType, tenant_id: uuid.UUID) -> bool:
@@ -25,6 +26,33 @@ router = APIRouter(
     tags=["asset_types"],
     dependencies=[Depends(require_section_access("asset_types"))],
 )
+
+
+@router.post("/import/xlsx/preview")
+def import_asset_types_preview(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """What an asset type file would create and change, and every problem in it. Nothing is written."""
+    try:
+        df = asset_type_import.read_table(file)
+    except asset_type_import.FileError as exc:
+        return {"error": str(exc)}
+    return asset_type_import.preview(db, current_user.tenant_id, df)
+
+
+@router.post("/import/xlsx/confirm")
+def import_asset_types_confirm(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    try:
+        df = asset_type_import.read_table(file)
+    except asset_type_import.FileError as exc:
+        return {"error": str(exc)}
+    return asset_type_import.confirm(db, current_user.tenant_id, df)
 
 
 @router.post("", response_model=AssetTypeSchema)

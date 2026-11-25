@@ -1,7 +1,7 @@
 // Helpers for the per-asset-type field definitions (asset_types.fields_schema).
 // A definition is { key, label, type, required, options, help }; the value lives in asset.custom_fields[key].
 
-export const FIELD_TYPES = ['text', 'number', 'date', 'select', 'boolean']
+export const FIELD_TYPES = ['text', 'number', 'date', 'select', 'boolean', 'url']
 
 // "I/O points (digital)" -> "io_points_digital"; never empty, always starts with a letter, max 50 chars
 export function slugifyKey(label, takenKeys = []) {

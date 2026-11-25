@@ -530,8 +530,15 @@
     "assetTypeRequired": "Device type is required",
     "validFormats": "Valid Formats",
     "ipFormat": "IP address: valid standard format",
-    "dateFormat": "Date: valid dd/mm/yyyy format",
+    "dateFormat": "Date: YYYY-MM-DD",
     "purdueFormat": "Purdue level: valid 1-5 format",
+    "optionalColumns": "Optional columns",
+    "controllerColumn": "controller: tag or name of the PLC or controller that runs the machine (the same site)",
+    "rackColumns": "rack, rack_position, rack_face (front or rear), airflow: the place in a rack at the site of the device",
+    "lifecycleColumns": "Lifecycle: safety relevance, owner, procurement, commissioning, warranty, AMC, support, licence and disposal",
+    "customColumns": "cf_<key>: a custom field of the device type, for example cf_voltage",
+    "blankNote": "A blank optional cell leaves the stored value as it is.",
+    "extraColumns": "Other columns",
     "tip": "Tip",
     "tipText": "Download the template to see valid format examples."
   },
@@ -571,6 +578,8 @@
       "componentOfNone": "Not a component",
       "componentOfSearch": "Search assets by name, tag or serial",
       "componentOfEmpty": "No assets found",
+      "controlledBy": "Controlled by (PLC / controller)",
+      "controlledByNone": "No controller",
       "disposalMethod": "Disposal method",
       "disposalDate": "Disposal / return date",
       "disposalReference": "Certificate, RMA or transfer no."
@@ -579,6 +588,8 @@
       "title": "Components",
       "partOf": "Component of",
       "hasComponents": "Components",
+      "controlledBy": "Controlled by",
+      "controls": "Controls ({count})",
       "none": "No parent or components"
     },
     "safety": {

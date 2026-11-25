@@ -41,11 +41,17 @@
     "ipamVlans": "VLANs",
     "ipamVrfs": "VRFs and roles",
     "ipamFhrp": "FHRP groups",
-    "ipamServices": "Services"
+    "ipamServices": "Services",
+    "dcimRacks": "Racks",
+    "dcimDeviceTypes": "Device types",
+    "dcimCables": "Cables and ports",
+    "dcimTopology": "Physical topology",
+    "dcimMacs": "MAC and Purdue levels"
   },
   "section": {
     "management": "Management",
     "ipam": "IPAM",
+    "dcim": "DCIM",
     "registry": "Registry",
     "utility": "Utility",
     "isa62443": "Industrial ISA/IEC"

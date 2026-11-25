@@ -36,8 +36,36 @@
             "number": "Number",
             "date": "Date",
             "select": "Choice",
-            "boolean": "Yes / No"
+            "boolean": "Yes / No",
+            "url": "Web link"
         }
+    },
+    "import": {
+        "title": "Import asset types",
+        "downloadTemplate": "Download template",
+        "importantInfo": "Important information",
+        "requiredFields": "Required",
+        "nameRequired": "name: the asset type name",
+        "labelRequired": "field_label: when a row has a field_key",
+        "validFormats": "Valid formats",
+        "purdueFormat": "purdue_level: 0, 1, 1.5, 2, 3 or 4",
+        "keyFormat": "field_key: lower-case letters, digits and _, starting with a letter",
+        "typeFormat": "field_type: text, number, date, select, boolean or url; field_required: yes or no",
+        "optionsFormat": "field_options (select fields): choices separated by |",
+        "rowsNote": "One row per field: repeat the type name on every row of its fields. A row without a field_key is a type with no fields.",
+        "existingNote": "A type that already exists is updated: the fields in the file are added or changed (a field's type cannot change) and the other fields are kept.",
+        "blankNote": "A blank cell never clears a stored value. A type with a wrong row is left out whole.",
+        "fileInput": "Asset types file",
+        "toCreate": "To create",
+        "toUpdate": "To update",
+        "differences": "Differences",
+        "errors": "Errors",
+        "row": "Row",
+        "confirm": "Confirm",
+        "readError": "Error reading file",
+        "nothingToDo": "The file has nothing new: every asset type in it is already as the file says.",
+        "done": "Asset types imported: {created} created, {updated} updated, {errors} errors",
+        "failed": "Nothing imported: {errors} errors"
     },
     "tagRules": {
         "button": "Naming rules",

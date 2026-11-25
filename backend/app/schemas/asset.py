@@ -79,6 +79,7 @@ class AssetLifecycleFields(BaseModel):
     disposal_reference: Optional[str] = Field(None, max_length=100, description="Certificate, RMA or transfer number")
     # Parent-child
     parent_asset_id: Optional[uuid.UUID] = Field(None, description="Asset this one is a component of")
+    controller_asset_id: Optional[uuid.UUID] = Field(None, description="PLC or controller that runs this asset")
 
     @field_validator("cost_currency", mode="before")
     @classmethod
@@ -125,6 +126,12 @@ class AssetBase(AssetRiskFieldsMixin, AssetLifecycleFields):
     installation_date: Optional[date] = None
     business_criticality: Optional[str] = Field(None, max_length=50, description="Business criticality")
     protocols: Optional[List[str]] = []
+    # DCIM (read only here; changed through /dcim/assets/{id}/placement, and the device type follows manufacturer + model)
+    device_type_id: Optional[uuid.UUID] = None
+    rack_id: Optional[uuid.UUID] = None
+    rack_position: Optional[float] = Field(None, description="Lowest rack unit the device uses")
+    rack_face: Optional[str] = Field(None, description="front or rear")
+    airflow: Optional[str] = None
     interfaces: Optional[List[AssetInterface]] = None
     manufacturer: Optional[ManufacturerSchema] = None
     site: Optional[Site] = None
@@ -243,6 +250,11 @@ class AssetCreate(AssetRiskFieldsMixin, AssetLifecycleFields):
 class AssetRead(AssetBase):
     location_id: Optional[uuid.UUID]
     parent: Optional[AssetSummary] = None
+    controller: Optional[AssetSummary] = None
+    # DCIM names, filled by the detail endpoint
+    rack_name: Optional[str] = None
+    device_type_name: Optional[str] = None
+    device_type_u_height: Optional[float] = None
     contacts: List[Contact] = []
     protocols: Optional[List[str]] = []
 

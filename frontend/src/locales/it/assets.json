@@ -519,8 +519,15 @@
     "assetTypeRequired": "Tipo di dispositivo",
     "validFormats": "Formati Validati",
     "ipFormat": "Indirizzo IP: formato standard valido",
-    "dateFormat": "Data: formato dd/mm/yyyy",
+    "dateFormat": "Data: AAAA-MM-GG",
     "purdueFormat": "Livello Purdue: formato 1-5",
+    "optionalColumns": "Colonne facoltative",
+    "controllerColumn": "controller: tag o nome del PLC o controller che comanda la macchina (stesso sito)",
+    "rackColumns": "rack, rack_position, rack_face (front o rear), airflow: la posizione in un rack del sito del dispositivo",
+    "lifecycleColumns": "Ciclo di vita: rilevanza safety, responsabile, acquisto, messa in servizio, garanzia, AMC, supporto, licenza e dismissione",
+    "customColumns": "cf_<chiave>: un campo personalizzato del tipo di dispositivo, ad esempio cf_voltage",
+    "blankNote": "Una cella facoltativa vuota lascia invariato il valore salvato.",
+    "extraColumns": "Altre colonne",
     "tip": "Suggerimento",
     "tipText": "Scarica il template per vedere esempi di formati validi."
   },
@@ -560,6 +567,8 @@
       "componentOfNone": "Non è un componente",
       "componentOfSearch": "Cerca asset per nome, tag o seriale",
       "componentOfEmpty": "Nessun asset trovato",
+      "controlledBy": "Controllato da (PLC / controller)",
+      "controlledByNone": "Nessun controller",
       "disposalMethod": "Modalità di smaltimento",
       "disposalDate": "Data di smaltimento / reso",
       "disposalReference": "N. certificato, RMA o trasferimento"
@@ -568,6 +577,8 @@
       "title": "Componenti",
       "partOf": "Componente di",
       "hasComponents": "Componenti",
+      "controlledBy": "Controllato da",
+      "controls": "Controlla ({count})",
       "none": "Nessun asset padre o componente"
     },
     "safety": {

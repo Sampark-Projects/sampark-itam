@@ -27,6 +27,16 @@
           </ul>
         </div>
       </div>
+      <div class="mt-3 text-sm">
+        <h5 class="font-semibold text-blue-700 mb-1">{{ t('assets.assetImport.optionalColumns') }}</h5>
+        <ul class="text-blue-600">
+          <li>{{ t('assets.assetImport.controllerColumn') }}</li>
+          <li>{{ t('assets.assetImport.rackColumns') }}</li>
+          <li>{{ t('assets.assetImport.lifecycleColumns') }}</li>
+          <li>{{ t('assets.assetImport.customColumns') }}</li>
+        </ul>
+        <p class="text-blue-600 mt-1">{{ t('assets.assetImport.blankNote') }}</p>
+      </div>
       <div class="mt-3 text-blue-600 text-sm">
         <p><strong>{{ t('assets.assetImport.tip') }}:</strong> {{ t('assets.assetImport.tipText') }}</p>
       </div>
@@ -45,6 +55,11 @@
         <h4 class="mb-1">{{ t('assets.assetImport.toCreate') }}</h4>
         <DataTable :value="previewResult.to_create" scrollable :scrollHeight="'20vh'">
           <Column v-for="col in columns" :key="col.field" :field="col.field" :header="t(col.header)" />
+          <Column field="extra" :header="t('assets.assetImport.extraColumns')">
+            <template #body="{ data }">
+              <span v-for="(value, key) in data.extra" :key="key" class="mr-2"><b>{{ key }}</b>: {{ value }}</span>
+            </template>
+          </Column>
         </DataTable>
       </div>
       <div v-if="previewResult.to_update && previewResult.to_update.length">

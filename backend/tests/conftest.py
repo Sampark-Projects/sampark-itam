@@ -15,6 +15,7 @@ from app.models.network_probe import NetworkProbe, ProbeHeartbeat, ProbeDataTran
 from app.models.discovered_device import DiscoveredDevice
 from app.models.asset import Asset
 from app.models.asset_interface import AssetInterface
+from app.models.dcim_mac import DcimMacAddress
 from app.models.asset_type import AssetType
 from app.models.asset_status import AssetStatus
 
@@ -48,6 +49,7 @@ def db_session():
         AssetStatus.__table__,
         Asset.__table__,
         AssetInterface.__table__,
+        DcimMacAddress.__table__,   # an interface with a MAC address gets its row in this table (mapper event)
     ]
     _sqlite_jsonb_compat(tables, url)
     Base.metadata.create_all(bind=engine, tables=tables)

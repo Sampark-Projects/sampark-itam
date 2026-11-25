@@ -28,6 +28,18 @@
             <Button v-if="canWrite('ipam')" icon="pi pi-cog" text rounded size="small" :aria-label="t('ipam.interfaceSettings.edit')" @click="openSettings(data)" />
           </template>
         </Column>
+        <Column v-if="showDcim" :header="t('dcim.ports.dcim')">
+          <template #body="{ data }">
+            <span class="settings">{{ portSummary(data) }}</span>
+            <Button v-if="canWrite('dcim') && portOf(data)" icon="pi pi-cog" text rounded size="small" :aria-label="t('dcim.ports.edit')" @click="openPort(data)" />
+          </template>
+        </Column>
+        <Column v-if="showDcim" :header="t('dcim.ports.cable')">
+          <template #body="{ data }">
+            <template v-if="farEnd(data)">→ <router-link :to="`/assets/${farEnd(data).asset_id}`">{{ farEnd(data).asset_name }}</router-link> / {{ farEnd(data).interface_name }}
+              <Button icon="pi pi-share-alt" text rounded size="small" :aria-label="t('dcim.trace.open')" @click="openTrace(data)" /></template>
+          </template>
+        </Column>
         <Column field="mac_address" :header="t('assets.fields.macAddress')" />
         <Column field="vlan" :header="t('assets.fields.vlan')" :filter="true" :filterPlaceholder="t('common.actions.search')" />
         <Column field="status" :header="t('common.fields.status')" />
@@ -67,6 +79,21 @@
                 <Button v-if="canWrite('ipam')" icon="pi pi-cog" text rounded size="small" :aria-label="t('ipam.interfaceSettings.edit')" @click="openSettings(iface)" />
               </dd>
             </div>
+            <div v-if="showDcim" class="dfield">
+              <dt>{{ t('dcim.ports.dcim') }}</dt>
+              <dd :class="{ 'is-empty': !portSummary(iface) }">
+                {{ portSummary(iface) || t('common.strings.na') }}
+                <Button v-if="canWrite('dcim') && portOf(iface)" icon="pi pi-cog" text rounded size="small" :aria-label="t('dcim.ports.edit')" @click="openPort(iface)" />
+              </dd>
+            </div>
+            <div v-if="showDcim" class="dfield">
+              <dt>{{ t('dcim.ports.cable') }}</dt>
+              <dd :class="{ 'is-empty': !farEnd(iface) }">
+                <template v-if="farEnd(iface)">→ <router-link :to="`/assets/${farEnd(iface).asset_id}`">{{ farEnd(iface).asset_name }}</router-link> / {{ farEnd(iface).interface_name }}
+                  <Button icon="pi pi-share-alt" text rounded size="small" :aria-label="t('dcim.trace.open')" @click="openTrace(iface)" /></template>
+                <template v-else>{{ t('dcim.ports.noCable') }}</template>
+              </dd>
+            </div>
             <div class="dfield">
               <dt>{{ t('assets.interfaces.macAddress') }}</dt>
               <dd :class="{ 'is-empty': !iface.mac_address }">{{ iface.mac_address || t('common.strings.na') }}</dd>
@@ -102,6 +129,8 @@
     <div v-else class="iface-empty">{{ t('assets.messages.noInterfaces') }}</div>
     <IpamInterfaceSettings v-if="showIpam" v-model:visible="settingsOpen" :settings="editing" @saved="loadSettings(asset.id)" />
     <IpamAssetAddresses v-if="showIpam" v-model:visible="addressesOpen" :assetId="asset.id" @saved="onAddressesSaved" />
+    <DcimInterfaceDetails v-if="showDcim" v-model:visible="portOpen" :port="editingPort" @saved="loadPorts(asset.id)" />
+    <DcimCableTrace v-if="showDcim" v-model:visible="traceOpen" :port="tracedPort" />
   </section>
 </template>
 
@@ -115,7 +144,10 @@ import Column from 'primevue/column'
 import api from '@/api/api'
 import IpamInterfaceSettings from '../ipam/IpamInterfaceSettings.vue'
 import IpamAssetAddresses from '../ipam/IpamAssetAddresses.vue'
+import DcimInterfaceDetails from '../dcim/DcimInterfaceDetails.vue'
+import DcimCableTrace from '../dcim/DcimCableTrace.vue'
 import { usePermissions } from '../../../composables/usePermissions'
+import { formatSpeed, keyOf } from '../../../composables/useDcim'
 
 const props = defineProps({
   asset: { type: Object, required: true }
@@ -195,7 +227,41 @@ function openSettings(iface) {
 }
 function onAddressesSaved(data) { primary.value = data }
 
-watch(() => props.asset?.id, id => { loadAddresses(id); loadSettings(id); loadPrimary(id) }, { immediate: true })
+// The port details and cables of the interfaces (DCIM), for users who may read DCIM.
+const showDcim = computed(() => canRead('dcim'))
+const ports = ref({})
+const editingPort = ref(null)
+const portOpen = ref(false)
+
+async function loadPorts(id) {
+  ports.value = {}
+  if (!id || !canRead('dcim')) return
+  try {
+    const res = await api.getDcimAssetInterfaces(id)
+    if (props.asset?.id === id) ports.value = Object.fromEntries((res.data || []).map(x => [x.id, x]))
+  } catch (err) {
+    ports.value = {}
+  }
+}
+const portOf = iface => ports.value[iface.id]
+const farEnd = iface => ports.value[iface.id]?.cable?.far_end || null
+function portSummary(iface) {
+  const p = portOf(iface)
+  if (!p) return ''
+  const parts = []
+  if (p.port_type) parts.push(t(`dcim.portTypes.${keyOf(p.port_type)}`))
+  if (p.speed_kbps) parts.push(formatSpeed(p.speed_kbps))
+  if (p.poe_mode) parts.push(`PoE ${t(`dcim.poeModes.${p.poe_mode}`)}`)
+  if (p.macs && p.macs.length > 1) parts.push(t('dcim.macs.count', { n: p.macs.length }))   // the primary MAC is in the MAC column; the others are in the port details
+  if (p.enabled === false) parts.push(t('dcim.ports.disabled'))
+  return parts.join(' · ')
+}
+function openPort(iface) { editingPort.value = portOf(iface); portOpen.value = true }
+const traceOpen = ref(false)
+const tracedPort = ref(null)
+function openTrace(iface) { tracedPort.value = portOf(iface); traceOpen.value = true }
+
+watch(() => props.asset?.id, id => { loadAddresses(id); loadSettings(id); loadPrimary(id); loadPorts(id) }, { immediate: true })
 </script>
 
 <style scoped>
