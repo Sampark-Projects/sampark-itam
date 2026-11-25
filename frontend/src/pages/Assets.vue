@@ -14,6 +14,8 @@
       :sites="sites"
       :assetTypes="assetTypes"
       :locations="locations"
+      :manufacturers="manufacturers"
+      :suppliers="suppliers"
     >
       <template #trailing>
         <div class="text-sm text-600">
@@ -58,6 +60,26 @@
           <i class="pi pi-times ml-2" style="font-size: 0.75rem"></i>
         </span>
         
+        <!-- Manufacturer Filter -->
+        <span
+          v-if="filters.manufacturer_id.value"
+          class="p-tag p-tag-info active-filter-tag"
+          @click="clearFilter('manufacturer_id')"
+        >
+          {{ getManufacturerFilterLabel() }}
+          <i class="pi pi-times ml-2" style="font-size: 0.75rem"></i>
+        </span>
+
+        <!-- Supplier Filter -->
+        <span
+          v-if="filters.supplier_id.value"
+          class="p-tag p-tag-info active-filter-tag"
+          @click="clearFilter('supplier_id')"
+        >
+          {{ getSupplierFilterLabel() }}
+          <i class="pi pi-times ml-2" style="font-size: 0.75rem"></i>
+        </span>
+
         <!-- Location Filter -->
         <span 
           v-if="filters.location_id.value" 
@@ -222,39 +244,35 @@
       </template>
 
       <template #body-name="{ data }">
-        <router-link :to="`/assets/${data.id}`" class="asset-link">
-          {{ data.name }}
-        </router-link>
+        <div class="asset-name-cell">
+          <router-link :to="`/assets/${data.id}`" class="asset-link">
+            {{ data.name }}
+          </router-link>
+          <router-link
+            v-if="!trashMode"
+            :to="`/assets/${data.id}`"
+            class="asset-view-icon"
+            :aria-label="t('common.actions.view')"
+            :title="t('common.actions.view')"
+          >
+            <i class="pi pi-eye" />
+          </router-link>
+        </div>
       </template>
 
       <template #body-actions="{ data }">
         <div class="flex gap-2">
-          <Button 
-            v-if="!trashMode"
-            icon="pi pi-eye" 
-            size="small"
-            @click="viewAsset(data.id)" 
-          />
+          <!-- Edit and Delete are in the three-dot menu, shown as words -->
           <Button
-            v-if="!trashMode && canWrite('assets')"
-            icon="pi pi-pencil"
+            v-if="!trashMode && (canWrite('assets') || canDelete('assets'))"
+            icon="pi pi-ellipsis-v"
             size="small"
-            @click="openEdit(t('assets.edit'), data)"
-          />
-          <Button 
-            v-if="!trashMode && canWrite('assets')"
-            icon="pi pi-copy" 
-            size="small"
-            severity="info"
-            :loading="duplicating"
-            @click="duplicateAsset(data)" 
-          />
-          <Button 
-            v-if="!trashMode && canDelete('assets')"
-            icon="pi pi-trash" 
-            size="small"
-            severity="danger"
-            @click="deleteAsset(data.id)" 
+            severity="secondary"
+            outlined
+            :aria-label="t('common.strings.actions')"
+            aria-haspopup="true"
+            aria-controls="asset_row_menu"
+            @click="openRowMenu($event, data)"
           />
           <Button 
             v-if="trashMode && canWrite('assets')" 
@@ -308,7 +326,9 @@
     />
     
 
-    <AssetsBulkActions 
+    <Menu id="asset_row_menu" ref="rowMenu" :model="rowMenuItems" :popup="true" />
+
+    <AssetsBulkActions
       v-model:visible="showBulkDialog"
       :assetStatusOptions="assetStatusOptions"
       :sites="sites"
@@ -335,7 +355,6 @@ import { useApi } from '../composables/useApi'
 import { useFilters } from '../composables/useFilters'
 import { useDialog } from '../composables/useDialog'
 import { useConfirm } from '../composables/useConfirm'
-import { useDuplicate } from '../composables/useDuplicate'
 import { usePermissions } from '../composables/usePermissions'
 import { useStatus } from '../composables/useStatus'
 import api from '../api/api'
@@ -370,7 +389,7 @@ const allColumns = [
   { field: 'area_name', header: t('areas.fields.name') },
   { field: 'location.name', header: t('locations.fields.name') },
   { field: 'status.name', header: t('common.fields.status') },
-  { field: 'manufacturer.name', header: t('manufacturers.fields.name') },
+  { field: 'manufacturer.name', header: t('assets.fields.manufacturer') },
   { field: 'asset_type.name', header: t('common.fields.type') },
   { field: 'business_criticality', header: t('assets.fields.businessCriticality'), sortable: true },
   { field: 'risk_score', header: t('assets.fields.riskScore'), sortable: true },
@@ -388,6 +407,8 @@ const { filters, globalSearch, selectedColumns, filterData, getApiParams, clearF
   site_id: { value: null, matchMode: 'equals' },
   asset_type_id: { value: null, matchMode: 'equals' },
   location_id: { value: null, matchMode: 'equals' },
+  manufacturer_id: { value: null, matchMode: 'equals' },
+  supplier_id: { value: null, matchMode: 'equals' },
   business_criticality: { value: null, matchMode: 'equals' },
   risk_score_min: { value: null, matchMode: 'gte' },
   risk_score_max: { value: null, matchMode: 'lte' },
@@ -410,7 +431,6 @@ const {
   closeConfirmDialog 
 } = useConfirm()
 
-const { duplicating, duplicateItem, excludeFunctions } = useDuplicate()
 const { canRead, canWrite, canDelete } = usePermissions()
 const { getStatusSeverity } = useStatus()
 
@@ -446,6 +466,7 @@ watch(assets, (newAssets) => {
 }, { immediate: true })
 const sites = ref([])
 const manufacturers = ref([])
+const suppliers = ref([])
 const assetTypes = ref([])
 const locations = ref([])
 const allAreas = ref([])
@@ -548,7 +569,15 @@ function syncFiltersToUrl() {
   if (filters.value.location_id?.value) {
     query.location_id = filters.value.location_id.value
   }
-  
+
+  if (filters.value.manufacturer_id?.value) {
+    query.manufacturer_id = filters.value.manufacturer_id.value
+  }
+
+  if (filters.value.supplier_id?.value) {
+    query.supplier_id = filters.value.supplier_id.value
+  }
+
   if (filters.value.business_criticality?.value) {
     // Se c'è un valore originale salvato (da URL con virgole), usalo
     // Altrimenti usa il valore del filtro
@@ -613,6 +642,8 @@ watch(
     filters.value.site_id?.value,
     filters.value.asset_type_id?.value,
     filters.value.location_id?.value,
+    filters.value.manufacturer_id?.value,
+    filters.value.supplier_id?.value,
     filters.value.business_criticality?.value,
     filters.value.risk_score_min?.value,
     filters.value.risk_score_max?.value,
@@ -661,6 +692,16 @@ watch(
         filtersChanged = true
       }
       
+      if ((newQuery.manufacturer_id || null) !== (filters.value.manufacturer_id?.value || null)) {
+        filters.value.manufacturer_id.value = newQuery.manufacturer_id || null
+        filtersChanged = true
+      }
+
+      if ((newQuery.supplier_id || null) !== (filters.value.supplier_id?.value || null)) {
+        filters.value.supplier_id.value = newQuery.supplier_id || null
+        filtersChanged = true
+      }
+
       if (newQuery.business_criticality !== filters.value.business_criticality?.value) {
         const value = newQuery.business_criticality
         const criticalityValues = Array.isArray(value) ? value : value?.split(',')
@@ -748,6 +789,14 @@ function initializeFiltersFromQuery() {
     filters.value.location_id.value = query.location_id
   }
   
+  // Parse manufacturer_id and supplier_id
+  if (query.manufacturer_id) {
+    filters.value.manufacturer_id.value = query.manufacturer_id
+  }
+  if (query.supplier_id) {
+    filters.value.supplier_id.value = query.supplier_id
+  }
+
   // Parse risk_score_min
   if (query.risk_score_min) {
     const value = parseFloat(query.risk_score_min)
@@ -810,6 +859,7 @@ onMounted(async () => {
   fetchLocations()
   fetchAreas()
   fetchManufactures()
+  fetchSuppliers()
   fetchAssetStatuses()
   try {
     await fetchAssets()
@@ -979,6 +1029,16 @@ async function fetchAreas() {
   }
 }
 
+// the supplier list is only for the filter: a failure leaves the filter empty and does not stop the page
+async function fetchSuppliers() {
+  try {
+    const response = await api.getSuppliers()
+    suppliers.value = Array.isArray(response.data) ? response.data : (response.data?.data || [])
+  } catch (error) {
+    suppliers.value = []
+  }
+}
+
 async function fetchManufactures() {
   try {
     const response = await api.getManufacturers()
@@ -1017,10 +1077,6 @@ async function fetchAssetStatuses() {
 }
 
 
-
-function viewAsset(id) {
-  router.push(`/assets/${id}`)
-}
 
 async function createAsset(assetData) {
   try {
@@ -1063,17 +1119,15 @@ async function deleteAsset(id) {
   })
 }
 
-async function duplicateAsset(asset) {
-  await duplicateItem(
-    asset,
-    async (data) => {
-      const result = await api.createAsset(data)
-      await fetchAssets()
-      return result
-    },
-    'asset',
-    excludeFunctions.asset
-  )
+// the three-dot menu of a row: one menu for the whole table, filled with the actions the user may do on that asset
+const rowMenu = ref()
+const rowMenuItems = ref([])
+function openRowMenu(event, asset) {
+  const items = []
+  if (canWrite('assets')) items.push({ label: t('common.actions.edit'), command: () => openEdit(t('assets.edit'), asset) })
+  if (canDelete('assets')) items.push({ label: t('common.actions.delete'), class: 'row-menu-danger', command: () => deleteAsset(asset.id) })
+  rowMenuItems.value = items
+  rowMenu.value.toggle(event)
 }
 
 const assetsWithIP = computed(() =>
@@ -1251,6 +1305,8 @@ const activeFiltersCount = computed(() => {
   if (filters.value.site_id?.value) count++
   if (filters.value.asset_type_id?.value) count++
   if (filters.value.location_id?.value) count++
+  if (filters.value.manufacturer_id?.value) count++
+  if (filters.value.supplier_id?.value) count++
   if (filters.value.business_criticality?.value) count++
   if (filters.value.risk_score_min?.value !== null && filters.value.risk_score_min?.value !== undefined) count++
   if (filters.value.risk_score_max?.value !== null && filters.value.risk_score_max?.value !== undefined) count++
@@ -1283,6 +1339,18 @@ function getLocationFilterLabel() {
   return location ? location.name : ''
 }
 
+function getManufacturerFilterLabel() {
+  if (!filters.value.manufacturer_id?.value) return ''
+  const manufacturer = manufacturers.value.find(m => m.id === filters.value.manufacturer_id.value)
+  return manufacturer ? `${t('assets.fields.manufacturer')}: ${manufacturer.name}` : ''
+}
+
+function getSupplierFilterLabel() {
+  if (!filters.value.supplier_id?.value) return ''
+  const supplier = suppliers.value.find(s => s.id === filters.value.supplier_id.value)
+  return supplier ? `${t('assets.tabs.suppliers')}: ${supplier.name}` : ''
+}
+
 function clearFilter(filterName) {
   if (filters.value[filterName]) {
     // Per boolean, usa false invece di null
@@ -1300,6 +1368,8 @@ function clearAllFilters() {
   filters.value.site_id.value = null
   filters.value.asset_type_id.value = null
   filters.value.location_id.value = null
+  filters.value.manufacturer_id.value = null
+  filters.value.supplier_id.value = null
   filters.value.business_criticality.value = null
   filters.value.risk_score_min.value = null
   filters.value.risk_score_max.value = null
@@ -1319,6 +1389,14 @@ function confirmEmptyTrash() {
 }
 
 </script>
+
+<style>
+/* the row menu is shown in the page body, outside this component's scoped styles */
+.p-menu .row-menu-danger .p-menuitem-text,
+.p-menu .row-menu-danger .p-menuitem-link:not(.p-disabled):hover .p-menuitem-text {
+  color: #dc2626;
+}
+</style>
 
 <style scoped>
 .assets-page {
@@ -1343,6 +1421,32 @@ function confirmEmptyTrash() {
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s ease;
+}
+
+/* the name and the eye icon sit on one line, centred on each other, whatever the font size of the table */
+.asset-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.asset-view-icon {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  line-height: 1;
+  font-size: 0.875rem;
+  color: #6b7280;
+  text-decoration: none;
+}
+
+.asset-view-icon .pi {
+  font-size: inherit;
+  line-height: 1;
+}
+
+.asset-view-icon:hover {
+  color: #1d6838;
 }
 
 .asset-link:hover {

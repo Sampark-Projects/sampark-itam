@@ -73,3 +73,14 @@ def test_paged_list_returns_one_page_with_the_total_sorted_on_the_server(db):
     assert c.get("/asset-types/paged", params={"sort_by": "nonsense; drop"}).status_code == 200  # unknown column: default order
     assert c.get("/asset-types/paged", params={"sort_order": "sideways"}).status_code == 422
     assert all("asset_count" in t for t in full["data"])
+
+
+def test_asset_count_leaves_out_deleted_assets_like_the_asset_list(db):
+    from datetime import datetime
+    from app.models import Asset
+    w = World(db)  # one live PLC asset
+    db.add(Asset(id=uuid.uuid4(), tenant_id=w.tenant.id, name="Gone", site_id=w.site.id, asset_type_id=w.type.id, status_id=w.active.id, deleted_at=datetime.utcnow()))
+    db.commit()
+    c = _client(db, w.user(ADMIN_DEFAULT_PERMISSIONS))
+    plc = next(t for t in c.get("/asset-types").json() if t["name"] == "PLC" and t["id"] == str(w.type.id))
+    assert plc["asset_count"] == 1

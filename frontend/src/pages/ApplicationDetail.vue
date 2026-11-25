@@ -55,6 +55,20 @@
               </dd>
             </dl>
           </section>
+          <section class="card">
+            <h3>{{ t('applications.cards.vapt') }}</h3>
+            <dl>
+              <dt>{{ t('applications.fields.vaptFrequency') }}</dt>
+              <dd>{{ app.vapt_frequency_value ? frequencyText(app) : none }}</dd>
+              <dt>{{ t('applications.fields.lastVapt') }}</dt><dd>{{ app.last_vapt_date ? formatDate(app.last_vapt_date) : none }}</dd>
+              <dt>{{ t('applications.fields.nextVaptDue') }}</dt>
+              <dd :class="{ late: app.next_vapt_overdue }">
+                <template v-if="app.next_vapt_due">{{ formatDate(app.next_vapt_due) }}
+                  <Tag v-if="app.next_vapt_overdue" :value="t('applications.fields.overdue')" severity="danger" class="chip" /></template>
+                <template v-else>{{ none }}</template>
+              </dd>
+            </dl>
+          </section>
         </div>
       </TabPanel>
       <TabPanel :header="t('applications.tabs.infrastructure')">
@@ -125,6 +139,8 @@ const error = ref('')
 const formOpen = ref(false)
 const none = computed(() => t('applications.none'))
 
+const frequencyText = a => t('applications.fields.vaptFrequencyEvery', {
+  n: a.vapt_frequency_value, unit: t(`applications.fields.vaptFrequencyUnitsPlural.${a.vapt_frequency_unit}`, a.vapt_frequency_value) })
 const tierSeverity = v => ({ tier1: 'danger', tier2: 'warning', tier3: 'info', tier4: 'secondary' }[v])
 const sslSeverity = v => ({ valid: 'success', expiring: 'warning', expired: 'danger' }[v])
 
@@ -170,6 +186,7 @@ dd { margin: 0; overflow-wrap: anywhere; }
 dd.pre { white-space: pre-line; }
 .pre { white-space: pre-wrap; }
 .chip { margin-left: 0.4rem; }
+.late { color: #dc2626; font-weight: 600; }
 .meta { margin-top: 1rem; color: var(--sk-text-muted, #6b7a71); font-size: 0.85rem; }
 @media (max-width: 640px) { dl { grid-template-columns: 1fr; } }
 </style>

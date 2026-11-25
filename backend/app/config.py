@@ -40,6 +40,10 @@ class Settings(BaseSettings):
         "http://localhost:3000,http://localhost:8080,http://localhost:5173",
     )
 
+    # Copy of each new application to the vulnerability-assessment application (empty URL = switched off)
+    VAPT_SYNC_URL: str = os.getenv("VAPT_SYNC_URL", "").strip()
+    VAPT_SYNC_TOKEN: str = os.getenv("VAPT_SYNC_TOKEN", "").strip()  # optional, sent as a Bearer token
+
     # Environment
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     DEBUG: bool = os.getenv("DEBUG", "true").lower() == "true"

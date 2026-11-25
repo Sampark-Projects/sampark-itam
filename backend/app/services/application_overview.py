@@ -27,14 +27,13 @@ def overview(db: Session, tenant_id, today: date) -> Dict:
         db.query(ApplicationAsset.application_id).filter(ApplicationAsset.tenant_id == tenant_id))).scalar() or 0
 
     # VAPT: applications never tested, and applications whose next test is overdue
-    app_ids = [r[0] for r in db.query(A.id).filter(*live).all()]
+    app_rows = db.query(A.id, A.vapt_frequency_value, A.vapt_frequency_unit).filter(*live).all()
     per_app: Dict = {}
-    for v in db.query(ApplicationVapt.application_id, ApplicationVapt.test_date, ApplicationVapt.next_due_date, ApplicationVapt.number).filter(
-            ApplicationVapt.tenant_id == tenant_id).all():
-        per_app.setdefault(v.application_id, []).append({"test_date": v.test_date, "next_due_date": v.next_due_date, "number": v.number})
+    for v in db.query(ApplicationVapt.application_id, ApplicationVapt.test_date).filter(ApplicationVapt.tenant_id == tenant_id).all():
+        per_app.setdefault(v.application_id, []).append(v.test_date)
     never, overdue = 0, 0
-    for app_id in app_ids:
-        last, nxt = sl.last_and_next(per_app.get(app_id, []))
+    for app_id, freq_value, freq_unit in app_rows:
+        last, nxt = sl.last_and_next(per_app.get(app_id, []), freq_value, freq_unit)
         if last is None:
             never += 1
         if nxt is not None and nxt < today:

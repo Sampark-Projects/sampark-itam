@@ -50,6 +50,10 @@ class BackgroundTaskManager:
         webhook_task = asyncio.create_task(cls._webhook_delivery_loop())
         cls._tasks.append(webhook_task)
 
+        # Copy of new applications to the vulnerability-assessment application, with retries
+        vapt_sync_task = asyncio.create_task(cls._vapt_sync_loop())
+        cls._tasks.append(vapt_sync_task)
+
         # Probe maintenance: stale status + telemetry retention
         probe_task = asyncio.create_task(cls._probe_maintenance_loop())
         cls._tasks.append(probe_task)
@@ -194,6 +198,31 @@ class BackgroundTaskManager:
             except Exception as e:
                 logger.error(f"Error in expiry alert loop: {e}", exc_info=True)
             await asyncio.sleep(24 * 60 * 60)
+
+    @classmethod
+    async def _vapt_sync_loop(cls):
+        """Send the applications waiting for their copy every 20 seconds (a no-op while the copy is switched off)."""
+        await asyncio.sleep(30)
+
+        def run():
+            from app.services import application_vapt_sync
+            db = SessionLocal()
+            try:
+                return application_vapt_sync.deliver_pending(db)
+            except Exception:
+                db.rollback()
+                raise
+            finally:
+                db.close()
+
+        while cls._running:
+            try:
+                result = await asyncio.to_thread(run)
+                if any(result.values()):
+                    logger.info(f"VAPT application copies: {result}")
+            except Exception as e:
+                logger.error(f"Error in VAPT application copy loop: {e}", exc_info=True)
+            await asyncio.sleep(20)
 
     @classmethod
     async def _webhook_delivery_loop(cls):

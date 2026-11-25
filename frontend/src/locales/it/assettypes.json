@@ -1,8 +1,10 @@
 {
     "title": "Tipi di Dispositivi",
     "search": "Cerca tipi di dispositivo per nome o descrizione",
+    "showAssets": "Mostra i {count} dispositivi di tipo {type}",
     "fields": {
-        "purdueLevel": "Livello Purdue"
+        "purdueLevel": "Livello Purdue",
+        "assets": "Dispositivi"
     },
     "messages": {
         "fetchError": "Errore nel caricamento dei tipi di dispositivi",
@@ -85,5 +87,16 @@
         "new": "Nuova regola",
         "edit": "Modifica regola",
         "required": "Nome e schema sono obbligatori."
+    },
+    "view": {
+        "label": "Vista",
+        "table": "Tabella",
+        "cards": "Schede",
+        "expandAll": "Espandi tutto",
+        "collapseAll": "Comprimi tutto",
+        "empty": "Nessun tipo di dispositivo trovato.",
+        "noLevel": "Nessun livello",
+        "levelHeading": "Livello {level}",
+        "groupCount": "{types} tipi, {assets} dispositivi"
     }
 }

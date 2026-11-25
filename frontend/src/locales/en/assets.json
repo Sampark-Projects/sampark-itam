@@ -126,6 +126,8 @@
     "exportAllHint": "Export all assets",
     "exportFilteredHint": "Export the {count} assets matching the current filters",
     "filterbyLocation": "Filter by location",
+    "filterbyManufacturer": "Filter by manufacturer",
+    "filterbySupplier": "Filter by supplier",
     "advancedFilters": "Advanced filters",
     "networkInterfacesSummary": "Network interfaces ({count})",
     "networkConnection": "Network Connection",

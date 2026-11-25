@@ -14,6 +14,7 @@ from app.models import Application, ApplicationAlertSent, ApplicationAsset, Appl
 from app.routers import application_alerts, application_hosting, application_security, applications
 from app.services import application_alert_logic as alog
 from app.services import application_alert_service as svc
+from app.services import application_security_logic as sl
 from app.services import application_overview, report_service
 from app.services.auth import get_current_user
 from app.services.notification_service import NotificationService
@@ -94,11 +95,12 @@ def _add_finding(db, w, app, n, **kw):
 
 def test_one_email_per_application_lists_everything_due_and_each_step_fires_once(db, monkeypatch):
     w, boss, sent = _setup(db, monkeypatch)
-    app = _app(db, w, ssl_expiry_date=TODAY + timedelta(days=20))
+    app = _app(db, w, ssl_expiry_date=TODAY + timedelta(days=20), vapt_frequency_value=6, vapt_frequency_unit="month")
     _add_finding(db, w, app, 1, sla_due_date=TODAY - timedelta(days=2), title="<script>alert(1)</script>")
     _add_finding(db, w, app, 2, sla_due_date=TODAY + timedelta(days=60))  # nothing due
-    db.add(ApplicationVapt(id=uuid.uuid4(), tenant_id=w.tenant.id, application_id=app.id, number=1, test_date=TODAY - timedelta(days=170),
-                           next_due_date=TODAY + timedelta(days=6)))
+    # the last test was 6 months before the date 6 days from now, so the next VAPT (test + 6 months) is due in 6 days
+    db.add(ApplicationVapt(id=uuid.uuid4(), tenant_id=w.tenant.id, application_id=app.id, number=1,
+                           test_date=sl.add_months(TODAY + timedelta(days=6), -6)))
     db.commit()
 
     first = svc.run_application_alerts(db, w.tenant.id, TODAY)
@@ -174,12 +176,11 @@ def test_overview_numbers_and_tenant_isolation(db):
     w = World(db)
     c = _client(db, w.user(ADMIN_DEFAULT_PERMISSIONS))
     today = date.today()
-    a = _app(db, w, tier="tier1", ssl_expiry_date=today - timedelta(days=1))
+    a = _app(db, w, tier="tier1", ssl_expiry_date=today - timedelta(days=1), vapt_frequency_value=6, vapt_frequency_unit="month")
     b = _app(db, w, tier="tier2", ssl_expiry_date=today + timedelta(days=10))
     _app(db, w)  # no tier, no assets
     db.add(ApplicationAsset(id=uuid.uuid4(), tenant_id=w.tenant.id, application_id=a.id, asset_id=w.asset.id, role="web"))
-    db.add(ApplicationVapt(id=uuid.uuid4(), tenant_id=w.tenant.id, application_id=a.id, number=1, test_date=today - timedelta(days=300),
-                           next_due_date=today - timedelta(days=5)))
+    db.add(ApplicationVapt(id=uuid.uuid4(), tenant_id=w.tenant.id, application_id=a.id, number=1, test_date=today - timedelta(days=300)))  # + 6 months: overdue
     for n, (severity, status, sla) in enumerate((("critical", "open", today - timedelta(days=1)), ("high", "patch_assigned", today + timedelta(days=9)),
                                                  ("high", "verified_fixed", today - timedelta(days=9))), start=1):
         f = ApplicationFinding(id=uuid.uuid4(), tenant_id=w.tenant.id, application_id=a.id, number=n, title="x", severity=severity, remediation_status=status,

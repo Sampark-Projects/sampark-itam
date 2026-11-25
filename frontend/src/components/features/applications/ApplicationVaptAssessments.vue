@@ -15,7 +15,7 @@
       <thead>
         <tr>
           <th>{{ t('applications.security.vaptId') }}</th><th>{{ t('applications.security.assessmentType') }}</th><th>{{ t('applications.security.assessor') }}</th>
-          <th>{{ t('applications.security.status') }}</th><th>{{ t('applications.security.testDate') }}</th><th>{{ t('applications.security.nextDue') }}</th>
+          <th>{{ t('applications.security.status') }}</th><th>{{ t('applications.security.testDate') }}</th>
           <th>{{ t('applications.security.posture') }}</th><th>{{ t('applications.security.openFindings') }}</th><th>{{ t('applications.security.report') }}</th><th></th>
         </tr>
       </thead>
@@ -26,7 +26,6 @@
           <td>{{ v.assessor || none }}</td>
           <td><Tag :value="t(`applications.security.assessmentStatuses.${v.status}`)" :severity="statusSeverity(v.status)" /></td>
           <td>{{ v.test_date ? formatDate(v.test_date) : none }}</td>
-          <td :class="{ late: isPast(v.next_due_date) && v.status !== 'closed' }">{{ v.next_due_date ? formatDate(v.next_due_date) : none }}</td>
           <td><Tag v-if="v.overall_posture" :value="t(`applications.security.postures.${v.overall_posture}`)" :severity="postureSeverity(v.overall_posture)" /><template v-else>{{ none }}</template></td>
           <td class="counts">
             <span v-for="s in SEVERITIES" :key="s" :class="['count', `sev-${s}`, { zero: !v.open_findings[s] }]" :title="t(`applications.security.severities.${s}`)">{{ v.open_findings[s] }}</span>
@@ -74,14 +73,10 @@
           <label>{{ t('applications.security.status') }}</label>
           <Dropdown v-model="form.status" :options="statusOptions" optionLabel="label" optionValue="value" class="w-full" />
         </div>
-        <div class="p-field"></div>
         <div class="p-field">
           <label>{{ t('applications.security.testDate') }}</label>
-          <Calendar v-model="form.test_date" dateFormat="dd/mm/yy" showIcon showButtonBar class="w-full" />
-        </div>
-        <div class="p-field">
-          <label>{{ t('applications.security.nextDue') }}</label>
-          <Calendar v-model="form.next_due_date" dateFormat="dd/mm/yy" showIcon showButtonBar class="w-full" />
+          <Calendar v-model="form.test_date" dateFormat="dd/mm/yy" :maxDate="new Date()" showIcon showButtonBar class="w-full" />
+          <small class="muted">{{ t('applications.security.testDateHint') }}</small>
         </div>
         <div class="p-field span-2">
           <label>{{ t('applications.security.reportUrl') }}</label>
@@ -169,7 +164,6 @@ const statusOptions = computed(() => STATUSES.map(v => ({ value: v, label: t(`ap
 const postureOptions = computed(() => POSTURES.map(v => ({ value: v, label: t(`applications.security.postures.${v}`) })))
 const statusSeverity = v => ({ scheduled: 'info', in_progress: 'warning', remediation: 'warning', closed: 'success' }[v])
 const postureSeverity = v => ({ pass: 'success', conditional_pass: 'warning', fail: 'danger' }[v])
-const isPast = value => { const d = parseLocalDate(value); return d ? d < new Date(new Date().toDateString()) : false }
 
 const items = ref([])
 const loading = ref(false)
@@ -193,7 +187,7 @@ const formError = ref('')
 const saving = ref(false)
 const uploading = ref(false)
 const fileInput = ref(null)
-const blank = () => ({ assessment_type: 'web_app', methodology: null, assessor: '', reference: '', scope: '', status: 'scheduled', test_date: null, next_due_date: null,
+const blank = () => ({ assessment_type: 'web_app', methodology: null, assessor: '', reference: '', scope: '', status: 'scheduled', test_date: null,
   report_url: '', overall_posture: null, sign_off_by: '', sign_off_date: null })
 const form = ref(blank())
 
@@ -202,7 +196,8 @@ function openForm(row) {
   formError.value = ''
   form.value = row
     ? { assessment_type: row.assessment_type, methodology: row.methodology, assessor: row.assessor || '', reference: row.reference || '', scope: row.scope || '',
-        status: row.status, test_date: parseLocalDate(row.test_date), next_due_date: parseLocalDate(row.next_due_date), report_url: row.report_url || '',
+        status: row.status, test_date: parseLocalDate(row.test_date),
+        report_url: row.report_url || '',
         overall_posture: row.overall_posture, sign_off_by: row.sign_off_by || '', sign_off_date: parseLocalDate(row.sign_off_date) }
     : blank()
   formOpen.value = true
@@ -211,7 +206,7 @@ function openForm(row) {
 async function save() {
   formError.value = ''
   const f = form.value
-  const body = { ...f, test_date: formatLocalDate(f.test_date), next_due_date: formatLocalDate(f.next_due_date), sign_off_date: formatLocalDate(f.sign_off_date) }
+  const body = { ...f, test_date: formatLocalDate(f.test_date), sign_off_date: formatLocalDate(f.sign_off_date) }
   for (const key of Object.keys(body)) if (body[key] === '') body[key] = null
   saving.value = true
   try {

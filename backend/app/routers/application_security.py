@@ -34,7 +34,7 @@ router = APIRouter(
     dependencies=[Depends(require_section_access("applications"))],
 )
 
-VAPT_FIELDS = ("reference", "assessment_type", "methodology", "scope", "assessor", "status", "test_date", "next_due_date",
+VAPT_FIELDS = ("reference", "assessment_type", "methodology", "scope", "assessor", "status", "test_date",
                "report_url", "overall_posture", "sign_off_by", "sign_off_date", "notes")
 FINDING_FIELDS = ("vapt_id", "ticket_ref", "cve_id", "vulnerability_id", "title", "severity", "cvss_score", "discovery_source",
                   "affected_asset_id", "affected_target", "affected_component", "exploitability", "remediation_status",
@@ -52,7 +52,6 @@ class VaptIn(BaseModel):
     assessor: Optional[str] = None
     status: Optional[str] = None
     test_date: Optional[date] = None
-    next_due_date: Optional[date] = None
     report_url: Optional[str] = None
     overall_posture: Optional[str] = None
     sign_off_by: Optional[str] = None
@@ -167,7 +166,7 @@ def _vapt_list_out(db: Session, app: Application, rows) -> list:
 
 def _clean_vapt(data: VaptIn) -> dict:
     try:
-        return sl.clean_assessment(data.model_dump())
+        return sl.clean_assessment(data.model_dump(), local_today())
     except sl.SecurityInputError as exc:
         raise _bad(str(exc))
 
@@ -422,11 +421,11 @@ def security_summary(application_id: uuid.UUID, current_user: User = Depends(get
                                                 F.sla_due_date < today).scalar()
     expired = db.query(func.count(F.id)).filter(F.application_id == app.id, F.remediation_status == "risk_accepted",
                                                 F.exception_valid_until.isnot(None), F.exception_valid_until < today).scalar()
-    assessments = db.query(ApplicationVapt.test_date, ApplicationVapt.next_due_date, ApplicationVapt.number).filter(
-        ApplicationVapt.application_id == app.id).all()
-    last_date, next_due = sl.last_and_next([{"test_date": a.test_date, "next_due_date": a.next_due_date, "number": a.number} for a in assessments])
+    test_dates = [d for (d,) in db.query(ApplicationVapt.test_date).filter(ApplicationVapt.application_id == app.id).all()]
+    last_date, next_due = sl.last_and_next(test_dates, app.vapt_frequency_value, app.vapt_frequency_unit)
     return {
         "open": open_counts, "open_total": sum(open_counts.values()), "overdue": overdue, "exceptions_expired": expired,
-        "assessments": len(assessments), "last_vapt_date": last_date, "next_vapt_due": next_due,
+        "assessments": len(test_dates), "last_vapt_date": last_date, "next_vapt_due": next_due,
+        "vapt_frequency_value": app.vapt_frequency_value, "vapt_frequency_unit": app.vapt_frequency_unit,
         "next_vapt_overdue": bool(next_due and next_due < today), "suggested_posture": sl.posture_suggestion(open_counts),
     }

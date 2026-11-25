@@ -94,6 +94,11 @@ def clean_application(raw: Dict) -> Dict:
     out["ssl_expiry_date"] = raw.get("ssl_expiry_date")
     out["last_scan_date"] = raw.get("last_scan_date")
     out["site_id"] = raw.get("site_id")
+    from app.services import application_security_logic as sl
+    try:  # optional: both the number and the unit (month or year), or neither
+        out["vapt_frequency_value"], out["vapt_frequency_unit"] = sl.clean_frequency(raw.get("vapt_frequency_value"), raw.get("vapt_frequency_unit"))
+    except sl.SecurityInputError as exc:
+        raise ApplicationInputError(str(exc))
     return out
 
 

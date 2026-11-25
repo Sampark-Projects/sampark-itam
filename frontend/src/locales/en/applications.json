@@ -60,7 +60,8 @@
   "cards": {
     "identity": "Identity and ownership",
     "access": "Access and URLs",
-    "governance": "Data and governance"
+    "governance": "Data and governance",
+    "vapt": "VAPT schedule"
   },
   "fields": {
     "code": "Application ID",
@@ -84,7 +85,17 @@
     "lastScanResult": "Scan result",
     "createdBy": "Created by",
     "updated": "Last updated",
-    "dnsRecords": "DNS A / CNAME records"
+    "dnsRecords": "DNS A / CNAME records",
+    "vaptFrequency": "VAPT frequency",
+    "vaptFrequencyValue": "Number",
+    "vaptFrequencyUnit": "Unit",
+    "vaptFrequencyHint": "Optional. Repeats every N months; the next VAPT is the last test date plus this.",
+    "vaptFrequencyEvery": "every {n} {unit}",
+    "vaptFrequencyUnits": { "month": "Month" },
+    "vaptFrequencyUnitsPlural": { "month": "month | months" },
+    "lastVapt": "Last VAPT",
+    "nextVaptDue": "Next VAPT due",
+    "overdue": "Overdue"
   },
   "placeholders": {
     "name": "e.g. Customer Billing Portal",
@@ -238,6 +249,7 @@
     "status": "Assessment status",
     "testDate": "Test completed on",
     "nextDue": "Next scheduled VAPT",
+    "testDateHint": "The last test date and the application frequency give the next VAPT due.",
     "reportUrl": "Report link",
     "report": "Report",
     "noReport": "No report attached.",

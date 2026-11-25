@@ -44,7 +44,9 @@ def _with_asset_counts(db: Session, tenant_id: Optional[uuid.UUID], asset_types)
     ids = [at.id for at in asset_types]
     counts = {}
     if ids:
-        counting = db.query(Asset.asset_type_id, func.count(Asset.id)).filter(Asset.asset_type_id.in_(ids))
+        # the same assets the asset list shows: deleted ones are not counted
+        counting = db.query(Asset.asset_type_id, func.count(Asset.id)).filter(
+            Asset.asset_type_id.in_(ids), Asset.deleted_at.is_(None))
         if tenant_id:
             counting = counting.filter(Asset.tenant_id == tenant_id)
         counts = dict(counting.group_by(Asset.asset_type_id).all())

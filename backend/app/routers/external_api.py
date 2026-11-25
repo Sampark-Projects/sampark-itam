@@ -486,6 +486,51 @@ async def ipam_vrfs_external(
     return _run_list(ipam_basics.list_vrfs, api_key, db, search=search, skip=skip, limit=limit)
 
 
+# --- Applications (read only) with their details -------------------------------------------------
+
+def _include_sections(include: Optional[str]):
+    from app.services import application_external
+    try:
+        return application_external.parse_include(include)
+    except ValueError as exc:
+        raise ErrorCodeException(status_code=400, error_code=ErrorCode.APPLICATION_INVALID, detail=str(exc))
+
+
+@router.get("/applications")
+async def applications_external(
+    search: Optional[str] = None, tier: Optional[str] = None, lifecycle_status: Optional[str] = None,
+    site_id: Optional[uuid.UUID] = None, include: Optional[str] = None,
+    skip: int = 0, limit: int = api_paging.DEFAULT_LIMIT,
+    api_key=Depends(require_read_scope), db: Session = Depends(get_db), request: Request = None,
+):
+    """Applications of the key's tenant with their details: owners, URLs, SSL, backup and RPO/RTO, the VAPT frequency, a security summary
+    (last and next VAPT, open findings by severity) and, in `include` (comma list, default all: assets, integrations, vapt, findings;
+    `none` for the application alone), the linked assets, connected systems, VAPT assessments and findings."""
+    from app.services import application_external
+    _guard(request, api_key, "/applications")
+    sections = _include_sections(include)
+    skip, limit = api_paging.clamp(skip, limit)
+    return application_external.list_page(db, api_key.tenant_id, skip, limit, sections, search=search, tier=tier,
+                                          lifecycle_status=lifecycle_status, site_id=site_id)
+
+
+@router.get("/applications/{application_id}")
+async def application_external_detail(
+    application_id: uuid.UUID, include: Optional[str] = None,
+    api_key=Depends(require_read_scope), db: Session = Depends(get_db), request: Request = None,
+):
+    """One application with all its details: owners, URLs, SSL, backup and RPO/RTO, a security summary (last and next VAPT, open findings
+    by severity) and, in `include` (comma list, default all: assets, integrations, vapt, findings; `none` for the application alone),
+    the linked assets, connected systems, VAPT assessments (with their frequency) and findings."""
+    from app.services import application_external
+    _guard(request, api_key, f"/applications/{application_id}")
+    sections = _include_sections(include)
+    item = application_external.get_one(db, api_key.tenant_id, application_id, sections)
+    if item is None:
+        raise ErrorCodeException(status_code=404, error_code=ErrorCode.APPLICATION_NOT_FOUND)
+    return item
+
+
 def _lifecycle_values(asset) -> dict:
     from app.schemas.asset import AssetLifecycleFields
     return {k: getattr(asset, k, None) for k in AssetLifecycleFields.model_fields if k not in ("parent_asset_id", "controller_asset_id")}

@@ -15,7 +15,7 @@
       </div>
       <div class="p-field">
         <label>{{ t('applications.fields.tier') }}</label>
-        <Dropdown v-model="form.tier" :options="tierOptions" optionLabel="label" optionValue="value" showClear
+        <Dropdown v-model="form.tier" :options="tierOptions" optionLabel="label" optionValue="value"
                   :placeholder="t('applications.select')" class="w-full" />
       </div>
       <div class="p-field">
@@ -72,7 +72,7 @@
     <div class="grid-2">
       <div class="p-field">
         <label>{{ t('applications.fields.classification') }}</label>
-        <Dropdown v-model="form.data_classification" :options="classificationOptions" optionLabel="label" optionValue="value" showClear
+        <Dropdown v-model="form.data_classification" :options="classificationOptions" optionLabel="label" optionValue="value"
                   :placeholder="t('applications.select')" class="w-full" />
       </div>
       <div class="p-field">
@@ -90,6 +90,16 @@
       <div class="p-field">
         <label>{{ t('applications.fields.rto') }}</label>
         <InputNumber v-model="form.rto_hours" :min="0" :max="8760" :useGrouping="false" class="w-full" />
+      </div>
+      <div class="p-field">
+        <label>{{ t('applications.fields.vaptFrequency') }}</label>
+        <div class="frequency-row">
+          <InputNumber v-model="form.vapt_frequency_value" :min="1" :max="120" :useGrouping="false" :maxFractionDigits="0"
+                       :placeholder="t('applications.fields.vaptFrequencyValue')" class="frequency-value" />
+          <Dropdown v-model="form.vapt_frequency_unit" :options="frequencyUnitOptions" optionLabel="label" optionValue="value"
+                    :placeholder="t('applications.fields.vaptFrequencyUnit')" class="frequency-unit" />
+        </div>
+        <small class="hint">{{ t('applications.fields.vaptFrequencyHint') }}</small>
       </div>
       <div class="p-field">
         <label>{{ t('applications.fields.lastScanDate') }}</label>
@@ -134,7 +144,10 @@ const tierOptions = computed(() => TIERS.map(v => ({ value: v, label: t(`applica
 const statusOptions = computed(() => STATUSES.map(v => ({ value: v, label: t(`applications.statuses.${v}`) })))
 const classificationOptions = computed(() => CLASSIFICATIONS.map(v => ({ value: v, label: t(`applications.classifications.${v}`) })))
 
+const frequencyUnitOptions = computed(() => ['month'].map(v => ({ value: v, label: t(`applications.fields.vaptFrequencyUnits.${v}`) })))
+
 const empty = () => ({
+  vapt_frequency_value: null, vapt_frequency_unit: 'month',
   name: '', tier: null, lifecycle_status: 'production', business_owner: '', technical_owner: '', site_id: null, description: '',
   primary_url: '', secondary_url: '', authentication_method: '', ssl_expiry_date: null,
   data_classification: null, firewall_rule_ids: '', backup_policy: '', rpo_hours: null, rto_hours: null,
@@ -171,6 +184,7 @@ async function save() {
   }
   const body = { ...form.value, ssl_expiry_date: formatLocalDate(form.value.ssl_expiry_date), last_scan_date: formatLocalDate(form.value.last_scan_date) }
   for (const key of Object.keys(body)) if (body[key] === '') body[key] = null
+  if (body.vapt_frequency_value == null) body.vapt_frequency_unit = null  // the unit (month) only goes with a number
   saving.value = true
   try {
     const res = props.application ? await api.updateApplication(props.application.id, body) : await api.createApplication(body)
@@ -189,6 +203,10 @@ async function save() {
 .card-title:first-of-type { margin-top: 0; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem 1rem; }
 .span-2 { grid-column: span 2; }
+.frequency-row { display: flex; gap: 0.5rem; }
+.frequency-value { flex: 0 0 40%; min-width: 0; }
+.frequency-unit { flex: 1 1 auto; min-width: 0; }
+.hint { color: var(--sk-text-muted, #6b7a71); }
 .p-field label { display: block; margin-bottom: 0.3rem; font-weight: 500; }
 @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } .span-2 { grid-column: span 1; } }
 </style>

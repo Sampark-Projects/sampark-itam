@@ -26,13 +26,85 @@
       </div>
     </div>
 
-    <span class="p-input-icon-left search-box">
-      <i class="pi pi-search" />
-      <InputText v-model="search" :placeholder="t('assettypes.search')" class="w-full" />
-    </span>
+    <div class="toolbar">
+      <span class="p-input-icon-left search-box">
+        <i class="pi pi-search" />
+        <InputText v-model="search" :placeholder="t('assettypes.search')" class="w-full" />
+      </span>
+      <div class="toolbar-right">
+        <div v-if="viewMode === 'cards' && levelGroups.length > 1" class="group-buttons">
+          <Button :label="t('assettypes.view.expandAll')" icon="pi pi-plus" text size="small" @click="setAllGroups(false)" />
+          <Button :label="t('assettypes.view.collapseAll')" icon="pi pi-minus" text size="small" @click="setAllGroups(true)" />
+        </div>
+        <SelectButton
+          class="view-switch"
+          v-model="viewMode"
+          :options="viewOptions"
+          optionLabel="label"
+          optionValue="value"
+          :allowEmpty="false"
+          :aria-label="t('assettypes.view.label')"
+        />
+      </div>
+    </div>
+
+    <!-- cards: every type under its Purdue level, each level can be folded -->
+    <div v-if="viewMode === 'cards'" class="cards-view" :class="{ 'is-loading': loading }">
+      <p v-if="!loading && !levelGroups.length" class="cards-empty">{{ t('assettypes.view.empty') }}</p>
+      <section v-for="group in levelGroups" :key="group.key" class="level-group">
+        <button
+          type="button"
+          class="level-head"
+          :aria-expanded="!isCollapsed(group.key)"
+          @click="toggleGroup(group.key)"
+        >
+          <i :class="isCollapsed(group.key) ? 'pi pi-chevron-right' : 'pi pi-chevron-down'" aria-hidden="true"></i>
+          <span class="level-title">{{ group.label }}</span>
+          <span class="level-meta">{{ t('assettypes.view.groupCount', { types: group.items.length, assets: group.assets }) }}</span>
+        </button>
+        <div v-show="!isCollapsed(group.key)" class="card-grid">
+          <article v-for="item in group.items" :key="item.id" class="type-card">
+            <div class="type-card-head">
+              <h3 class="type-card-name">{{ item.name }}</h3>
+              <div class="type-card-actions">
+                <Button
+                  v-if="canWrite('asset_types')"
+                  icon="pi pi-pencil"
+                  class="p-button-rounded p-button-text p-button-info card-icon-btn"
+                  :aria-label="t('common.actions.edit')"
+                  @click="editAssetType(item)"
+                />
+                <Button
+                  v-if="canDelete('asset_types')"
+                  icon="pi pi-trash"
+                  class="p-button-rounded p-button-text p-button-danger card-icon-btn"
+                  :aria-label="t('common.actions.delete')"
+                  @click="deleteAssetType(item.id)"
+                />
+              </div>
+            </div>
+            <p class="type-card-desc">{{ item.description || '-' }}</p>
+            <div class="type-card-foot">
+              <span class="type-card-label">{{ t('assettypes.fields.assets') }}</span>
+              <Button
+                v-if="item.asset_count > 0 && canRead('assets')"
+                :label="String(item.asset_count)"
+                icon="pi pi-arrow-right"
+                iconPos="right"
+                class="p-button-link asset-count-link"
+                :aria-label="t('assettypes.showAssets', { type: item.name, count: item.asset_count })"
+                @click="showAssets(item)"
+              />
+              <span v-else class="type-card-zero">{{ item.asset_count ?? 0 }}</span>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
 
     <!-- lazy: the API cuts the page, sorts and searches; the table only holds the page on screen -->
     <DataTable
+      v-else
       :value="assettypes"
       :loading="loading"
       lazy
@@ -55,6 +127,19 @@
             {{ t('assettypes.level' + (data.purdue_level === 1.5 ? '1_5' : data.purdue_level)) }}
           </span>
           <span v-else>-</span>
+        </template>
+      </Column>
+      <Column field="asset_count" :header="t('assettypes.fields.assets')" style="width: 8rem">
+        <template #body="{ data }">
+          <!-- the number opens the asset list filtered on this type -->
+          <Button
+            v-if="data.asset_count > 0 && canRead('assets')"
+            :label="String(data.asset_count)"
+            class="p-button-link asset-count-link"
+            :aria-label="t('assettypes.showAssets', { type: data.name, count: data.asset_count })"
+            @click="showAssets(data)"
+          />
+          <span v-else>{{ data.asset_count ?? 0 }}</span>
         </template>
       </Column>
       <Column v-if="canWrite('asset_types') || canDelete('asset_types')" :header="t('common.strings.actions')">
@@ -107,7 +192,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { useI18n } from 'vue-i18n'
@@ -122,12 +207,13 @@ import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
+import SelectButton from 'primevue/selectbutton'
 
 const toast = useToast()
 const showTagRules = ref(false)
 const router = useRouter()
-const { t } = useI18n()
-const { canWrite, canDelete, canBulkOperate } = usePermissions()
+const { t, te } = useI18n()
+const { canRead, canWrite, canDelete, canBulkOperate } = usePermissions()
 const showImportDialog = ref(false)
 
 const assettypes = ref([])
@@ -147,6 +233,55 @@ const pageRows = ref(15)
 const totalRecords = ref(0)
 const sortField = ref(null)
 const sortOrder = ref(null)
+
+// Table or cards: the choice is kept in the browser. Cards load every match at once (the API caps a page at 500),
+// because the Purdue level groups need the whole list; the table keeps its server-side pages.
+const VIEW_KEY = 'assetTypes.viewMode'
+// cards are the default until the user picks the table
+const viewMode = ref(localStorage.getItem(VIEW_KEY) === 'table' ? 'table' : 'cards')
+const viewOptions = computed(() => [
+  { value: 'table', label: t('assettypes.view.table') },
+  { value: 'cards', label: t('assettypes.view.cards') }
+])
+const CARD_LIMIT = 500
+const collapsed = ref({})
+
+watch(viewMode, (mode) => {
+  localStorage.setItem(VIEW_KEY, mode)
+  pageFirst.value = 0
+  fetchAssetTypes()
+})
+
+function levelText(level) {
+  const key = 'assettypes.level' + (level === 1.5 ? '1_5' : level)
+  return te(key) ? t(key) : String(level)
+}
+
+// Cards per Purdue level, lowest level first; types without a level come last. Within a level the API order (name) is kept.
+const levelGroups = computed(() => {
+  const byLevel = new Map()
+  for (const item of assettypes.value) {
+    const key = item.purdue_level === null || item.purdue_level === undefined ? 'none' : String(item.purdue_level)
+    if (!byLevel.has(key)) byLevel.set(key, [])
+    byLevel.get(key).push(item)
+  }
+  return [...byLevel.entries()]
+    .sort(([a], [b]) => (a === 'none') - (b === 'none') || Number(a) - Number(b))
+    .map(([key, items]) => ({
+      key,
+      label: key === 'none' ? t('assettypes.view.noLevel') : t('assettypes.view.levelHeading', { level: levelText(Number(key)) }),
+      items,
+      assets: items.reduce((sum, i) => sum + (i.asset_count || 0), 0)
+    }))
+})
+
+const isCollapsed = (key) => !!collapsed.value[key]
+function toggleGroup(key) {
+  collapsed.value = { ...collapsed.value, [key]: !collapsed.value[key] }
+}
+function setAllGroups(value) {
+  collapsed.value = Object.fromEntries(levelGroups.value.map(g => [g.key, value]))
+}
 
 onMounted(() => {
   fetchAssetTypes()
@@ -181,10 +316,11 @@ async function fetchAssetTypes() {
   // a response that is no longer the newest request (search, page or sort moved on) is ignored
   const requestId = ++fetchRequestId
   loading.value = true
-  const params = { skip: pageFirst.value, limit: pageRows.value }
+  const cards = viewMode.value === 'cards'
+  const params = cards ? { skip: 0, limit: CARD_LIMIT } : { skip: pageFirst.value, limit: pageRows.value }
   const asked = search.value.trim()
   if (asked) params.search = asked
-  if (sortField.value) {
+  if (!cards && sortField.value) {
     params.sort_by = sortField.value
     params.sort_order = sortOrder.value === -1 ? 'desc' : 'asc'
   }
@@ -208,6 +344,11 @@ async function fetchAssetTypes() {
   } finally {
     if (requestId === fetchRequestId) loading.value = false
   }
+}
+
+// The asset list already reads asset_type_id from the address, so this opens it filtered on the type
+function showAssets(assettype) {
+  router.push({ path: '/assets', query: { asset_type_id: assettype.id } })
 }
 
 function onImported(result) {
@@ -274,10 +415,136 @@ async function deleteAssetType(id) {
 .assettypes-page {
   padding: 0;
 }
+.asset-count-link {
+  padding: 0;
+  font-weight: 600;
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
 .search-box {
   display: block;
+  flex: 1 1 14rem;
   max-width: 24rem;
-  margin-bottom: 0.75rem;
+}
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+.cards-view.is-loading {
+  opacity: 0.6;
+}
+.cards-empty {
+  color: var(--text-color-secondary);
+  padding: 1rem 0;
+}
+.level-group {
+  margin-bottom: 1rem;
+}
+.level-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.25rem;
+  border: 0;
+  border-bottom: 1px solid var(--surface-border);
+  background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+  border-radius: 0 6px 6px 0;
+  color: var(--text-color);
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.level-head:hover {
+  background: color-mix(in srgb, var(--primary-color) 14%, transparent);
+}
+.level-title {
+  font-weight: 600;
+}
+.level-meta {
+  margin-left: auto;
+  color: var(--text-color-secondary);
+  font-size: 0.85rem;
+}
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+.type-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem 1rem;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 0 8px 8px 0;
+}
+.group-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.toolbar-right .view-switch.p-selectbutton :deep(.p-button:first-child) {
+  border-radius: 6px 0 0 6px !important;
+}
+.toolbar-right .view-switch.p-selectbutton :deep(.p-button:last-child) {
+  border-radius: 0 6px 6px 0 !important;
+}
+.group-buttons :deep(.p-button) {
+  padding: 0.4rem 0.5rem;
+}
+.type-card-actions :deep(.card-icon-btn) {
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+}
+.type-card-actions :deep(.card-icon-btn .p-button-icon) {
+  font-size: 0.65rem;
+}
+.type-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.type-card-name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.type-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+.type-card-desc {
+  flex: 1;
+  margin: 0.25rem 0 0.75rem;
+  color: var(--text-color-secondary);
+  font-size: 0.9rem;
+}
+.type-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--surface-border);
+}
+.type-card-label {
+  color: var(--text-color-secondary);
+  font-size: 0.9rem;
+}
+.type-card-zero {
+  font-weight: 600;
 }
 .page-header {
   display: flex;

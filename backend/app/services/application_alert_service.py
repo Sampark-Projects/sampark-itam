@@ -76,14 +76,13 @@ def run_application_alerts(db: Session, tenant_id, today: Optional[date] = None)
     for f in db.query(ApplicationFinding).filter(ApplicationFinding.application_id.in_(ids)).all():
         findings.setdefault(f.application_id, []).append(f)
     assessments: Dict = {}
-    for v in db.query(ApplicationVapt.application_id, ApplicationVapt.test_date, ApplicationVapt.next_due_date, ApplicationVapt.number).filter(
-            ApplicationVapt.application_id.in_(ids)).all():
-        assessments.setdefault(v.application_id, []).append({"test_date": v.test_date, "next_due_date": v.next_due_date, "number": v.number})
+    for v in db.query(ApplicationVapt.application_id, ApplicationVapt.test_date).filter(ApplicationVapt.application_id.in_(ids)).all():
+        assessments.setdefault(v.application_id, []).append(v.test_date)
 
     recipients: Optional[List[User]] = None  # looked up once, only when something is due
     for app in apps:
         result["checked"] += 1
-        _, next_due = sl.last_and_next(assessments.get(app.id, []))
+        _, next_due = sl.last_and_next(assessments.get(app.id, []), app.vapt_frequency_value, app.vapt_frequency_unit)
         items = alog.due_items(
             {"id": app.id, "status": app.lifecycle_status, "ssl_expiry_date": app.ssl_expiry_date},
             [{"id": f.id, "code": sl.format_finding(f.number), "title": f.title, "severity": f.severity, "status": f.remediation_status,

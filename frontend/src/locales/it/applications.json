@@ -60,7 +60,8 @@
   "cards": {
     "identity": "Identità e responsabilità",
     "access": "Accesso e URL",
-    "governance": "Dati e governance"
+    "governance": "Dati e governance",
+    "vapt": "Pianificazione VAPT"
   },
   "fields": {
     "code": "ID applicazione",
@@ -84,7 +85,17 @@
     "lastScanResult": "Esito della scansione",
     "createdBy": "Creato da",
     "updated": "Ultimo aggiornamento",
-    "dnsRecords": "Record DNS A / CNAME"
+    "dnsRecords": "Record DNS A / CNAME",
+    "vaptFrequency": "Frequenza del VAPT",
+    "vaptFrequencyValue": "Numero",
+    "vaptFrequencyUnit": "Unità",
+    "vaptFrequencyHint": "Facoltativa. Si ripete ogni N mesi; il prossimo VAPT è la data dell'ultimo test più questa.",
+    "vaptFrequencyEvery": "ogni {n} {unit}",
+    "vaptFrequencyUnits": { "month": "Mese" },
+    "vaptFrequencyUnitsPlural": { "month": "mese | mesi" },
+    "lastVapt": "Ultimo VAPT",
+    "nextVaptDue": "Prossimo VAPT previsto",
+    "overdue": "Scaduto"
   },
   "placeholders": {
     "name": "es. Portale fatturazione clienti",
@@ -238,6 +249,7 @@
     "status": "Stato della valutazione",
     "testDate": "Test completato il",
     "nextDue": "Prossimo VAPT pianificato",
+    "testDateHint": "La data dell'ultimo test e la frequenza dell'applicazione danno il prossimo VAPT.",
     "reportUrl": "Link al rapporto",
     "report": "Rapporto",
     "noReport": "Nessun rapporto allegato.",

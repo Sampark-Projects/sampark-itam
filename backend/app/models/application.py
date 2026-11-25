@@ -2,7 +2,7 @@
 Linked assets, integrations and VAPT records are added by later phases and point at this table."""
 import uuid
 
-from sqlalchemy import Boolean, Column, Date, DateTime, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint, func
+from sqlalchemy import Boolean, CheckConstraint, Column, Date, DateTime, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 
 from app.database import Base
@@ -13,6 +13,11 @@ class Application(Base):
     __table_args__ = (
         UniqueConstraint("tenant_id", "number", name="uq_applications_number"),
         Index("ix_applications_tenant_name", "tenant_id", "name"),
+        CheckConstraint(
+            "(vapt_frequency_value IS NULL AND vapt_frequency_unit IS NULL) OR "
+            "(vapt_frequency_value >= 1 AND vapt_frequency_unit IN ('month', 'year'))",
+            name="ck_applications_vapt_frequency",
+        ),
     )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -43,6 +48,17 @@ class Application(Base):
     last_scan_date = Column(Date, nullable=True)
     last_scan_result = Column(String(255), nullable=True)
     dns_records = Column(Text, nullable=True)  # DNS A / CNAME mapping, one per line
+    # how often the application is tested (VAPT): every <value> <unit>. The next VAPT is the last test date plus this.
+    vapt_frequency_value = Column(Integer, nullable=True)
+    vapt_frequency_unit = Column(String(5), nullable=True)  # month / year
+
+    # copy of the application sent to the vulnerability-assessment application when it is created
+    # status: pending (to send or retrying) / synced / failed (gave up) / skipped (nothing to send); empty = not applicable
+    vapt_sync_status = Column(String(10), nullable=True)
+    vapt_sync_attempts = Column(Integer, nullable=False, default=0, server_default="0")
+    vapt_sync_error = Column(String(500), nullable=True)
+    vapt_sync_next_at = Column(DateTime, nullable=True)
+    vapt_synced_at = Column(DateTime, nullable=True)
 
     created_by = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     created_at = Column(DateTime, default=func.now())
@@ -87,7 +103,6 @@ class ApplicationVapt(Base):
     __tablename__ = "application_vapt_assessments"
     __table_args__ = (
         UniqueConstraint("tenant_id", "number", name="uq_application_vapt_number"),
-        Index("ix_application_vapt_next_due", "tenant_id", "next_due_date"),
     )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -101,7 +116,6 @@ class ApplicationVapt(Base):
     assessor = Column(String(255), nullable=True)
     status = Column(String(15), nullable=False, default="scheduled", server_default="scheduled")
     test_date = Column(Date, nullable=True)  # when the test was completed
-    next_due_date = Column(Date, nullable=True)  # the next periodic test
     report_url = Column(String(500), nullable=True)
     report_file_name = Column(String(255), nullable=True)
     report_file_path = Column(String(500), nullable=True)

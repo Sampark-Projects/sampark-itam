@@ -33,6 +33,28 @@
         filter
         style="min-width: 150px"
       />
+      <Dropdown
+        id="filter_manufacturer"
+        v-model="filters.manufacturer_id.value"
+        :options="sortedManufacturers"
+        optionLabel="name"
+        optionValue="id"
+        :placeholder="t('assets.strings.filterbyManufacturer')"
+        showClear
+        filter
+        style="min-width: 150px"
+      />
+      <Dropdown
+        id="filter_supplier"
+        v-model="filters.supplier_id.value"
+        :options="sortedSuppliers"
+        optionLabel="name"
+        optionValue="id"
+        :placeholder="t('assets.strings.filterbySupplier')"
+        showClear
+        filter
+        style="min-width: 150px"
+      />
       <Button 
         icon="pi pi-filter" 
         :label="showAdvanced ? t('common.actions.hide') : t('assets.strings.advancedFilters')"
@@ -118,7 +140,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
 import Dropdown from 'primevue/dropdown'
@@ -130,12 +152,20 @@ const props = defineProps({
   assetStatusOptions: { type: Array, default: () => [] },
   sites: { type: Array, default: () => [] },
   assetTypes: { type: Array, default: () => [] },
-  locations: { type: Array, default: () => [] }
+  locations: { type: Array, default: () => [] },
+  manufacturers: { type: Array, default: () => [] },
+  suppliers: { type: Array, default: () => [] }
 })
 
 const { t } = useI18n()
 
 const showAdvanced = ref(false)
+
+// A-Z, ignoring case; a copy so the list the page shares with the asset form keeps its order
+const byName = (list) =>
+  [...list].sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }))
+const sortedManufacturers = computed(() => byName(props.manufacturers))
+const sortedSuppliers = computed(() => byName(props.suppliers))
 
 // Mostra i filtri avanzati se il filtro has_critical_vulns è attivo
 import { watch } from 'vue'

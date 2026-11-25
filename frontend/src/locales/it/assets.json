@@ -115,6 +115,8 @@
     "exportAllHint": "Esporta tutti i dispositivi",
     "exportFilteredHint": "Esporta i {count} dispositivi che corrispondono ai filtri attuali",
     "filterbyLocation": "Filtra per posizione",
+    "filterbyManufacturer": "Filtra per produttore",
+    "filterbySupplier": "Filtra per fornitore",
     "advancedFilters": "Filtri avanzati",
     "networkInterfacesSummary": "Interfacce di Rete ({count})",
     "networkConnection": "Connessione di Rete",

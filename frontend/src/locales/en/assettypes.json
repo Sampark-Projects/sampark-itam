@@ -1,8 +1,10 @@
 {
     "title": "Asset Types",
     "search": "Search asset types by name or description",
+    "showAssets": "Show the {count} assets of type {type}",
     "fields": {
-        "purdueLevel": "Purdue Level"
+        "purdueLevel": "Purdue Level",
+        "assets": "Assets"
     },
     "messages": {
         "fetchError": "Error loading asset types",
@@ -88,5 +90,16 @@
         "new": "New rule",
         "edit": "Edit rule",
         "required": "Name and pattern are required."
+    },
+    "view": {
+        "label": "View",
+        "table": "Table",
+        "cards": "Cards",
+        "expandAll": "Expand all",
+        "collapseAll": "Collapse all",
+        "empty": "No asset types found.",
+        "noLevel": "No level",
+        "levelHeading": "Level {level}",
+        "groupCount": "{types} types, {assets} assets"
     }
 }

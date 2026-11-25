@@ -111,6 +111,7 @@ def _apply_asset_filters(
     query, db, tenant_id, *, status_id=None, site_id=None, area_id=None, location_id=None,
     asset_type_id=None, global_search=None, business_criticality=None,
     risk_score_min=None, risk_score_max=None, has_critical_vulns=None,
+    manufacturer_id=None, supplier_id=None,
 ):
     """Filters shared by the asset list and the asset export, so an export of a filtered
     view always contains exactly the assets the list shows."""
@@ -129,6 +130,13 @@ def _apply_asset_filters(
         query = query.filter(Asset.location_id == location_id)
     if asset_type_id:
         query = query.filter(Asset.asset_type_id == asset_type_id)
+    if manufacturer_id:
+        query = query.filter(Asset.manufacturer_id == manufacturer_id)
+    if supplier_id:
+        # an asset can have several suppliers (asset_suppliers): keep the assets this supplier is linked to
+        from app.models.asset import asset_suppliers
+        query = query.filter(Asset.id.in_(
+            db.query(asset_suppliers.c.asset_id).filter(asset_suppliers.c.supplier_id == supplier_id)))
     if business_criticality:
         # Supporta valori multipli separati da virgola (es: "critical,high")
         criticality_values = [v.strip().lower() for v in business_criticality.split(',') if v.strip()]
@@ -242,6 +250,8 @@ def list_assets(
     area_id: Optional[uuid.UUID] = None,
     location_id: Optional[uuid.UUID] = None,
     asset_type_id: Optional[uuid.UUID] = None,
+    manufacturer_id: Optional[uuid.UUID] = None,
+    supplier_id: Optional[uuid.UUID] = None,
     global_search: Optional[str] = None,
     business_criticality: Optional[str] = None,
     risk_score_min: Optional[float] = None,
@@ -295,6 +305,7 @@ def list_assets(
         asset_type_id=asset_type_id, global_search=global_search,
         business_criticality=business_criticality, risk_score_min=risk_score_min,
         risk_score_max=risk_score_max, has_critical_vulns=has_critical_vulns,
+        manufacturer_id=manufacturer_id, supplier_id=supplier_id,
     )
 
     # PERFORMANCE: Usa count ottimizzato con func.count()
@@ -364,6 +375,8 @@ def export_assets(
     area_id: Optional[uuid.UUID] = None,
     location_id: Optional[uuid.UUID] = None,
     asset_type_id: Optional[uuid.UUID] = None,
+    manufacturer_id: Optional[uuid.UUID] = None,
+    supplier_id: Optional[uuid.UUID] = None,
     global_search: Optional[str] = None,
     business_criticality: Optional[str] = None,
     risk_score_min: Optional[float] = None,
@@ -397,6 +410,7 @@ def export_assets(
         asset_type_id=asset_type_id, global_search=global_search,
         business_criticality=business_criticality, risk_score_min=risk_score_min,
         risk_score_max=risk_score_max, has_critical_vulns=has_critical_vulns,
+        manufacturer_id=manufacturer_id, supplier_id=supplier_id,
     )
     assets = _apply_asset_sort(query, sort_by, sort_order).all()
 

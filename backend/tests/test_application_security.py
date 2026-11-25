@@ -27,10 +27,10 @@ def test_numbers():
 
 def test_assessment_cleaning_and_rules():
     out = sl.clean_assessment({"assessor": "  CERT-In   auditor ", "methodology": "grey_box", "test_date": date(2026, 10, 20),
-                               "next_due_date": date(2027, 4, 20), "report_url": "https://reports.example/vapt.pdf"})
+                               "report_url": "https://reports.example/vapt.pdf"})
     assert out["assessor"] == "CERT-In auditor" and out["assessment_type"] == "web_app" and out["status"] == "scheduled"
     for bad in ({"assessment_type": "x"}, {"methodology": "pink_box"}, {"status": "done"}, {"overall_posture": "meh"},
-                {"report_url": "ftp://x"}, {"test_date": date(2026, 5, 1), "next_due_date": date(2026, 4, 1)},
+                {"report_url": "ftp://x"},
                 {"status": "closed"}, {"scope": "x" * 5001}):
         with pytest.raises(sl.SecurityInputError):
             sl.clean_assessment(bad)
@@ -76,12 +76,11 @@ def test_flags_and_posture():
 
 
 def test_last_and_next_vapt():
-    a = [{"test_date": date(2026, 4, 1), "next_due_date": date(2026, 10, 1), "number": 1},
-         {"test_date": date(2026, 10, 20), "next_due_date": date(2027, 4, 20), "number": 2}]
-    assert sl.last_and_next(a) == (date(2026, 10, 20), date(2027, 4, 20))  # the newer test replaces the older due date
-    scheduled = a + [{"test_date": None, "next_due_date": date(2026, 12, 1), "number": 3}]
-    assert sl.last_and_next(scheduled) == (date(2026, 10, 20), date(2026, 12, 1))
-    assert sl.last_and_next([]) == (None, None)
+    tests = [date(2026, 4, 1), date(2026, 10, 20), None]  # an assessment with no test date yet does not count
+    assert sl.last_and_next(tests, 6, "month") == (date(2026, 10, 20), date(2027, 4, 20))  # last test + the application's frequency
+    assert sl.last_and_next(tests, 12, "month") == (date(2026, 10, 20), date(2027, 10, 20))
+    assert sl.last_and_next(tests) == (date(2026, 10, 20), None)  # no frequency on the application: no next date
+    assert sl.last_and_next([None], 6, "month") == (None, None) and sl.last_and_next([], 6, "month") == (None, None)
 
 
 # --- API --------------------------------------------------------------------------------------
@@ -110,7 +109,7 @@ def test_vapt_lifecycle_with_scorecard_and_audit(db):
     w, c, app, base = _setup(db)
     made = c.post(f"{base}/vapt", json={"assessment_type": "api", "methodology": "grey_box", "assessor": "Internal Red Team",
                                         "scope": "https://company.com*", "status": "remediation", "test_date": "2026-10-20",
-                                        "next_due_date": "2027-04-20", "overall_posture": "conditional_pass",
+                                        "overall_posture": "conditional_pass",
                                         "sign_off_by": "Vikram Mehta", "sign_off_date": "2026-10-25"})
     assert made.status_code == 200 and made.json()["code"] == "VAPT-0001" and made.json()["open_total"] == 0
     vapt = made.json()
@@ -210,11 +209,12 @@ def test_list_filters_order_and_summary(db):
     assert titles(search="C-OPEN") == ["c-open"] and c.get(f"{base}/findings", params={"limit": 2}).json()["has_more"] is True
     assert c.get(f"{base}/findings", params={"severity": "bad"}).status_code == 422
 
-    c.post(f"{base}/vapt", json={"test_date": "2026-10-20", "next_due_date": "2027-04-20", "status": "closed"})
+    c.post(f"{base}/vapt", json={"test_date": "2026-10-20", "status": "closed"})
     summary = c.get(f"{base}/security-summary").json()
     assert summary["open"] == {"critical": 1, "high": 1, "medium": 1, "low": 1, "info": 0} and summary["open_total"] == 4
     assert summary["overdue"] == 1 and summary["assessments"] == 1 and summary["suggested_posture"] == "fail"
-    assert summary["last_vapt_date"] == "2026-10-20" and summary["next_vapt_due"] == "2027-04-20" and summary["next_vapt_overdue"] is False
+    # the application has no VAPT frequency: a last VAPT, but no next one
+    assert summary["last_vapt_date"] == "2026-10-20" and summary["next_vapt_due"] is None and summary["next_vapt_overdue"] is False
 
 
 def test_other_tenants_and_permissions(db):

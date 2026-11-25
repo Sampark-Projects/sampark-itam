@@ -36,22 +36,23 @@ def sheets(db: Session, tenant_id, today, site_scope=None) -> List[Tuple[str, Li
     vapts = db.query(ApplicationVapt).filter(ApplicationVapt.application_id.in_(ids)).order_by(ApplicationVapt.number).all()
     per_app: Dict = {}
     for v in vapts:
-        per_app.setdefault(v.application_id, []).append({"test_date": v.test_date, "next_due_date": v.next_due_date, "number": v.number})
+        per_app.setdefault(v.application_id, []).append(v.test_date)
 
     app_rows = []
     for a in apps:
-        last, nxt = sl.last_and_next(per_app.get(a.id, []))
+        last, nxt = sl.last_and_next(per_app.get(a.id, []), a.vapt_frequency_value, a.vapt_frequency_unit)
         c = open_counts.get(a.id, {})
         app_rows.append([
             al.format_number(a.number), a.name, a.tier, a.lifecycle_status, a.business_owner, a.technical_owner, a.primary_url,
             a.secondary_url, a.authentication_method, a.ssl_expiry_date, al.ssl_state(a.ssl_expiry_date, today), a.data_classification,
             a.rpo_hours, a.rto_hours, a.backup_policy, a.firewall_rule_ids, a.last_scan_date, a.last_scan_result,
             asset_counts.get(a.id, 0), c.get("critical", 0), c.get("high", 0), c.get("medium", 0), c.get("low", 0),
-            overdue.get(a.id, 0), last, nxt])
+            overdue.get(a.id, 0), last, nxt, a.vapt_frequency_value, a.vapt_frequency_unit])
     out = [("Applications", [
         "ID", "Name", "Tier", "Lifecycle status", "Business owner", "Technical owner", "Primary URL", "Secondary URL", "Authentication",
         "SSL expiry", "SSL state", "Data classification", "RPO (h)", "RTO (h)", "Backup policy", "Firewall rule IDs", "Last scan",
-        "Scan result", "Linked assets", "Open critical", "Open high", "Open medium", "Open low", "Overdue fixes", "Last VAPT", "Next VAPT"],
+        "Scan result", "Linked assets", "Open critical", "Open high", "Open medium", "Open low", "Overdue fixes", "Last VAPT", "Next VAPT",
+        "VAPT frequency (number)", "VAPT frequency (unit)"],
         app_rows)]
 
     link_rows = []
@@ -79,10 +80,10 @@ def sheets(db: Session, tenant_id, today, site_scope=None) -> List[Tuple[str, Li
         a, c = by_id[v.application_id], counts.get(v.id, {})
         vapt_rows.append([
             sl.format_vapt(v.number), v.reference, al.format_number(a.number), a.name, v.assessment_type, v.methodology, v.assessor,
-            v.status, v.test_date, v.next_due_date, v.scope, v.overall_posture, c.get("critical", 0), c.get("high", 0),
+            v.status, v.test_date, v.scope, v.overall_posture, c.get("critical", 0), c.get("high", 0),
             c.get("medium", 0), c.get("low", 0), v.sign_off_by, v.sign_off_date, v.report_file_name or v.report_url])
     out.append(("VAPT", [
-        "VAPT ID", "Reference", "Application ID", "Application", "Type", "Methodology", "Assessor", "Status", "Test date", "Next due",
+        "VAPT ID", "Reference", "Application ID", "Application", "Type", "Methodology", "Assessor", "Status", "Test date",
         "Scope", "Posture", "Open critical", "Open high", "Open medium", "Open low", "Signed off by", "Sign-off date", "Report"], vapt_rows))
 
     asset_names = {a.id: a.name for a in db.query(Asset.id, Asset.name).filter(Asset.tenant_id == tenant_id).all()}

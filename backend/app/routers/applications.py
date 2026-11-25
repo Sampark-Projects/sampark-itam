@@ -18,6 +18,8 @@ from app.models import Application, ApplicationAsset, ApplicationIntegration, Ap
 from app.services import api_paging
 from app.services import application_logic as al
 from app.services import application_overview
+from app.services import application_vapt_sync
+from app.services import application_security_logic as sl
 from app.services.audit_trail import AuditContext, snapshot
 from app.services.auth import get_current_user
 from app.services.local_time import local_today
@@ -33,7 +35,7 @@ EDIT_FIELDS = (
     "name", "tier", "lifecycle_status", "business_owner", "technical_owner", "site_id", "description",
     "primary_url", "secondary_url", "authentication_method", "ssl_expiry_date",
     "data_classification", "firewall_rule_ids", "backup_policy", "rpo_hours", "rto_hours",
-    "last_scan_date", "last_scan_result", "dns_records",
+    "last_scan_date", "last_scan_result", "dns_records", "vapt_frequency_value", "vapt_frequency_unit",
 )
 
 
@@ -57,6 +59,8 @@ class ApplicationIn(BaseModel):
     last_scan_date: Optional[date] = None
     last_scan_result: Optional[str] = None
     dns_records: Optional[str] = None
+    vapt_frequency_value: Optional[int] = None  # optional, with the unit: every N months or years (checked in the rules)
+    vapt_frequency_unit: Optional[str] = None  # month or year
 
 
 def _bad(detail: str, status_code: int = 400) -> ErrorCodeException:
@@ -87,9 +91,23 @@ def _name_taken(db: Session, tenant_id, name: str, exclude_id=None) -> bool:
     return query.first() is not None
 
 
-def _out(app: Application, sites: dict, today: date, names: dict, counts: dict = None) -> dict:
+def _last_tests(db: Session, apps) -> dict:
+    """{application id: date of its last completed VAPT test}, from one grouped query."""
+    ids = [a.id for a in apps]
+    if not ids:
+        return {}
+    return dict(db.query(ApplicationVapt.application_id, func.max(ApplicationVapt.test_date)).filter(
+        ApplicationVapt.application_id.in_(ids), ApplicationVapt.test_date.isnot(None)).group_by(ApplicationVapt.application_id).all())
+
+
+def _out(app: Application, sites: dict, today: date, names: dict, counts: dict = None, last_tests: dict = None) -> dict:
     counts = counts or {}
+    last_vapt = (last_tests or {}).get(app.id)
+    next_vapt = sl.next_due_from_frequency(last_vapt, app.vapt_frequency_value, app.vapt_frequency_unit)
     return {
+        "vapt_frequency_value": app.vapt_frequency_value, "vapt_frequency_unit": app.vapt_frequency_unit,
+        "vapt_sync_status": app.vapt_sync_status, "vapt_sync_error": app.vapt_sync_error, "vapt_synced_at": app.vapt_synced_at,
+        "last_vapt_date": last_vapt, "next_vapt_due": next_vapt, "next_vapt_overdue": bool(next_vapt and next_vapt < today),
         "asset_count": counts.get("assets"), "integration_count": counts.get("integrations"),
         "id": app.id, "code": al.format_number(app.number), "name": app.name, "tier": app.tier,
         "lifecycle_status": app.lifecycle_status, "business_owner": app.business_owner,
@@ -151,11 +169,12 @@ def list_applications(
     sites, names = _lookups(db, current_user.tenant_id, apps)
     today = local_today()
     ids = [a.id for a in apps]
+    last_tests = _last_tests(db, apps)
     assets = dict(db.query(ApplicationAsset.application_id, func.count(ApplicationAsset.id))
                   .filter(ApplicationAsset.application_id.in_(ids)).group_by(ApplicationAsset.application_id).all()) if ids else {}
     integrations = dict(db.query(ApplicationIntegration.application_id, func.count(ApplicationIntegration.id))
                         .filter(ApplicationIntegration.application_id.in_(ids)).group_by(ApplicationIntegration.application_id).all()) if ids else {}
-    return api_paging.page([_out(a, sites, today, names, {"assets": assets.get(a.id, 0), "integrations": integrations.get(a.id, 0)})
+    return api_paging.page([_out(a, sites, today, names, {"assets": assets.get(a.id, 0), "integrations": integrations.get(a.id, 0)}, last_tests)
                             for a in apps], total, skip, limit)
 
 
@@ -169,6 +188,7 @@ def create_application(data: ApplicationIn, audit: AuditContext = Depends(),
     for _ in range(3):  # two requests may pick the same number: the unique key decides, then we retry
         number = (db.query(func.max(Application.number)).filter(Application.tenant_id == current_user.tenant_id).scalar() or 0) + 1
         app = Application(tenant_id=current_user.tenant_id, number=number, created_by=current_user.id, **values)
+        application_vapt_sync.queue(db, app)  # the copy for the vulnerability-assessment application, sent in the background
         db.add(app)
         try:
             db.commit()
@@ -182,14 +202,27 @@ def create_application(data: ApplicationIn, audit: AuditContext = Depends(),
     audit.log("create", "Application", app.id, f"Created application {al.format_number(app.number)} '{app.name}'",
               None, snapshot(app, EDIT_FIELDS))
     sites, names = _lookups(db, current_user.tenant_id, [app])
-    return _out(app, sites, local_today(), names)
+    return _out(app, sites, local_today(), names, None, _last_tests(db, [app]))
+
+
+@router.post("/{application_id}/vapt-sync/retry")
+def retry_vapt_sync(application_id: uuid.UUID, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Send the copy of a failed or not-sent application (a fresh set of attempts, done in the background)."""
+    app = _get(db, current_user.tenant_id, application_id)
+    if app.vapt_sync_status not in ("failed", "skipped") or not application_vapt_sync.enabled():
+        raise _bad("Only a copy that failed or was not sent can be sent again", 409)
+    application_vapt_sync.retry(app)
+    db.commit()
+    db.refresh(app)
+    sites, names = _lookups(db, current_user.tenant_id, [app])
+    return _out(app, sites, local_today(), names, None, _last_tests(db, [app]))
 
 
 @router.get("/{application_id}")
 def get_application(application_id: uuid.UUID, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     app = _get(db, current_user.tenant_id, application_id)
     sites, names = _lookups(db, current_user.tenant_id, [app])
-    return _out(app, sites, local_today(), names)
+    return _out(app, sites, local_today(), names, None, _last_tests(db, [app]))
 
 
 @router.put("/{application_id}")
@@ -206,7 +239,7 @@ def update_application(application_id: uuid.UUID, data: ApplicationIn, audit: Au
     db.refresh(app)
     audit.log("update", "Application", app.id, f"Updated application {al.format_number(app.number)}", old, snapshot(app, EDIT_FIELDS))
     sites, names = _lookups(db, current_user.tenant_id, [app])
-    return _out(app, sites, local_today(), names)
+    return _out(app, sites, local_today(), names, None, _last_tests(db, [app]))
 
 
 @router.delete("/{application_id}", status_code=204)
