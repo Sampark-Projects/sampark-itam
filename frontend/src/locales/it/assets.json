@@ -1,7 +1,19 @@
 {
   "title": "Dispositivi",
+  "freeIp": {
+    "title": "Indirizzo IP",
+    "label": "Indirizzo IP disponibile",
+    "placeholder": "Seleziona un indirizzo IP disponibile",
+    "search": "Cerca tra gli indirizzi disponibili",
+    "hint": "Facoltativo. Il dispositivo riceve un'interfaccia di rete con questo indirizzo, che diventa l'IP primario del dispositivo.",
+    "hintEdit": "Facoltativo. L'indirizzo viene aggiunto al dispositivo come nuova interfaccia di rete. Diventa l'IP primario solo se il dispositivo non ne ha ancora uno.",
+    "empty": "Nessun indirizzo IP disponibile trovato",
+    "needWrite": "Per assegnare un indirizzo IP serve l'accesso in scrittura a IPAM.",
+    "needRead": "Non hai accesso a IPAM, quindi qui non si può scegliere un indirizzo IP.",
+    "loadError": "Impossibile caricare gli indirizzi IP disponibili."
+  },
   "description": "Gestisci dispositivi e asset industriali",
- "actions": {
+  "actions": {
     "addProtocol": "Aggiungi protocollo"
   },
   "fields": {
@@ -42,6 +54,7 @@
   },
   "interfaces": {
     "ipAddress": "Indirizzo IP",
+    "ipam": "Indirizzi IPAM",
     "macAddress": "Indirizzo MAC",
     "vlan": "VLAN",
     "status": "Stato",
@@ -319,8 +332,24 @@
     "chooseLabel": "Scegli Documento",
     "uploadLabel": "Carica",
     "documentsUploaded": "Documenti caricati con successo",
-    "uploadDocuments": "Carica Documenti"
-  } ,
+    "uploadDocuments": "Carica Documenti",
+    "category": "Categoria",
+    "noCategory": "Nessuna categoria",
+    "categories": {
+      "manual": "Manuale",
+      "drawing": "Disegno",
+      "certificate": "Certificato",
+      "purchase_order": "Ordine di acquisto",
+      "warranty": "Garanzia",
+      "delivery_note": "Bolla di consegna",
+      "commissioning": "Verbale di messa in servizio",
+      "acceptance": "Verbale di accettazione",
+      "test_report": "Rapporto di prova",
+      "wipe_certificate": "Certificato di cancellazione dati",
+      "disposal": "Evidenza di smaltimento o reso",
+      "other": "Altro"
+    }
+  },
   "connections": {
     "title": "Connessioni",
     "uploadConnection": "Carica Connessione",
@@ -494,5 +523,112 @@
     "purdueFormat": "Livello Purdue: formato 1-5",
     "tip": "Suggerimento",
     "tipText": "Scarica il template per vedere esempi di formati validi."
+  },
+  "tagHint": {
+    "tagAuto": "Lascia vuoto per generarlo automaticamente: il prossimo è {tag}",
+    "tagPattern": "Regola di denominazione: {pattern}"
+  },
+  "typeFields": {
+    "title": "Dettagli {type}"
+  },
+  "lifecycle": {
+    "title": "Ciclo di vita, acquisto e supporto",
+    "empty": "Nessun dato sul ciclo di vita registrato",
+    "classification": "Classificazione e responsabilità",
+    "procurement": "Acquisto",
+    "commissioning": "Messa in servizio e accettazione",
+    "support": "Garanzia e supporto",
+    "fields": {
+      "safetyRelevance": "Rilevanza per la sicurezza",
+      "plantOwner": "Responsabile di stabilimento",
+      "amcPartner": "Fornitore / partner AMC",
+      "requisitionNumber": "Numero di richiesta",
+      "purchaseOrderNumber": "Numero ordine d'acquisto (PO)",
+      "purchaseDate": "Data di acquisto",
+      "expectedDeliveryDate": "Data di consegna prevista",
+      "receivedDate": "Data di ricezione",
+      "purchaseCost": "Costo di acquisto",
+      "costCurrency": "Valuta (es. INR)",
+      "commissionedDate": "Messo in servizio il",
+      "acceptanceDate": "Data di accettazione",
+      "acceptanceSignedBy": "Accettazione firmata da",
+      "warrantyExpiryDate": "Scadenza garanzia",
+      "amcExpiryDate": "Scadenza AMC",
+      "supportExpiryDate": "Scadenza contratto di supporto",
+      "licenceExpiryDate": "Scadenza licenza",
+      "componentOf": "Componente di",
+      "componentOfNone": "Non è un componente",
+      "componentOfSearch": "Cerca asset per nome, tag o seriale",
+      "componentOfEmpty": "Nessun asset trovato",
+      "disposalMethod": "Modalità di smaltimento",
+      "disposalDate": "Data di smaltimento / reso",
+      "disposalReference": "N. certificato, RMA o trasferimento"
+    },
+    "components": {
+      "title": "Componenti",
+      "partOf": "Componente di",
+      "hasComponents": "Componenti",
+      "none": "Nessun asset padre o componente"
+    },
+    "safety": {
+      "none": "Non rilevante per la sicurezza",
+      "safetyRelated": "Legato alla sicurezza",
+      "safetyCritical": "Critico per la sicurezza"
+    },
+    "expiry": {
+      "expired": "Scaduto",
+      "soon": "In scadenza",
+      "ok": "Valido"
+    },
+    "disposal": "Smaltimento o reso",
+    "disposalMethods": {
+      "scrapped": "Rottamato / distrutto",
+      "recycled": "Riciclato (RAEE)",
+      "returned_to_vendor": "Reso al fornitore",
+      "sold": "Venduto",
+      "transferred": "Trasferito ad altro stabilimento",
+      "donated": "Donato"
+    }
+  },
+  "archived": {
+    "text": "Dismesso e archiviato il {date}. Il record è conservato per la traccia di audit e non può più essere modificato.",
+    "reopen": "Riapri il record",
+    "reopenTitle": "Riapri il record archiviato",
+    "reopenHint": "La riapertura consente di modificare di nuovo l'asset, ad esempio per correggere un errore. Il motivo viene registrato nel log di audit.",
+    "reason": "Motivo"
+  },
+  "spares": {
+    "title": "Asset di ricambio",
+    "keptFor": "Ricambi disponibili",
+    "spareFor": "Ricambio per",
+    "none": "Nessun asset di ricambio",
+    "edit": "Modifica ricambi",
+    "add": "Aggiungi",
+    "pick": "Cerca un asset di ricambio"
+  },
+  "software": {
+    "title": "Software",
+    "empty": "Nessun software registrato.",
+    "kind": "Tipo",
+    "name": "Nome",
+    "vendor": "Fornitore",
+    "version": "Versione",
+    "installed": "Installato il",
+    "licenceExpiry": "Scadenza licenza",
+    "installPath": "Percorso di installazione",
+    "licenseType": "Tipo di licenza",
+    "add": "Aggiungi software",
+    "edit": "Modifica",
+    "delete": "Rimuovi",
+    "deleteConfirm": "Rimuovere \"{name}\" da questo asset?",
+    "required": "Inserisci un nome.",
+    "kinds": {
+      "os": "Sistema operativo",
+      "application": "Applicazione",
+      "runtime": "Runtime",
+      "firmware_module": "Modulo firmware",
+      "library": "Libreria",
+      "other": "Altro"
+    }
   }
 }

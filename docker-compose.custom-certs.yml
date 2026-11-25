@@ -52,6 +52,8 @@ services:
       - ./logs:/app/logs
     environment:
       - SECRET_KEY=${SECRET_KEY}
+      # plant time zone for day-based rules (expiry, due and overdue dates), e.g. Asia/Kolkata
+      - APP_TIMEZONE=${APP_TIMEZONE:-UTC}
       - ACCESS_TOKEN_EXPIRE_MINUTES=30
       - CORS_ORIGINS=https://${DOMAIN},https://${WWW_DOMAIN}
       - SSO_REDIRECT_URI=https://${DOMAIN}/auth/sso/callback

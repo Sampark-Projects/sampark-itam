@@ -27,6 +27,7 @@
     <div class="dashboard-totals cards-grid">
       <DashboardCard
         :value="formatTotal(totals.total_assets)"
+        :loading="!loaded.stats"
         :label="t('dashboard.totals.totalAssets')"
         icon="pi pi-box"
         severity="info"
@@ -34,6 +35,7 @@
       />
       <DashboardCard
         :value="formatTotal(totals.total_asset_types)"
+        :loading="!loaded.stats"
         :label="t('dashboard.totals.assetTypes')"
         icon="pi pi-tags"
         severity="info"
@@ -41,6 +43,7 @@
       />
       <DashboardCard
         :value="formatTotal(totals.total_sites)"
+        :loading="!loaded.stats"
         :label="t('dashboard.totals.totalSites')"
         icon="pi pi-building"
         severity="info"
@@ -48,6 +51,7 @@
       />
       <DashboardCard
         :value="formatTotal(totals.newly_added_assets)"
+        :loading="!loaded.stats"
         :label="t('dashboard.change.newlyAddedAssets')"
         :subtitle="t('dashboard.change.addedInLast', { days: NEW_ASSETS_DAYS })"
         icon="pi pi-plus-circle"
@@ -66,6 +70,7 @@
       <div class="cards-grid">
         <DashboardCard
           :value="exposureData.overall_exposure_score || 0"
+        :loading="!loaded.exposure"
           :label="t('dashboard.exposure.overallExposure')"
           :subtitle="t('dashboard.exposure.overallExposureSubtitle')"
           icon="pi pi-shield"
@@ -74,6 +79,7 @@
         />
         <DashboardCard
           :value="exposureData.assets_at_risk || 0"
+        :loading="!loaded.exposure"
           :label="t('dashboard.exposure.assetsAtRisk')"
           :subtitle="t('dashboard.exposure.assetsAtRiskSubtitle')"
           icon="pi pi-exclamation-triangle"
@@ -82,6 +88,7 @@
         />
         <DashboardCard
           :value="exposureData.critical_assets || 0"
+        :loading="!loaded.exposure"
           :label="t('dashboard.exposure.criticalAssets')"
           :subtitle="t('dashboard.exposure.criticalAssetsSubtitle')"
           icon="pi pi-exclamation-circle"
@@ -90,6 +97,7 @@
         />
         <DashboardCard
           :value="exposureData.assets_with_critical_vulns || 0"
+        :loading="!loaded.exposure"
           :label="t('dashboard.exposure.assetsWithCriticalVulns')"
           :subtitle="t('dashboard.exposure.assetsWithCriticalVulnsSubtitle')"
           icon="pi pi-exclamation-triangle"
@@ -109,6 +117,7 @@
       <div class="cards-grid">
         <DashboardCard
           :value="reviewsSummary.overdue_count || 0"
+        :loading="!loaded.reviews"
           :label="t('dashboard.attention.reviewsOverdue')"
           :subtitle="t('dashboard.attention.reviewsOverdueSubtitle')"
           icon="pi pi-calendar-times"
@@ -118,6 +127,7 @@
         <DashboardCard
           v-if="isIec62443Enabled"
           :value="(complianceSummary.non_compliant_zones || 0) + (complianceSummary.partial_compliant_zones || 0)"
+        :loading="!loaded.compliance"
           :label="t('dashboard.attention.complianceGaps')"
           :subtitle="t('dashboard.attention.complianceGapsSubtitle')"
           icon="pi pi-times-circle"
@@ -126,6 +136,7 @@
         />
         <DashboardCard
           :value="dependenciesSummary.missing_dependencies_count || 0"
+        :loading="!loaded.deps"
           :label="t('dashboard.attention.missingDependencies')"
           :subtitle="t('dashboard.attention.missingDependenciesSubtitle')"
           icon="pi pi-sitemap"
@@ -135,6 +146,7 @@
         <DashboardCard
           v-if="isIec62443Enabled"
           :value="evidenceMissing || 0"
+        :loading="!loaded.evidence"
           :label="t('dashboard.attention.evidenceMissing')"
           :subtitle="t('dashboard.attention.evidenceMissingSubtitle')"
           icon="pi pi-file"
@@ -175,6 +187,7 @@
       <div class="cards-grid">
         <DashboardCard
           :value="getPostureScore()"
+        :loading="!loaded.compliance"
           :label="t('dashboard.posture.securityPosture')"
           :subtitle="t('dashboard.posture.securityPostureSubtitle')"
           icon="pi pi-shield"
@@ -183,6 +196,7 @@
         />
         <DashboardCard
           :value="`${complianceSummary.coverage_percentage || 0}%`"
+        :loading="!loaded.compliance"
           :label="t('dashboard.posture.iec62443Coverage')"
           :subtitle="t('dashboard.posture.iec62443CoverageSubtitle')"
           icon="pi pi-percentage"
@@ -191,6 +205,7 @@
         />
         <DashboardCard
           :value="complianceSummary.non_compliant_zones || 0"
+        :loading="!loaded.compliance"
           :label="t('dashboard.posture.nonCompliantZones')"
           :subtitle="t('dashboard.posture.nonCompliantZonesSubtitle')"
           icon="pi pi-times-circle"
@@ -199,6 +214,7 @@
         />
         <DashboardCard
           :value="complianceSummary.sl_gap_summary?.zones_with_gap || 0"
+        :loading="!loaded.compliance"
           :label="t('dashboard.posture.slGapSummary')"
           :subtitle="t('dashboard.posture.slGapSummarySubtitle')"
           icon="pi pi-chart-line"
@@ -243,7 +259,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useToast } from 'primevue/usetoast'
@@ -340,49 +356,44 @@ const recalculateRiskScores = async () => {
   }
 }
 
-const loadDashboardData = async () => {
-  try {
-    const compliancePromise = isIec62443Enabled.value
-      ? api.getComplianceSummary().catch(() => ({ data: complianceSummary.value }))
-      : Promise.resolve({ data: complianceSummary.value })
-    const evidencePromise = isIec62443Enabled.value
-      ? api.getEvidenceMissing().catch(() => ({ data: { missing_evidence_count: 0 } }))
-      : Promise.resolve({ data: { missing_evidence_count: 0 } })
+// Which blocks have received their first response; a card shows a placeholder until its own data is in
+const loaded = reactive({ stats: false, exposure: false, reviews: false, deps: false, compliance: false, evidence: false, changes: false })
 
-    // Load all data in parallel
-    const [
-      exposureRes,
-      reviewsRes,
-      depsRes,
-      complianceRes,
-      changesRes,
-      evidenceRes,
-      statsRes
-    ] = await Promise.all([
-      api.getExposureSummary().catch(() => ({ data: exposureData.value })),
-      api.getReviewsSummary().catch(() => ({ data: { overdue_count: 0, due_count: 0 } })),
-      api.getDependenciesSummary().catch(() => ({ data: { missing_dependencies_count: 0, critical_missing_count: 0 } })),
-      compliancePromise,
-      api.getRecentChanges(10).catch(() => ({ data: [] })),
-      evidencePromise,
-      api.getDashboardStats({ new_assets_days: NEW_ASSETS_DAYS }).catch(() => ({ data: totals.value }))
-    ])
-    
-    exposureData.value = exposureRes.data
-    reviewsSummary.value = reviewsRes.data
-    dependenciesSummary.value = depsRes.data
-    complianceSummary.value = complianceRes.data
-    recentChanges.value = changesRes.data
-    evidenceMissing.value = evidenceRes.data.missing_evidence_count || 0
-    totals.value = {
-      total_assets: statsRes.data.total_assets || 0,
-      total_asset_types: statsRes.data.total_asset_types || 0,
-      total_sites: statsRes.data.total_sites || 0,
-      newly_added_assets: statsRes.data.newly_added_assets || 0
-    }
-  } catch (error) {
-    console.error('Error loading dashboard data:', error)
+// Each request fills its own block the moment it answers; the others keep loading. A failed request
+// keeps what the block already shows and stops its placeholder.
+const fill = (key, request, apply) =>
+  request
+    .then(res => apply(res.data))
+    .catch(error => console.error(`Dashboard: ${key} failed`, error))
+    .finally(() => { loaded[key] = true })
+
+const loadDashboardData = () => {
+  loadingRecentChanges.value = true
+  const requests = [
+    fill('stats', api.getDashboardStats({ new_assets_days: NEW_ASSETS_DAYS }), data => {
+      totals.value = {
+        total_assets: data.total_assets || 0,
+        total_asset_types: data.total_asset_types || 0,
+        total_sites: data.total_sites || 0,
+        newly_added_assets: data.newly_added_assets || 0
+      }
+    }),
+    fill('exposure', api.getExposureSummary(), data => { exposureData.value = data }),
+    fill('reviews', api.getReviewsSummary(), data => { reviewsSummary.value = data }),
+    fill('deps', api.getDependenciesSummary(), data => { dependenciesSummary.value = data }),
+    fill('changes', api.getRecentChanges(10), data => { recentChanges.value = data })
+      .finally(() => { loadingRecentChanges.value = false })
+  ]
+  if (isIec62443Enabled.value) {
+    requests.push(
+      fill('compliance', api.getComplianceSummary(), data => { complianceSummary.value = data }),
+      fill('evidence', api.getEvidenceMissing(), data => { evidenceMissing.value = data.missing_evidence_count || 0 })
+    )
+  } else {
+    loaded.compliance = true
+    loaded.evidence = true
   }
+  return Promise.allSettled(requests)
 }
 
 // Load data on mount

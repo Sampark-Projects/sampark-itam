@@ -2,24 +2,47 @@
   <div class="assettypes-page">
     <div class="page-header">
       <h1>{{ t('assettypes.title') }}</h1>
-      <Button 
-        v-if="canWrite('asset_types')" 
-        :label="t('common.actions.create')" 
-        icon="pi pi-plus" 
-        @click="showDialog = true" 
-      />
+      <div class="flex gap-2">
+        <Button
+          :label="t('assettypes.tagRules.button')"
+          icon="pi pi-tag"
+          severity="secondary"
+          outlined
+          @click="showTagRules = true"
+        />
+        <Button 
+          v-if="canWrite('asset_types')" 
+          :label="t('common.actions.create')" 
+          icon="pi pi-plus" 
+          @click="showDialog = true" 
+        />
+      </div>
     </div>
 
-    <DataTable 
-      :value="assettypes" 
-      :loading="loading" 
-      paginator 
-      :rows="10" 
-      :rowsPerPageOptions="[5, 10, 25]"
+    <span class="p-input-icon-left search-box">
+      <i class="pi pi-search" />
+      <InputText v-model="search" :placeholder="t('assettypes.search')" class="w-full" />
+    </span>
+
+    <!-- lazy: the API cuts the page, sorts and searches; the table only holds the page on screen -->
+    <DataTable
+      :value="assettypes"
+      :loading="loading"
+      lazy
+      paginator
+      :first="pageFirst"
+      :rows="pageRows"
+      :totalRecords="totalRecords"
+      :rowsPerPageOptions="[5, 10, 15, 25, 50, 100]"
+      :sortField="sortField"
+      :sortOrder="sortOrder"
+      removableSort
+      @page="onPage"
+      @sort="onSort"
     >
       <Column field="name" :header="t('common.fields.name')" sortable></Column>
-      <Column field="description" :header="t('common.fields.description')"></Column>
-      <Column field="purdue_level" :header="t('assettypes.fields.purdueLevel')">
+      <Column field="description" :header="t('common.fields.description')" sortable></Column>
+      <Column field="purdue_level" :header="t('assettypes.fields.purdueLevel')" sortable>
         <template #body="{ data }">
           <span v-if="data.purdue_level !== null && data.purdue_level !== undefined">
             {{ t('assettypes.level' + (data.purdue_level === 1.5 ? '1_5' : data.purdue_level)) }}
@@ -49,7 +72,7 @@
       v-model:visible="showDialog" 
       :header="t('common.actions.create')" 
       :modal="true" 
-      :style="{ width: '40vw' }"
+      :style="{ width: '55vw', maxWidth: '40rem' }"
     >
       <AssetTypeForm 
         :tenantId="tenantId" 
@@ -62,7 +85,7 @@
       v-model:visible="editDialog" 
       :header="t('common.actions.edit')" 
       :modal="true" 
-      :style="{ width: '40vw' }"
+      :style="{ width: '55vw', maxWidth: '40rem' }"
     >
       <AssetTypeForm 
         :tenantId="tenantId" 
@@ -71,11 +94,12 @@
         @cancel="onEditCancel" 
       />
     </Dialog>
+    <TagRulesDialog v-model:visible="showTagRules" :can-write="canWrite('asset_types')" />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { useI18n } from 'vue-i18n'
@@ -83,12 +107,15 @@ import { usePermissions } from '../composables/usePermissions'
 import api from '../api/api'
 
 import AssetTypeForm from '../components/forms/AssetTypeForm.vue'
+import TagRulesDialog from '../components/forms/TagRulesDialog.vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
+import InputText from 'primevue/inputtext'
 
 const toast = useToast()
+const showTagRules = ref(false)
 const router = useRouter()
 const { t } = useI18n()
 const { canWrite, canDelete } = usePermissions()
@@ -101,19 +128,75 @@ const editingAssetType = ref(null)
 
 const tenantId = ref('...') 
 
+const search = ref('')
+let searchTimer = null
+
+// Server-side paging state: one API call per page, page-size, sort or search change
+const pageFirst = ref(0)
+const pageRows = ref(15)
+const totalRecords = ref(0)
+const sortField = ref(null)
+const sortOrder = ref(null)
+
 onMounted(() => {
   fetchAssetTypes()
 })
 
+// the search runs on the server: ask again shortly after the user stops typing, from the first page
+watch(search, () => {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    pageFirst.value = 0
+    fetchAssetTypes()
+  }, 300)
+})
+onBeforeUnmount(() => clearTimeout(searchTimer))
+
+function onPage(event) {
+  pageFirst.value = event.first
+  pageRows.value = event.rows
+  fetchAssetTypes()
+}
+
+function onSort(event) {
+  sortField.value = event.sortField || null
+  sortOrder.value = event.sortField ? event.sortOrder : null
+  pageFirst.value = 0
+  fetchAssetTypes()
+}
+
+let fetchRequestId = 0
+
 async function fetchAssetTypes() {
+  // a response that is no longer the newest request (search, page or sort moved on) is ignored
+  const requestId = ++fetchRequestId
   loading.value = true
+  const params = { skip: pageFirst.value, limit: pageRows.value }
+  const asked = search.value.trim()
+  if (asked) params.search = asked
+  if (sortField.value) {
+    params.sort_by = sortField.value
+    params.sort_order = sortOrder.value === -1 ? 'desc' : 'asc'
+  }
   try {
-    const response = await api.getAssetTypes()
-    assettypes.value = response.data
+    const response = await api.getAssetTypesPaged(params)
+    if (requestId !== fetchRequestId) return
+    const body = response.data || {}
+    const rows = Array.isArray(body.data) ? body.data : []
+    const total = body.total ?? rows.length
+    // the current page no longer exists (the last row of the last page was deleted): go back to the last one
+    if (rows.length === 0 && total > 0 && pageFirst.value > 0) {
+      pageFirst.value = Math.floor((total - 1) / pageRows.value) * pageRows.value
+      fetchAssetTypes()
+      return
+    }
+    assettypes.value = rows
+    totalRecords.value = total
   } catch (error) {
+    if (requestId !== fetchRequestId) return
     toast.add({ severity: 'error', summary: t('common.messages.error'), detail: t('assettypes.messages.fetchError'), life: 3000 })
   } finally {
-    loading.value = false
+    if (requestId === fetchRequestId) loading.value = false
   }
 }
 
@@ -165,6 +248,11 @@ async function deleteAssetType(id) {
 <style scoped>
 .assettypes-page {
   padding: 0;
+}
+.search-box {
+  display: block;
+  max-width: 24rem;
+  margin-bottom: 0.75rem;
 }
 .page-header {
   display: flex;

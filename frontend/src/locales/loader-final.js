@@ -50,6 +50,22 @@ import enUsers from './en/users.json'
 import itGlobalsearch from './it/globalsearch.json'
 import enGlobalsearch from './en/globalsearch.json'
 import itAssetReviews from './it/assetReviews.json'
+import itLifecycle from './it/lifecycle.json'
+import itApplications from './it/applications.json'
+import itIpam from './it/ipam.json'
+import itWorkflows from './it/workflows.json'
+import itChanges from './it/changes.json'
+import itReports from './it/reports.json'
+import itProcurement from './it/procurement.json'
+import enProcurement from './en/procurement.json'
+import enReports from './en/reports.json'
+import itConfigMgmt from './it/config.json'
+import enConfigMgmt from './en/config.json'
+import enChanges from './en/changes.json'
+import enWorkflows from './en/workflows.json'
+import enLifecycle from './en/lifecycle.json'
+import enApplications from './en/applications.json'
+import enIpam from './en/ipam.json'
 import enAssetReviews from './en/assetReviews.json'
 import itNotifications from './it/notifications.json'
 import enNotifications from './en/notifications.json'
@@ -123,6 +139,14 @@ const messages = {
     users: itUsers,
     globalsearch: itGlobalsearch,
     assetReviews: itAssetReviews,
+    lifecycle: itLifecycle,
+    applications: itApplications,
+    ipam: itIpam,
+    workflows: itWorkflows,
+    changes: itChanges,
+    reports: itReports,
+    procurement: itProcurement,
+    configmgmt: itConfigMgmt,
     notifications: itNotifications,
     isa62443: itISA62443,
     assetDependencies: itAssetDependencies,
@@ -161,6 +185,14 @@ const messages = {
     users: enUsers,
     globalsearch: enGlobalsearch,
     assetReviews: enAssetReviews,
+    lifecycle: enLifecycle,
+    applications: enApplications,
+    ipam: enIpam,
+    workflows: enWorkflows,
+    changes: enChanges,
+    reports: enReports,
+    procurement: enProcurement,
+    configmgmt: enConfigMgmt,
     notifications: enNotifications,
     isa62443: enISA62443,
     assetDependencies: enAssetDependencies,

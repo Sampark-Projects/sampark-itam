@@ -10,6 +10,7 @@ from app.services.auth import get_current_user
 from app.services.rbac import require_section_access
 from app.services.feature_guard import require_iec62443_enabled
 from app.services.audit_log import create_audit_log
+from app.services.dashboard_cache import dashboard_cache
 
 def clean_float_values(data):
     """Clean float values to prevent JSON serialization errors"""
@@ -77,12 +78,7 @@ def get_dashboard_stats(
     }
 
 
-@router.get("/risky-assets")
-def get_risky_assets(
-    current_user: User = Depends(get_current_user), 
-    db: Session = Depends(get_db),
-    limit: int = 10
-):
+def _risky_assets(current_user, db, limit):
     """
     Ottieni gli asset più a rischio
     PERFORMANCE: Usa selectinload per evitare N+1 queries
@@ -141,59 +137,11 @@ def get_reviews_summary(
 ):
     """Get summary statistics for asset reviews"""
     from app.services.asset_review_service import AssetReviewService
-    from datetime import datetime, timedelta
-    from app.models import Tenant
-    
-    overdue = AssetReviewService.get_overdue_assets(db, current_user.tenant_id)
-    
-    # Get due assets (excluding overdue - they're already counted)
-    tenant = db.query(Tenant).filter(Tenant.id == current_user.tenant_id).first()
-    days_ahead = tenant.review_due_days_ahead if tenant and tenant.review_due_days_ahead else 30
-    
-    today = datetime.utcnow()
-    future_date = today + timedelta(days=days_ahead)
-    
-    # Get assets due in future (not overdue)
-    from app.models import Asset
-    from sqlalchemy import and_
-    
-    due_assets = (
-        db.query(Asset)
-        .filter(
-            and_(
-                Asset.tenant_id == current_user.tenant_id,
-                Asset.deleted_at.is_(None),
-                Asset.next_review_date.isnot(None),
-                Asset.next_review_date >= today,
-                Asset.next_review_date <= future_date,
-                Asset.review_status.in_(['pending', None])
-            )
-        )
-        .all()
+
+    return dashboard_cache.get_or_compute(
+        str(current_user.tenant_id), "reviews",
+        lambda: AssetReviewService.dashboard_summary(db, current_user.tenant_id),
     )
-    
-    return {
-        "overdue_count": len(overdue),
-        "due_count": len(due_assets),  # Only future due, not overdue
-        "overdue_assets": [
-            {
-                "id": str(asset.id),
-                "name": asset.name,
-                "next_review_date": asset.next_review_date.isoformat() if asset.next_review_date else None,
-                "review_status": asset.review_status
-            }
-            for asset in overdue[:5]  # Top 5
-        ],
-        "due_assets": [
-            {
-                "id": str(asset.id),
-                "name": asset.name,
-                "next_review_date": asset.next_review_date.isoformat() if asset.next_review_date else None,
-                "review_status": asset.review_status
-            }
-            for asset in due_assets[:5]  # Top 5
-        ]
-    }
 
 
 @router.get("/dependencies-summary")
@@ -202,39 +150,20 @@ def get_dependencies_summary(
     db: Session = Depends(get_db),
 ):
     """Get summary statistics for asset dependencies"""
-    from app.models.asset_connection import AssetConnection
     from app.services.connection_dependency_analyzer import ConnectionDependencyAnalyzer
-    from sqlalchemy import and_
-    
-    # Get all connections for tenant (filter directly by tenant_id)
-    connections = (
-        db.query(AssetConnection)
-        .filter(AssetConnection.tenant_id == current_user.tenant_id)
-        .all()
-    )
-    
-    missing_count = 0
-    critical_missing = 0
-    
-    for conn in connections:
-        status = ConnectionDependencyAnalyzer.get_connection_dependency_status(db, conn)
-        if status.get('status') == 'missing':
-            missing_count += 1
-            if status.get('severity') == 'critical':
-                critical_missing += 1
-    
-    return {
-        "total_connections": len(connections),
-        "missing_dependencies_count": missing_count,
-        "critical_missing_count": critical_missing
-    }
+
+    def compute():
+        counts = ConnectionDependencyAnalyzer.dependency_gap_counts(db, current_user.tenant_id)
+        return {
+            "total_connections": counts["total_connections"],
+            "missing_dependencies_count": counts["missing"],
+            "critical_missing_count": counts["critical_missing"],
+        }
+
+    return dashboard_cache.get_or_compute(str(current_user.tenant_id), "dependencies", compute)
 
 
-@router.get("/vulnerabilities-summary")
-def get_vulnerabilities_summary(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
+def _vulnerabilities_summary(current_user, db):
     """Get summary statistics for vulnerabilities"""
     from app.models.vulnerability import AssetVulnerability, Vulnerability
     from sqlalchemy import func, and_
@@ -286,11 +215,7 @@ def get_vulnerabilities_summary(
     }
 
 
-@router.get("/exposure")
-def get_exposure_summary(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
+def _exposure_summary(current_user, db):
     """Get exposure summary with overall exposure score"""
     from app.services.exposure_calculator import ExposureCalculator
     
@@ -352,12 +277,7 @@ def get_recent_changes(
     return changes
 
 
-@router.get("/compliance-summary")
-def get_compliance_summary(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-    _iec62443=Depends(require_iec62443_enabled),
-):
+def _compliance_summary(current_user, db):
     """Get summary statistics for ISA/IEC 62443 compliance"""
     from app.models import SecurityZone
     from app.services.isa62443_compliance_engine import ISA62443ComplianceEngine
@@ -411,12 +331,14 @@ def get_compliance_summary(
     total_gap = 0.0
     max_gap = 0
     
+    # zones with no stored status are calculated together, not one by one
+    pending = [z for z in zones if not z.compliance_status or z.compliance_status == "not_assessed"]
+    calculated = ISA62443ComplianceEngine.calculate_zone_compliance_statuses(db, pending) if pending else {}
+
     for zone in zones:
         compliance_status = zone.compliance_status
         if not compliance_status or compliance_status == "not_assessed":
-            compliance_status = ISA62443ComplianceEngine.calculate_zone_compliance_status(
-                db, zone
-            )
+            compliance_status = calculated[zone.id]
 
         if compliance_status == "not_assessed":
             continue
@@ -468,3 +390,31 @@ def get_evidence_missing(
     return {
         "missing_evidence_count": 0
     }
+
+
+# Cached endpoints: the heavy summaries are kept per tenant for a short time (see dashboard_cache.get_or_compute)
+@router.get("/risky-assets")
+def get_risky_assets(current_user: User = Depends(get_current_user), db: Session = Depends(get_db), limit: int = 10):
+    limit = min(limit, 50)
+    return dashboard_cache.get_or_compute(str(current_user.tenant_id), f"risky-{limit}", lambda: _risky_assets(current_user, db, limit))
+
+
+@router.get("/vulnerabilities-summary")
+def get_vulnerabilities_summary(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    return dashboard_cache.get_or_compute(str(current_user.tenant_id), "vulnerabilities", lambda: _vulnerabilities_summary(current_user, db))
+
+
+@router.get("/exposure")
+def get_exposure_summary(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get exposure summary with overall exposure score"""
+    return dashboard_cache.get_or_compute(str(current_user.tenant_id), "exposure", lambda: _exposure_summary(current_user, db))
+
+
+@router.get("/compliance-summary")
+def get_compliance_summary(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    _iec62443=Depends(require_iec62443_enabled),
+):
+    """Get summary statistics for ISA/IEC 62443 compliance"""
+    return dashboard_cache.get_or_compute(str(current_user.tenant_id), "compliance", lambda: _compliance_summary(current_user, db))

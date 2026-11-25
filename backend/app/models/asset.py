@@ -10,6 +10,7 @@ from sqlalchemy import (
     Integer,
     Boolean,
     Date,
+    Numeric,
 )
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
@@ -41,6 +42,16 @@ asset_contacts = Table(
         nullable=False,
         server_default="other",
     ),
+)
+
+# spare assets kept in stock for an installed asset (a spare PLC CPU for the line's PLC, ...)
+asset_spares = Table(
+    "asset_spares",
+    Base.metadata,
+    Column("installed_asset_id", UUID(as_uuid=True), ForeignKey("assets.id", ondelete="CASCADE"), primary_key=True),
+    Column("spare_asset_id", UUID(as_uuid=True), ForeignKey("assets.id", ondelete="CASCADE"), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False),
+    Column("created_at", DateTime, server_default=func.now(), nullable=False),
 )
 
 asset_suppliers = Table(
@@ -80,6 +91,8 @@ class Asset(Base):
     )
     name = Column(String(255), nullable=False)
     tag = Column(String(100))
+    # set on rows that shared a tag before uniqueness was enforced; they are left out of uq_assets_tenant_tag
+    tag_legacy_duplicate = Column(Boolean, nullable=False, default=False, server_default="false")
     serial_number = Column(String(100))
     model = Column(String(100))
     firmware_version = Column(String(50))
@@ -90,6 +103,11 @@ class Asset(Base):
     last_update_date = Column(DateTime, nullable=True)
     description = Column(Text)
     custom_fields = Column(JSONB, default={})
+    # IPAM: the addresses that identify this asset (each must be assigned to one of its interfaces). use_alter: the IP
+    # address table points back at asset interfaces, so these keys are added after both tables exist.
+    primary_ip4_id = Column(UUID(as_uuid=True), ForeignKey("ipam_ip_addresses.id", ondelete="SET NULL", use_alter=True, name="fk_assets_primary_ip4"), nullable=True)
+    primary_ip6_id = Column(UUID(as_uuid=True), ForeignKey("ipam_ip_addresses.id", ondelete="SET NULL", use_alter=True, name="fk_assets_primary_ip6"), nullable=True)
+    oob_ip_id = Column(UUID(as_uuid=True), ForeignKey("ipam_ip_addresses.id", ondelete="SET NULL", use_alter=True, name="fk_assets_oob_ip"), nullable=True)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     last_seen = Column(DateTime)
@@ -97,6 +115,48 @@ class Asset(Base):
     map_y = Column(Float, nullable=True)
     deleted_at = Column(DateTime, nullable=True)
     installation_date = Column(Date, nullable=True)
+
+    # --- OT lifecycle data (requirements gap plan, phase 1). All optional / additive. ---
+    # Classification
+    safety_relevance = Column(String(20), nullable=True)  # none / safety_related / safety_critical
+    # Procurement
+    requisition_number = Column(String(100), nullable=True)
+    purchase_order_number = Column(String(100), nullable=True)
+    purchase_date = Column(Date, nullable=True)
+    purchase_cost = Column(Numeric(14, 2), nullable=True)
+    cost_currency = Column(String(3), nullable=True)  # ISO 4217, e.g. INR
+    expected_delivery_date = Column(Date, nullable=True)
+    received_date = Column(Date, nullable=True)
+    # Commissioning and acceptance
+    commissioned_date = Column(Date, nullable=True)
+    acceptance_date = Column(Date, nullable=True)
+    acceptance_signed_by = Column(String(255), nullable=True)
+    # Warranty, AMC, support and licence (expiry dates feed the phase 2 alerts)
+    warranty_expiry_date = Column(Date, nullable=True, index=True)
+    amc_expiry_date = Column(Date, nullable=True, index=True)
+    support_expiry_date = Column(Date, nullable=True, index=True)
+    licence_expiry_date = Column(Date, nullable=True, index=True)
+    # Ownership
+    plant_owner = Column(String(255), nullable=True)
+    amc_partner = Column(String(255), nullable=True)
+    # Disposal or return at the end of life
+    disposal_method = Column(String(30), nullable=True)
+    disposal_date = Column(Date, nullable=True)
+    disposal_reference = Column(String(100), nullable=True)  # certificate, RMA or transfer number
+    # A completed retirement closes the record: it is kept for the audit trail but no longer edited
+    archived_at = Column(DateTime, nullable=True)
+    archived_by = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    # the purchase order line this asset was delivered against (checked when it is received)
+    purchase_order_line_id = Column(UUID(as_uuid=True), ForeignKey("purchase_order_lines.id", ondelete="SET NULL", name="fk_assets_po_line"), nullable=True, index=True)
+    order_mismatch_note = Column(Text, nullable=True)  # why a delivery that differs from the order was accepted
+    # Parent-child: this asset is a component of another asset (e.g. a module in a PLC rack)
+    parent_asset_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("assets.id", ondelete="SET NULL", name="fk_assets_parent_asset_id"),
+        nullable=True,
+        index=True,
+    )
+
     business_criticality = Column(String, nullable=True)
     protocols = Column(JSONB, default=list)
     impact_value = Column(Integer, default=1)  # 1-5 scale
@@ -124,6 +184,8 @@ class Asset(Base):
     review_interval_months = Column(Integer, default=6)  # Intervallo in mesi (default: 6)
     
     status = relationship("AssetStatus", back_populates="assets")
+    parent = relationship("Asset", remote_side=[id], back_populates="components", foreign_keys=[parent_asset_id])
+    components = relationship("Asset", back_populates="parent", foreign_keys=[parent_asset_id])
     site = relationship("Site", back_populates="assets")
     asset_type = relationship("AssetType", back_populates="assets")
     photos = relationship("AssetPhoto", back_populates="asset", cascade="all, delete")

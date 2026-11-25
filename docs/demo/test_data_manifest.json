@@ -1,0 +1,113 @@
+{
+  "tenant": "e8ea0833-40b1-4c52-a998-4c0681504f5b",
+  "started": "2026-11-16T09:49:53.857Z",
+  "originals": {
+    "5a60fc2e-366f-4601-9c55-b7b0e7e91b7d": {
+      "serial_number": null,
+      "firmware_version": null,
+      "warranty_expiry_date": null,
+      "support_expiry_date": null,
+      "amc_expiry_date": null,
+      "amc_partner": null,
+      "plant_owner": null
+    },
+    "7d303229-4108-4774-985d-58a99c2d69d7": {
+      "serial_number": null,
+      "warranty_expiry_date": null,
+      "support_expiry_date": null,
+      "firmware_version": null
+    },
+    "e3d54116-c953-4adf-9997-7540df4047a3": {
+      "serial_number": null,
+      "warranty_expiry_date": null,
+      "support_expiry_date": null,
+      "amc_expiry_date": null,
+      "amc_partner": null
+    },
+    "7a3bf3b1-b27d-442e-a3ef-1af9f0c8f612": {
+      "serial_number": null,
+      "licence_expiry_date": null,
+      "support_expiry_date": null
+    },
+    "90c5e610-881d-4804-a8ad-42b43d2e5984": {
+      "serial_number": null,
+      "warranty_expiry_date": null,
+      "support_expiry_date": null,
+      "firmware_version": null
+    }
+  },
+  "created": {
+    "assets": {
+      "newPlc": "517c4b45-d633-4f7a-91e6-27a94fc4251e",
+      "spareCpu": "edec0eba-67f0-4a13-a601-c5bda62db0db",
+      "retire1": "1e4a70dc-9822-43e0-b774-b718732c08e4",
+      "retire2": "b1c6affb-6068-4bf7-832e-a82dbff7ad1f",
+      "newHmi": "eb628348-10ef-45a2-92cc-da4170fb9f14"
+    },
+    "orders": {
+      "draft": "e0bcd848-5d80-4546-963f-82113b2a14a9",
+      "submitted": "01abbf29-01e6-4450-b622-d52a8a151153",
+      "rejected": "e3cc74ab-0cfc-46d2-903a-b69823480520",
+      "ordered": "de757cb5-acf8-41d8-9258-63e61f039c57",
+      "received": "68acf8ee-293f-4b80-b00b-462dc7850d78"
+    },
+    "artifacts": {
+      "main": "6795e7d1-328d-4e70-8272-6dd6781bd800",
+      "hmi": "c7f5583b-1787-4ebf-b895-314b8a84191f",
+      "cnc": "f1d96a21-194d-4de0-a5ac-567170a484a9",
+      "newPlc": "0618117b-1c88-47ed-8cc7-aaeaf0766931"
+    },
+    "software": [
+      {
+        "asset": "5a60fc2e-366f-4601-9c55-b7b0e7e91b7d",
+        "id": "363c8018-a287-4722-9b13-22c1171bf37a"
+      },
+      {
+        "asset": "5a60fc2e-366f-4601-9c55-b7b0e7e91b7d",
+        "id": "f31f3f13-b314-49c8-9c53-c890f34404db"
+      },
+      {
+        "asset": "7a3bf3b1-b27d-442e-a3ef-1af9f0c8f612",
+        "id": "f49c201a-e604-4a8b-8e73-200165bc1a94"
+      }
+    ],
+    "costs": [
+      {
+        "asset": "5a60fc2e-366f-4601-9c55-b7b0e7e91b7d",
+        "id": "2cc29ebb-74c3-4dd1-864c-d09dccde2531"
+      },
+      {
+        "asset": "5a60fc2e-366f-4601-9c55-b7b0e7e91b7d",
+        "id": "db010588-dd75-4207-a7b0-b0c3f685788d"
+      },
+      {
+        "asset": "7a3bf3b1-b27d-442e-a3ef-1af9f0c8f612",
+        "id": "cee7d871-93dc-4ef5-8feb-ce0697b0eda8"
+      }
+    ],
+    "parts": [
+      "b7afc78f-82ae-4782-a804-08811876d3fa",
+      "89d46a86-0aa1-49f9-9a92-35f83eee7a5f"
+    ],
+    "plans": [
+      "ecaf5191-7407-4455-8c35-a55c2a71e535"
+    ],
+    "records": [
+      "1c80c3b0-ed95-4fd4-8454-19ff38061a5e",
+      "37a91bc6-33c6-4e52-9c11-42618879f73a",
+      "a2f81c2e-49d1-4fa3-adb2-80268effe64f"
+    ],
+    "runs": {
+      "onboarding": "374dc67e-18c6-47fc-8dd9-8cdf4ef04c87",
+      "retire1": "4aa7b3f1-f79f-4896-adcd-15cd5c45d6bc",
+      "retire2": "8264e32e-882d-4432-afe8-c0abc1e6884b"
+    },
+    "targets": []
+  },
+  "stages": [
+    "1",
+    "2",
+    "3"
+  ],
+  "note": "Change requests were removed from the product; the change request records no longer exist."
+}

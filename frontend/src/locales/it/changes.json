@@ -1,0 +1,90 @@
+{
+  "title": "Manutenzione e configurazione",
+  "tabs": {
+    "maintenance": "Manutenzione",
+    "parts": "Ricambi"
+  },
+  "maintenance": {
+    "hint": "Manutenzione pianificata in ritardo o in scadenza. Completando un'attività preventiva si può pianificare la successiva.",
+    "within": "In scadenza entro",
+    "empty": "Nessuna manutenzione pianificata in questo periodo.",
+    "asset": "Asset",
+    "task": "Attività",
+    "kind": "Tipo",
+    "due": "Scadenza",
+    "overdue": "In ritardo",
+    "complete": "Completa",
+    "performedOn": "Eseguita il",
+    "performedBy": "Eseguita da",
+    "vendor": "Fornitore",
+    "notes": "Note",
+    "cost": "Costo",
+    "currency": "Valuta",
+    "parts": "Ricambi usati",
+    "addPart": "Aggiungi ricambio",
+    "nextDue": "Prossima scadenza (preventiva)",
+    "completeTitle": "Completa manutenzione",
+    "required": "La data di esecuzione è obbligatoria.",
+    "kinds": {
+      "preventive": "Preventiva",
+      "corrective": "Correttiva",
+      "inspection": "Ispezione",
+      "upgrade": "Aggiornamento firmware",
+      "patch": "Patch"
+    },
+    "done": "Eseguita",
+    "planned": "Pianificata"
+  },
+  "assetCard": {
+    "title": "Manutenzione",
+    "addTask": "Pianifica manutenzione",
+    "taskTitle": "Attività",
+    "empty": "Nessuna manutenzione registrata.",
+    "parts": "Ricambi per questo asset",
+    "noParts": "Nessun ricambio collegato.",
+    "inStock": "{n} in magazzino",
+    "delete": "Eliminare questo registro? I ricambi usati tornano in magazzino.",
+    "required": "Servono un titolo e una scadenza."
+  },
+  "parts": {
+    "hint": "Scorte di ricambi e asset a cui si adattano. I ricambi usati al completamento della manutenzione vengono scalati dal magazzino.",
+    "new": "Nuovo ricambio",
+    "edit": "Modifica ricambio",
+    "name": "Nome",
+    "partNumber": "Codice articolo",
+    "manufacturer": "Produttore",
+    "quantity": "In magazzino",
+    "minQuantity": "Scorta minima",
+    "location": "Posizione di stoccaggio",
+    "notes": "Note",
+    "assets": "Adatto agli asset",
+    "lowStock": "Scorta bassa",
+    "empty": "Nessun ricambio.",
+    "deleteConfirm": "Eliminare questo ricambio?",
+    "required": "Il nome è obbligatorio."
+  },
+  "upgrade": {
+    "toVersion": "Nuova versione",
+    "hint": "Completando un aggiornamento, la versione firmware dell'asset diventa la nuova versione.",
+    "installedVersion": "Versione installata",
+    "completeHint": "Completare un aggiornamento aggiorna la versione firmware dell'asset."
+  },
+  "plans": {
+    "title": "Piani di manutenzione",
+    "none": "Nessuna manutenzione ricorrente pianificata.",
+    "every": "ogni {n} giorni",
+    "nextDue": "prossima scadenza {date}",
+    "paused": "In pausa",
+    "pause": "Sospendi piano",
+    "resume": "Riprendi piano",
+    "delete": "Elimina piano",
+    "deleteConfirm": "Eliminare il piano \"{title}\"? Le attività già create restano.",
+    "planTitle": "Attività ricorrente, es. Controllo PLC trimestrale",
+    "interval": "Ogni (giorni)",
+    "firstDue": "Prima scadenza",
+    "add": "Aggiungi piano",
+    "hint": "Un'attività viene creata 14 giorni prima di ogni scadenza; quando è completata la successiva scade dopo l'intervallo dal lavoro. Le attività in ritardo vengono inviate via e-mail al responsabile dell'asset.",
+    "required": "Inserisci l'attività, l'intervallo e la prima scadenza.",
+    "fromPlan": "Da un piano di manutenzione"
+  }
+}

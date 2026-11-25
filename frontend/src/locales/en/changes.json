@@ -1,0 +1,90 @@
+{
+  "title": "Maintenance and configuration",
+  "tabs": {
+    "maintenance": "Maintenance",
+    "parts": "Spare parts"
+  },
+  "maintenance": {
+    "hint": "Planned maintenance that is overdue or due soon. Completing a preventive task can schedule the next one.",
+    "within": "Due within",
+    "empty": "No planned maintenance in this period.",
+    "asset": "Asset",
+    "task": "Task",
+    "kind": "Kind",
+    "due": "Due",
+    "overdue": "Overdue",
+    "complete": "Complete",
+    "performedOn": "Performed on",
+    "performedBy": "Performed by",
+    "vendor": "Vendor",
+    "notes": "Notes",
+    "cost": "Cost",
+    "currency": "Currency",
+    "parts": "Spare parts used",
+    "addPart": "Add part",
+    "nextDue": "Next due date (preventive)",
+    "completeTitle": "Complete maintenance",
+    "required": "The date performed is required.",
+    "kinds": {
+      "preventive": "Preventive",
+      "corrective": "Corrective",
+      "inspection": "Inspection",
+      "upgrade": "Firmware upgrade",
+      "patch": "Patch"
+    },
+    "done": "Done",
+    "planned": "Planned"
+  },
+  "assetCard": {
+    "title": "Maintenance",
+    "addTask": "Plan maintenance",
+    "taskTitle": "Task",
+    "empty": "No maintenance recorded.",
+    "parts": "Spare parts for this asset",
+    "noParts": "No spare parts linked.",
+    "inStock": "{n} in stock",
+    "delete": "Delete this record? Parts used go back to stock.",
+    "required": "A title and a due date are required."
+  },
+  "parts": {
+    "hint": "Stock of spare parts and the assets they fit. Parts used when completing maintenance are taken from stock.",
+    "new": "New spare part",
+    "edit": "Edit spare part",
+    "name": "Name",
+    "partNumber": "Part number",
+    "manufacturer": "Manufacturer",
+    "quantity": "In stock",
+    "minQuantity": "Minimum stock",
+    "location": "Storage location",
+    "notes": "Notes",
+    "assets": "Fits assets",
+    "lowStock": "Low stock",
+    "empty": "No spare parts.",
+    "deleteConfirm": "Delete this spare part?",
+    "required": "A name is required."
+  },
+  "upgrade": {
+    "toVersion": "New version",
+    "hint": "Completing an upgrade sets the asset firmware version to the new version.",
+    "installedVersion": "Version installed",
+    "completeHint": "Completing an upgrade updates the firmware version of the asset."
+  },
+  "plans": {
+    "title": "Maintenance plans",
+    "none": "No recurring maintenance planned.",
+    "every": "every {n} days",
+    "nextDue": "next due {date}",
+    "paused": "Paused",
+    "pause": "Pause plan",
+    "resume": "Resume plan",
+    "delete": "Delete plan",
+    "deleteConfirm": "Delete the plan \"{title}\"? Tasks already created stay.",
+    "planTitle": "Recurring task, e.g. Quarterly PLC check",
+    "interval": "Every (days)",
+    "firstDue": "First due",
+    "add": "Add plan",
+    "hint": "A task is created 14 days before each due date; when it is completed the next one is due the interval after the work. Overdue tasks are e-mailed to the asset owner.",
+    "required": "Enter the task, the interval and the first due date.",
+    "fromPlan": "From a maintenance plan"
+  }
+}

@@ -16,6 +16,22 @@ from app.config import settings
 from app.errors.exceptions import ErrorCodeException
 from app.errors.error_codes import ErrorCode
 from app.services.audit_decorator import audit_log_action
+from app.services.workflow_logic import DOCUMENT_CATEGORIES
+from pydantic import BaseModel, Field
+from typing import Optional
+
+class DocumentUpdateIn(BaseModel):
+    category: Optional[str] = Field(None, max_length=30)
+    description: Optional[str] = Field(None, max_length=2000)
+
+
+def _clean_category(category: Optional[str]) -> Optional[str]:
+    category = (category or "").strip() or None
+    if category is not None and category not in DOCUMENT_CATEGORIES:
+        raise ErrorCodeException(status_code=400, error_code=ErrorCode.INVALID_ASSET_DOCUMENT_FORMAT,
+                                 detail="Unknown document category")
+    return category
+
 
 router = APIRouter(
     prefix="/assets/{asset_id}/documents",
@@ -30,6 +46,7 @@ def upload_document(
     asset_id: uuid.UUID,
     request: Request,
     description: str = Form(None),
+    category: str = Form(None),
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -43,6 +60,7 @@ def upload_document(
         raise ErrorCodeException(
             status_code=404, error_code=ErrorCode.UNAUTHORIZED_ASSET_ACCESS
         )
+    category = _clean_category(category)
 
     # Validate file size first (before processing)
     if not validate_file_size(file):
@@ -91,11 +109,40 @@ def upload_document(
         file_path=str(relative_path),
         name=file.filename,
         description=description,
+        category=category,
     )
     db.add(document)
     db.commit()
     db.refresh(document)
 
+    return document
+
+
+@router.patch("/{document_id}", response_model=AssetDocumentSchema)
+@audit_log_action("update", "AssetDocument", model_class=AssetDocument)
+def update_document(
+    asset_id: uuid.UUID,
+    document_id: uuid.UUID,
+    data: DocumentUpdateIn,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Change the category or description of a document (the file itself does not change)."""
+    document = (
+        db.query(AssetDocument)
+        .filter_by(id=document_id, asset_id=asset_id, tenant_id=current_user.tenant_id)
+        .first()
+    )
+    if not document:
+        raise ErrorCodeException(status_code=404, error_code=ErrorCode.ASSET_DOCUMENT_NOT_FOUND)
+    fields = data.model_dump(exclude_unset=True)
+    if "category" in fields:
+        document.category = _clean_category(fields["category"])
+    if "description" in fields:
+        document.description = (fields["description"] or "").strip() or None
+    db.commit()
+    db.refresh(document)
     return document
 
 

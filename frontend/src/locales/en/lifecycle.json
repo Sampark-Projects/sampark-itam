@@ -1,0 +1,116 @@
+{
+  "title": "Lifecycle",
+  "tabs": {
+    "expiring": "Expiring",
+    "obsolescence": "Obsolescence",
+    "vendor": "Vendor end of life",
+    "cost": "Cost",
+    "settings": "Alerts"
+  },
+  "states": {
+    "expired": "Expired",
+    "soon": "Soon",
+    "obsolete": "Obsolete",
+    "later": "Later",
+    "unknown": "No vendor data"
+  },
+  "types": {
+    "warranty": "Warranty",
+    "amc": "AMC",
+    "support": "Support contract",
+    "licence": "Licence"
+  },
+  "kinds": {
+    "purchase": "Purchase",
+    "maintenance": "Maintenance",
+    "upgrade": "Upgrade",
+    "licence": "Licence",
+    "other": "Other"
+  },
+  "expiring": {
+    "within": "Expiring within",
+    "days": "{n} days",
+    "empty": "Nothing expires in this period.",
+    "daysLeft": "Days left",
+    "expiryDate": "Expiry date",
+    "type": "Type",
+    "runNow": "Send due alerts now",
+    "runResult": "Alerts: {alerts}, e-mails queued: {emails}, assets without a contact to notify: {noRecipients}",
+    "runDisabled": "Expiry alerts are switched off in the Alerts tab.",
+    "hint": "Includes dates that expired in the last year."
+  },
+  "obsolescence": {
+    "hint": "Based on the vendor end-of-support date (or end of life) matched by manufacturer and model. Assets without a match are counted as no vendor data.",
+    "byYear": "Assets reaching end of support, by year",
+    "bySite": "By site",
+    "byCriticality": "By criticality",
+    "assets": "Assets",
+    "supportEnds": "Support ends",
+    "endOfLife": "End of life",
+    "model": "Model",
+    "manufacturer": "Manufacturer",
+    "criticality": "Criticality",
+    "site": "Site",
+    "allSites": "All sites",
+    "allCriticality": "All criticality",
+    "empty": "No assets match the vendor lifecycle table yet. Add or import entries in the Vendor end of life tab.",
+    "export": "Export CSV",
+    "source": "Source"
+  },
+  "vendor": {
+    "hint": "Manufacturer end-of-sale, end-of-support and end-of-life dates. A model can use * and ? as wildcards (for example S7-12*). The most specific entry wins.",
+    "add": "Add entry",
+    "edit": "Edit entry",
+    "import": "Import CSV",
+    "template": "Download template",
+    "manufacturer": "Manufacturer",
+    "selectManufacturer": "Select a manufacturer",
+    "model": "Model",
+    "endOfSale": "End of sale",
+    "endOfSupport": "End of support",
+    "endOfLife": "End of life",
+    "source": "Source",
+    "notes": "Notes",
+    "empty": "No vendor lifecycle entries yet.",
+    "deleteConfirm": "Delete this entry?",
+    "importResult": "Imported: {created} new, {updated} updated.",
+    "importErrors": "{count} row(s) skipped: {details}",
+    "dateRequired": "At least one date is required.",
+    "required": "Manufacturer and model are required.",
+    "matchedFor": "Vendor support"
+  },
+  "cost": {
+    "hint": "Purchase cost plus maintenance, upgrade and licence costs recorded on assets. Currencies are never converted into each other.",
+    "empty": "No costs recorded yet. Add a purchase cost on an asset or record costs on the asset page.",
+    "total": "Total",
+    "assetsWithCost": "{with} of {all} assets have a cost",
+    "bySite": "By site",
+    "byType": "By asset type",
+    "topAssets": "Most expensive assets",
+    "byKind": "By kind",
+    "site": "Site",
+    "type": "Asset type",
+    "asset": "Asset",
+    "amount": "Amount"
+  },
+  "assetCost": {
+    "title": "Cost of ownership",
+    "purchase": "Purchase",
+    "add": "Add cost",
+    "kind": "Kind",
+    "amount": "Amount",
+    "currency": "Currency",
+    "date": "Date",
+    "description": "Description",
+    "empty": "No additional costs recorded.",
+    "total": "Total",
+    "required": "Amount, currency and date are required."
+  },
+  "settings": {
+    "hint": "Alerts go to the owners and points of contact of an asset (matched to users by e-mail) once for each lead time, and once more when the date has passed. The check runs every day.",
+    "enabled": "Send expiry alerts",
+    "leadDays": "Lead times (days before expiry, separated by commas)",
+    "saved": "Alert settings saved.",
+    "invalid": "Enter whole numbers of days, for example 90, 30, 7."
+  }
+}

@@ -91,6 +91,167 @@ export default {
   getAsset(id) {
     return api.get(`/assets/${id}`)
   },
+  getWorkflowFieldChoices() {
+    return api.get('/workflows/field-choices')
+  },
+  getWorkflowDefinitions() {
+    return api.get('/workflows/definitions')
+  },
+  updateWorkflowDefinition(kind, data) {
+    return api.put(`/workflows/definitions/${kind}`, data)
+  },
+  getWorkflowTasks() {
+    return api.get('/workflows/tasks')
+  },
+  getWorkflowRuns(params = {}) {
+    return api.get('/workflows/runs', { params })
+  },
+  getAssetWorkflowRuns(assetId) {
+    return api.get(`/workflows/assets/${assetId}/runs`)
+  },
+  startWorkflowRun(assetId, data) {
+    return api.post(`/workflows/assets/${assetId}/runs`, data)
+  },
+  completeWorkflowStep(runId, stepId, data) {
+    return api.post(`/workflows/runs/${runId}/steps/${stepId}/complete`, data)
+  },
+  rejectWorkflowStep(runId, stepId, data) {
+    return api.post(`/workflows/runs/${runId}/steps/${stepId}/reject`, data)
+  },
+  cancelWorkflowRun(runId, data) {
+    return api.post(`/workflows/runs/${runId}/cancel`, data)
+  },
+  getMaintenanceDue(params = {}) {
+    return api.get('/maintenance/due', { params })
+  },
+  getAssetMaintenance(assetId) {
+    return api.get(`/maintenance/assets/${assetId}`)
+  },
+  createMaintenanceTask(assetId, data) {
+    return api.post(`/maintenance/assets/${assetId}`, data)
+  },
+  completeMaintenanceTask(id, data) {
+    return api.post(`/maintenance/records/${id}/complete`, data)
+  },
+  deleteMaintenanceRecord(id) {
+    return api.delete(`/maintenance/records/${id}`)
+  },
+  getSpareParts(params = {}) {
+    return api.get('/maintenance/parts', { params })
+  },
+  createSparePart(data) {
+    return api.post('/maintenance/parts', data)
+  },
+  updateSparePart(id, data) {
+    return api.put(`/maintenance/parts/${id}`, data)
+  },
+  deleteSparePart(id) {
+    return api.delete(`/maintenance/parts/${id}`)
+  },
+  getConfigOverview(params = {}) {
+    return api.get('/config/overview', { params })
+  },
+  runConfigAlerts() {
+    return api.post('/config/alerts/run')
+  },
+  getAssetConfigArtifacts(assetId) {
+    return api.get(`/config/assets/${assetId}/artifacts`)
+  },
+  createConfigArtifact(assetId, data) {
+    return api.post(`/config/assets/${assetId}/artifacts`, data)
+  },
+  updateConfigArtifact(id, data) {
+    return api.put(`/config/artifacts/${id}`, data)
+  },
+  deleteConfigArtifact(id) {
+    return api.delete(`/config/artifacts/${id}`)
+  },
+  setConfigBaseline(versionId) {
+    return api.post(`/config/versions/${versionId}/baseline`)
+  },
+  clearConfigBaseline(artifactId) {
+    return api.delete(`/config/artifacts/${artifactId}/baseline`)
+  },
+  deleteConfigVersion(versionId) {
+    return api.delete(`/config/versions/${versionId}`)
+  },
+  compareConfigVersions(a, b) {
+    return api.get('/config/compare', { params: { a, b } })
+  },
+  downloadConfigVersion(versionId) {
+    return api.get(`/config/versions/${versionId}/download`, { responseType: 'blob' })
+  },
+  uploadConfigVersion(artifactId, file, fields = {}) {
+    const form = new FormData()
+    form.append('file', file)
+    Object.entries(fields).forEach(([k, v]) => { if (v) form.append(k, v) })
+    return api.post(`/config/artifacts/${artifactId}/versions`, form, { headers: { 'Content-Type': 'multipart/form-data' } })
+  },
+  getLifecycleSettings() {
+    return api.get('/lifecycle/settings')
+  },
+  updateLifecycleSettings(data) {
+    return api.put('/lifecycle/settings', data)
+  },
+  runLifecycleAlerts() {
+    return api.post('/lifecycle/alerts/run')
+  },
+  getLifecycleExpiring(params = {}) {
+    return api.get('/lifecycle/expiring', { params })
+  },
+  getLifecycleObsolescence(params = {}) {
+    return api.get('/lifecycle/obsolescence', { params })
+  },
+  getLifecycleCostSummary(params = {}) {
+    return api.get('/lifecycle/cost-summary', { params })
+  },
+  getVendorLifecycleEntries() {
+    return api.get('/lifecycle/vendor-entries')
+  },
+  createVendorLifecycleEntry(data) {
+    return api.post('/lifecycle/vendor-entries', data)
+  },
+  updateVendorLifecycleEntry(id, data) {
+    return api.put(`/lifecycle/vendor-entries/${id}`, data)
+  },
+  deleteVendorLifecycleEntry(id) {
+    return api.delete(`/lifecycle/vendor-entries/${id}`)
+  },
+  importVendorLifecycleCsv(file) {
+    const form = new FormData()
+    form.append('file', file)
+    return api.post('/lifecycle/vendor-entries/import', form, { headers: { 'Content-Type': 'multipart/form-data' } })
+  },
+  getAssetVendorLifecycle(assetId) {
+    return api.get(`/lifecycle/assets/${assetId}/vendor`)
+  },
+  getAssetCosts(assetId) {
+    return api.get(`/lifecycle/assets/${assetId}/costs`)
+  },
+  addAssetCost(assetId, data) {
+    return api.post(`/lifecycle/assets/${assetId}/costs`, data)
+  },
+  deleteAssetCost(assetId, entryId) {
+    return api.delete(`/lifecycle/assets/${assetId}/costs/${entryId}`)
+  },
+  getAssetTagRules() {
+    return api.get('/asset-tag-rules')
+  },
+  createAssetTagRule(data) {
+    return api.post('/asset-tag-rules', data)
+  },
+  updateAssetTagRule(id, data) {
+    return api.put(`/asset-tag-rules/${id}`, data)
+  },
+  deleteAssetTagRule(id) {
+    return api.delete(`/asset-tag-rules/${id}`)
+  },
+  getNextAssetTag(params = {}) {
+    return api.get('/assets/next-tag', { params })
+  },
+  getAssetComponents(id) {
+    return api.get(`/assets/${id}/components`)
+  },
   createAsset(assetData) {
     return api.post('/assets', assetData)
   },
@@ -178,8 +339,13 @@ export default {
   emptySitesTrash() {
     return api.delete('/sites/trash/empty')
   },
-  getAssetTypes() {
-    return api.get('/asset-types')
+  // params: { search, skip, limit }; the search runs on the server
+  getAssetTypes(params = {}) {
+    return api.get('/asset-types', { params })
+  },
+  // One page: params { search, skip, limit, sort_by, sort_order }; answers { data, total, skip, limit }
+  getAssetTypesPaged(params = {}) {
+    return api.get('/asset-types/paged', { params })
   },
   getDashboardStats(params = {}) {
     return api.get('/dashboard/stats', { params })
@@ -231,6 +397,18 @@ export default {
   },
   uploadAssetDocument(assetId, formData) {
     return api.post(`/assets/${assetId}/documents`, formData)
+  },
+  updateAssetDocument(assetId, documentId, data) {
+    return api.patch(`/assets/${assetId}/documents/${documentId}`, data)
+  },
+  getAssetSpares(assetId) {
+    return api.get(`/lifecycle/assets/${assetId}/spares`)
+  },
+  setAssetSpares(assetId, spareAssetIds) {
+    return api.put(`/lifecycle/assets/${assetId}/spares`, { spare_asset_ids: spareAssetIds })
+  },
+  reopenArchivedAsset(assetId, reason) {
+    return api.post(`/workflows/assets/${assetId}/reopen`, { reason })
   },
   deleteAssetDocument(assetId, documentId) {
     return api.delete(`/assets/${assetId}/documents/${documentId}`)
@@ -772,6 +950,10 @@ export default {
   getAuditLogs(params = {}) {
     return api.get('/audit-logs', { params })
   },
+  // One page: params { from, to, action, entity, user_id, skip, limit, sort_order }; answers { data, total, skip, limit }
+  getAuditLogsPaged(params = {}) {
+    return api.get('/audit-logs/paged', { params })
+  },
   exportAuditLogs(params = {}) {
     return api.get('/audit-logs/export', { params, responseType: 'blob' })
   },
@@ -1107,6 +1289,329 @@ export default {
     return api.post(`/discovered-devices/${deviceId}/onboard`, payload)
   },
   
+  getMaintenancePlans(assetId) {
+    return api.get(`/maintenance/assets/${assetId}/plans`)
+  },
+  createMaintenancePlan(assetId, data) {
+    return api.post(`/maintenance/assets/${assetId}/plans`, data)
+  },
+  updateMaintenancePlan(planId, data) {
+    return api.put(`/maintenance/plans/${planId}`, data)
+  },
+  deleteMaintenancePlan(planId) {
+    return api.delete(`/maintenance/plans/${planId}`)
+  },
+  runMaintenancePlans() {
+    return api.post('/maintenance/plans/run')
+  },
+  getPurchaseOrders(params = {}) {
+    return api.get('/procurement/orders', { params })
+  },
+  getPurchaseOrder(id) {
+    return api.get(`/procurement/orders/${id}`)
+  },
+  createPurchaseOrder(data) {
+    return api.post('/procurement/orders', data)
+  },
+  updatePurchaseOrder(id, data) {
+    return api.put(`/procurement/orders/${id}`, data)
+  },
+  transitionPurchaseOrder(id, data) {
+    return api.post(`/procurement/orders/${id}/transition`, data)
+  },
+  // --- IPAM ---
+  getIpamOverview() { return api.get('/ipam/overview') },
+  getIpamOptions() { return api.get('/ipam/options') },
+  getIpamVrfs(params = {}) { return api.get('/ipam/vrfs', { params }) },
+  createIpamVrf(data) { return api.post('/ipam/vrfs', data) },
+  updateIpamVrf(id, data) { return api.put(`/ipam/vrfs/${id}`, data) },
+  deleteIpamVrf(id) { return api.delete(`/ipam/vrfs/${id}`) },
+  getIpamRoles() { return api.get('/ipam/roles') },
+  createIpamRole(data) { return api.post('/ipam/roles', data) },
+  updateIpamRole(id, data) { return api.put(`/ipam/roles/${id}`, data) },
+  deleteIpamRole(id) { return api.delete(`/ipam/roles/${id}`) },
+  getIpamVlanGroups() { return api.get('/ipam/vlan-groups') },
+  createIpamVlanGroup(data) { return api.post('/ipam/vlan-groups', data) },
+  updateIpamVlanGroup(id, data) { return api.put(`/ipam/vlan-groups/${id}`, data) },
+  deleteIpamVlanGroup(id) { return api.delete(`/ipam/vlan-groups/${id}`) },
+  getIpamAvailableVids(id, limit = 50) { return api.get(`/ipam/vlan-groups/${id}/available-vids`, { params: { limit } }) },
+  getIpamVlans(params = {}) { return api.get('/ipam/vlans', { params }) },
+  createIpamVlan(data) { return api.post('/ipam/vlans', data) },
+  updateIpamVlan(id, data) { return api.put(`/ipam/vlans/${id}`, data) },
+  deleteIpamVlan(id) { return api.delete(`/ipam/vlans/${id}`) },
+  getIpamPrefixes(params = {}) { return api.get('/ipam/prefixes', { params }) },
+  getIpamPrefix(id) { return api.get(`/ipam/prefixes/${id}`) },
+  createIpamPrefix(data) { return api.post('/ipam/prefixes', data) },
+  updateIpamPrefix(id, data) { return api.put(`/ipam/prefixes/${id}`, data) },
+  deleteIpamPrefix(id) { return api.delete(`/ipam/prefixes/${id}`) },
+  getIpamChildPrefixes(id, params = {}) { return api.get(`/ipam/prefixes/${id}/prefixes`, { params }) },
+  allocateIpamPrefix(id, data) { return api.post(`/ipam/prefixes/${id}/available-prefixes`, data) },
+  getIpamPrefixAddresses(id, params = {}) { return api.get(`/ipam/prefixes/${id}/ip-addresses`, { params }) },
+  getIpamPrefixRanges(id) { return api.get(`/ipam/prefixes/${id}/ip-ranges`) },
+  getIpamAvailableIps(id, limit = 20) { return api.get(`/ipam/prefixes/${id}/available-ips`, { params: { limit } }) },
+  allocateIpamAddress(id, data) { return api.post(`/ipam/prefixes/${id}/available-ips`, data) },
+  getIpamRanges(params = {}) { return api.get('/ipam/ip-ranges', { params }) },
+  getIpamRange(id) { return api.get(`/ipam/ip-ranges/${id}`) },
+  createIpamRange(data) { return api.post('/ipam/ip-ranges', data) },
+  updateIpamRange(id, data) { return api.put(`/ipam/ip-ranges/${id}`, data) },
+  deleteIpamRange(id) { return api.delete(`/ipam/ip-ranges/${id}`) },
+  getIpamRangeAddresses(id, params = {}) { return api.get(`/ipam/ip-ranges/${id}/ip-addresses`, { params }) },
+  getIpamRangeAvailableIps(id, limit = 20) { return api.get(`/ipam/ip-ranges/${id}/available-ips`, { params: { limit } }) },
+  getIpamAddresses(params = {}) { return api.get('/ipam/ip-addresses', { params }) },
+  getIpamAddress(id) { return api.get(`/ipam/ip-addresses/${id}`) },
+  createIpamAddress(data) { return api.post('/ipam/ip-addresses', data) },
+  updateIpamAddress(id, data) { return api.put(`/ipam/ip-addresses/${id}`, data) },
+  deleteIpamAddress(id) { return api.delete(`/ipam/ip-addresses/${id}`) },
+  searchIpamInterfaces(q) { return api.get('/ipam/asset-interfaces', { params: { q } }) },
+  importIpamAssetInterfaces(data) { return api.post('/ipam/import/asset-interfaces', data) },
+  exportIpamCsv(kind, params = {}) { return api.get(`/ipam/export/${kind}`, { params, responseType: 'blob' }) },
+  importIpamCsv(kind, file, options = {}) {
+    const form = new FormData()
+    form.append('file', file)
+    for (const [key, value] of Object.entries(options)) form.append(key, value ? 'true' : 'false')
+    return api.post(`/ipam/import/csv/${kind}`, form, { headers: { 'Content-Type': 'multipart/form-data' } })
+  },
+  getIpamRirs() { return api.get('/ipam/rirs') },
+  createIpamRir(data) { return api.post('/ipam/rirs', data) },
+  updateIpamRir(id, data) { return api.put(`/ipam/rirs/${id}`, data) },
+  deleteIpamRir(id) { return api.delete(`/ipam/rirs/${id}`) },
+  getIpamAggregates(params = {}) { return api.get('/ipam/aggregates', { params }) },
+  getIpamAggregate(id) { return api.get(`/ipam/aggregates/${id}`) },
+  createIpamAggregate(data) { return api.post('/ipam/aggregates', data) },
+  updateIpamAggregate(id, data) { return api.put(`/ipam/aggregates/${id}`, data) },
+  deleteIpamAggregate(id) { return api.delete(`/ipam/aggregates/${id}`) },
+  getIpamAggregatePrefixes(id, params = {}) { return api.get(`/ipam/aggregates/${id}/prefixes`, { params }) },
+  allocateIpamAggregatePrefix(id, data) { return api.post(`/ipam/aggregates/${id}/available-prefixes`, data) },
+  getIpamAsns(params = {}) { return api.get('/ipam/asns', { params }) },
+  createIpamAsn(data) { return api.post('/ipam/asns', data) },
+  updateIpamAsn(id, data) { return api.put(`/ipam/asns/${id}`, data) },
+  deleteIpamAsn(id) { return api.delete(`/ipam/asns/${id}`) },
+  getIpamAsnRanges() { return api.get('/ipam/asn-ranges') },
+  createIpamAsnRange(data) { return api.post('/ipam/asn-ranges', data) },
+  updateIpamAsnRange(id, data) { return api.put(`/ipam/asn-ranges/${id}`, data) },
+  deleteIpamAsnRange(id) { return api.delete(`/ipam/asn-ranges/${id}`) },
+  getIpamAsnRangeAsns(id, params = {}) { return api.get(`/ipam/asn-ranges/${id}/asns`, { params }) },
+  getIpamAsnRangeAvailable(id, limit = 20) { return api.get(`/ipam/asn-ranges/${id}/available-asns`, { params: { limit } }) },
+  getIpamRouteTargets() { return api.get('/ipam/route-targets') },
+  createIpamRouteTarget(data) { return api.post('/ipam/route-targets', data) },
+  updateIpamRouteTarget(id, data) { return api.put(`/ipam/route-targets/${id}`, data) },
+  deleteIpamRouteTarget(id) { return api.delete(`/ipam/route-targets/${id}`) },
+  getIpamServiceTemplates() { return api.get('/ipam/service-templates') },
+  createIpamServiceTemplate(data) { return api.post('/ipam/service-templates', data) },
+  updateIpamServiceTemplate(id, data) { return api.put(`/ipam/service-templates/${id}`, data) },
+  deleteIpamServiceTemplate(id) { return api.delete(`/ipam/service-templates/${id}`) },
+  getIpamServices(params = {}) { return api.get('/ipam/services', { params }) },
+  getIpamService(id) { return api.get(`/ipam/services/${id}`) },
+  createIpamService(data) { return api.post('/ipam/services', data) },
+  createIpamServiceFromTemplate(data) { return api.post('/ipam/services/from-template', data) },
+  updateIpamService(id, data) { return api.put(`/ipam/services/${id}`, data) },
+  deleteIpamService(id) { return api.delete(`/ipam/services/${id}`) },
+  getIpamFhrpGroups(params = {}) { return api.get('/ipam/fhrp-groups', { params }) },
+  getIpamFhrpGroup(id) { return api.get(`/ipam/fhrp-groups/${id}`) },
+  createIpamFhrpGroup(data) { return api.post('/ipam/fhrp-groups', data) },
+  updateIpamFhrpGroup(id, data) { return api.put(`/ipam/fhrp-groups/${id}`, data) },
+  deleteIpamFhrpGroup(id) { return api.delete(`/ipam/fhrp-groups/${id}`) },
+  addIpamFhrpAssignment(groupId, data) { return api.post(`/ipam/fhrp-groups/${groupId}/assignments`, data) },
+  updateIpamFhrpAssignment(groupId, id, data) { return api.put(`/ipam/fhrp-groups/${groupId}/assignments/${id}`, data) },
+  deleteIpamFhrpAssignment(groupId, id) { return api.delete(`/ipam/fhrp-groups/${groupId}/assignments/${id}`) },
+  getIpamVlanPolicies() { return api.get('/ipam/vlan-translation-policies') },
+  getIpamVlanPolicy(id) { return api.get(`/ipam/vlan-translation-policies/${id}`) },
+  createIpamVlanPolicy(data) { return api.post('/ipam/vlan-translation-policies', data) },
+  updateIpamVlanPolicy(id, data) { return api.put(`/ipam/vlan-translation-policies/${id}`, data) },
+  deleteIpamVlanPolicy(id) { return api.delete(`/ipam/vlan-translation-policies/${id}`) },
+  createIpamVlanRule(policyId, data) { return api.post(`/ipam/vlan-translation-policies/${policyId}/rules`, data) },
+  updateIpamVlanRule(policyId, id, data) { return api.put(`/ipam/vlan-translation-policies/${policyId}/rules/${id}`, data) },
+  deleteIpamVlanRule(policyId, id) { return api.delete(`/ipam/vlan-translation-policies/${policyId}/rules/${id}`) },
+  getIpamInterface(id) { return api.get(`/ipam/interfaces/${id}`) },
+  updateIpamInterface(id, data) { return api.put(`/ipam/interfaces/${id}`, data) },
+  getIpamVlanInterfaces(id) { return api.get(`/ipam/vlans/${id}/interfaces`) },
+  getIpamAssetInterfaces(assetId) { return api.get(`/ipam/assets/${assetId}/interfaces`) },
+  getIpamAssetAddresses(assetId) { return api.get(`/ipam/assets/${assetId}/primary-ips`) },
+  setIpamAssetAddresses(assetId, data) { return api.put(`/ipam/assets/${assetId}/primary-ips`, data) },
+  getApplications(params = {}) {
+    return api.get('/applications', { params })
+  },
+  getApplication(id) {
+    return api.get(`/applications/${id}`)
+  },
+  createApplication(data) {
+    return api.post('/applications', data)
+  },
+  updateApplication(id, data) {
+    return api.put(`/applications/${id}`, data)
+  },
+  deleteApplication(id) {
+    return api.delete(`/applications/${id}`)
+  },
+  getApplicationInfrastructure(id) {
+    return api.get(`/applications/${id}/infrastructure`)
+  },
+  searchApplicationAssets(id, q, includeLinked = false) {
+    return api.get(`/applications/${id}/asset-search`, { params: { q, include_linked: includeLinked } })
+  },
+  linkApplicationAsset(id, data) {
+    return api.post(`/applications/${id}/assets`, data)
+  },
+  updateApplicationAssetLink(id, linkId, data) {
+    return api.put(`/applications/${id}/assets/${linkId}`, data)
+  },
+  unlinkApplicationAsset(id, linkId) {
+    return api.delete(`/applications/${id}/assets/${linkId}`)
+  },
+  getApplicationsOverview() {
+    return api.get('/applications/overview')
+  },
+  getApplicationAlertSettings() {
+    return api.get('/application-alerts/settings')
+  },
+  saveApplicationAlertSettings(data) {
+    return api.put('/application-alerts/settings', data)
+  },
+  runApplicationAlerts() {
+    return api.post('/application-alerts/run')
+  },
+  getApplicationSecuritySummary(id) {
+    return api.get(`/applications/${id}/security-summary`)
+  },
+  getApplicationVapt(id) {
+    return api.get(`/applications/${id}/vapt`)
+  },
+  createApplicationVapt(id, data) {
+    return api.post(`/applications/${id}/vapt`, data)
+  },
+  updateApplicationVapt(id, vaptId, data) {
+    return api.put(`/applications/${id}/vapt/${vaptId}`, data)
+  },
+  deleteApplicationVapt(id, vaptId) {
+    return api.delete(`/applications/${id}/vapt/${vaptId}`)
+  },
+  uploadApplicationVaptReport(id, vaptId, file) {
+    const form = new FormData()
+    form.append('file', file)
+    return api.post(`/applications/${id}/vapt/${vaptId}/report`, form, { headers: { 'Content-Type': 'multipart/form-data' } })
+  },
+  downloadApplicationVaptReport(id, vaptId) {
+    return api.get(`/applications/${id}/vapt/${vaptId}/report`, { responseType: 'blob' })
+  },
+  deleteApplicationVaptReport(id, vaptId) {
+    return api.delete(`/applications/${id}/vapt/${vaptId}/report`)
+  },
+  getApplicationFindings(id, params = {}) {
+    return api.get(`/applications/${id}/findings`, { params })
+  },
+  createApplicationFinding(id, data) {
+    return api.post(`/applications/${id}/findings`, data)
+  },
+  updateApplicationFinding(id, findingId, data) {
+    return api.put(`/applications/${id}/findings/${findingId}`, data)
+  },
+  deleteApplicationFinding(id, findingId) {
+    return api.delete(`/applications/${id}/findings/${findingId}`)
+  },
+  getApplicationTopology(id, includeInferred = true) {
+    return api.get(`/applications/${id}/topology`, { params: { include_inferred: includeInferred } })
+  },
+  getApplicationSoftware(id) {
+    return api.get(`/applications/${id}/software`)
+  },
+  getApplicationIntegrations(id) {
+    return api.get(`/applications/${id}/integrations`)
+  },
+  addApplicationIntegration(id, data) {
+    return api.post(`/applications/${id}/integrations`, data)
+  },
+  updateApplicationIntegration(id, integrationId, data) {
+    return api.put(`/applications/${id}/integrations/${integrationId}`, data)
+  },
+  deleteApplicationIntegration(id, integrationId) {
+    return api.delete(`/applications/${id}/integrations/${integrationId}`)
+  },
+  getPurchaseApprovalLevels() {
+    return api.get('/procurement/approval-levels')
+  },
+  savePurchaseApprovalLevels(levels) {
+    return api.put('/procurement/approval-levels', { levels })
+  },
+  uploadPurchaseOrderFile(id, file) {
+    const form = new FormData()
+    form.append('file', file)
+    return api.post(`/procurement/orders/${id}/po-file`, form, { headers: { 'Content-Type': 'multipart/form-data' } })
+  },
+  downloadPurchaseOrderFile(id) {
+    return api.get(`/procurement/orders/${id}/po-file`, { responseType: 'blob' })
+  },
+  deletePurchaseOrderFile(id) {
+    return api.delete(`/procurement/orders/${id}/po-file`)
+  },
+  checkDelivery(lineId, assetId) {
+    return api.get(`/procurement/lines/${lineId}/check`, { params: { asset_id: assetId } })
+  },
+  receiveDelivery(lineId, data) {
+    return api.post(`/procurement/lines/${lineId}/receive`, data)
+  },
+  removeDelivery(assetId) {
+    return api.delete(`/procurement/assets/${assetId}/receipt`)
+  },
+  getAssetReceipt(assetId) {
+    return api.get(`/procurement/assets/${assetId}`)
+  },
+  getAssetSoftware(assetId) {
+    return api.get(`/assets/${assetId}/software`)
+  },
+  addAssetSoftware(assetId, data) {
+    return api.post(`/assets/${assetId}/software`, data)
+  },
+  updateAssetSoftware(assetId, itemId, data) {
+    return api.put(`/assets/${assetId}/software/${itemId}`, data)
+  },
+  deleteAssetSoftware(assetId, itemId) {
+    return api.delete(`/assets/${assetId}/software/${itemId}`)
+  },
+  getWebhookEvents() {
+    return api.get('/webhooks/events')
+  },
+  getWebhooks() {
+    return api.get('/webhooks')
+  },
+  createWebhook(data) {
+    return api.post('/webhooks', data)
+  },
+  updateWebhook(id, data) {
+    return api.put(`/webhooks/${id}`, data)
+  },
+  deleteWebhook(id) {
+    return api.delete(`/webhooks/${id}`)
+  },
+  rotateWebhookSecret(id, params = {}) {
+    return api.post(`/webhooks/${id}/rotate-secret`, null, { params })
+  },
+  testWebhook(id) {
+    return api.post(`/webhooks/${id}/test`)
+  },
+  redeliverWebhook(deliveryId) {
+    return api.post(`/webhooks/deliveries/${deliveryId}/redeliver`)
+  },
+  getKpiTrend(params = {}) {
+    return api.get('/reports/trend', { params })
+  },
+  getWebhookDeliveries(params = {}) {
+    return api.get('/webhooks/deliveries', { params })
+  },
+  getPlantDashboard(params = {}) {
+    return api.get('/reports/dashboard', { params })
+  },
+  getKpiTargets() {
+    return api.get('/reports/targets')
+  },
+  setKpiTarget(data) {
+    return api.put('/reports/targets', data)
+  },
+  clearKpiTarget(params) {
+    return api.delete('/reports/targets', { params })
+  },
+  downloadAuditPack(params = {}) {
+    return api.get('/reports/audit-pack', { params, responseType: 'blob' })
+  },
   // Generic HTTP methods for direct API calls
   get(url, config = {}) {
     return api.get(url, config)

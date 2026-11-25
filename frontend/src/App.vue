@@ -2,7 +2,7 @@
   <div class="app-container">
     <Toast />
     <SetupDetector />
-    <div v-if="auth.isAuthenticated" class="layout">
+    <div v-if="auth.isAuthenticated && !isPublicPage" class="layout">
       <SidebarMenu />
       <div class="main-content">
         <router-view />
@@ -16,7 +16,8 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from './store/auth'
 
 import Toast from 'primevue/toast'
@@ -25,11 +26,15 @@ import GlobalSearchSpotlight from './components/common/GlobalSearchSpotlight.vue
 import SetupDetector from './components/SetupDetector.vue'
 
 const auth = useAuthStore()
+const route = useRoute()
+
+// Pages shown before sign-in never get the sidebar, even if a stale saved login flag says otherwise.
+const PUBLIC_PAGES = ['Login', 'MfaVerify', 'MfaSetup', 'SSOSuccess', 'SSOError']
+const isPublicPage = computed(() => PUBLIC_PAGES.includes(route.name))
 
 onMounted(async () => {
-  if (!auth.isAuthenticated) {
-    await auth.fetchUser()
-  }
+  // The saved flag survives an expired session, so always confirm it with the server.
+  await auth.fetchUser()
   if (auth.isAuthenticated) {
     auth.startTokenRefresh()
   }

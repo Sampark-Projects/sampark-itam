@@ -1,5 +1,17 @@
 {
   "title": "Assets",
+  "freeIp": {
+    "title": "IP address",
+    "label": "Available IP address",
+    "placeholder": "Select an available IP address",
+    "search": "Search the available addresses",
+    "hint": "Optional. The asset gets a network interface with this address and it becomes the primary IP of the asset.",
+    "hintEdit": "Optional. The address is added to the asset as a new network interface. It becomes the primary IP only if the asset has none yet.",
+    "empty": "No available IP addresses found",
+    "needWrite": "Assigning an IP address needs write access to IPAM.",
+    "needRead": "You have no access to IPAM, so no IP address can be chosen here.",
+    "loadError": "The available IP addresses could not be loaded."
+  },
   "description": "Manage industrial devices and assets",
   "create": "Create new asset",
   "edit": "Edit asset",
@@ -76,6 +88,7 @@
   },
   "interfaces": {
     "ipAddress": "IP Address",
+    "ipam": "IPAM addresses",
     "macAddress": "MAC Address",
     "vlan": "VLAN",
     "status": "Status",
@@ -330,7 +343,23 @@
     "chooseLabel": "Choose Document",
     "uploadLabel": "Upload",
     "documentsUploaded": "Documents uploaded successfully",
-    "uploadDocuments": "Upload Documents"
+    "uploadDocuments": "Upload Documents",
+    "category": "Category",
+    "noCategory": "No category",
+    "categories": {
+      "manual": "Manual",
+      "drawing": "Drawing",
+      "certificate": "Certificate",
+      "purchase_order": "Purchase order",
+      "warranty": "Warranty",
+      "delivery_note": "Delivery note",
+      "commissioning": "Commissioning record",
+      "acceptance": "Acceptance record",
+      "test_report": "Test report",
+      "wipe_certificate": "Data wipe certificate",
+      "disposal": "Disposal or return evidence",
+      "other": "Other"
+    }
   },
   "connections": {
     "title": "Connections",
@@ -505,5 +534,112 @@
     "purdueFormat": "Purdue level: valid 1-5 format",
     "tip": "Tip",
     "tipText": "Download the template to see valid format examples."
+  },
+  "tagHint": {
+    "tagAuto": "Leave empty to generate automatically: next is {tag}",
+    "tagPattern": "Naming rule: {pattern}"
+  },
+  "typeFields": {
+    "title": "{type} details"
+  },
+  "lifecycle": {
+    "title": "Lifecycle, procurement and support",
+    "empty": "No lifecycle data recorded yet",
+    "classification": "Classification and ownership",
+    "procurement": "Procurement",
+    "commissioning": "Commissioning and acceptance",
+    "support": "Warranty and support",
+    "fields": {
+      "safetyRelevance": "Safety relevance",
+      "plantOwner": "Plant owner",
+      "amcPartner": "Vendor / AMC partner",
+      "requisitionNumber": "Requisition number",
+      "purchaseOrderNumber": "Purchase order (PO) number",
+      "purchaseDate": "Purchase date",
+      "expectedDeliveryDate": "Expected delivery date",
+      "receivedDate": "Received date",
+      "purchaseCost": "Purchase cost",
+      "costCurrency": "Currency (e.g. INR)",
+      "commissionedDate": "Commissioned on",
+      "acceptanceDate": "Acceptance date",
+      "acceptanceSignedBy": "Acceptance signed by",
+      "warrantyExpiryDate": "Warranty expiry",
+      "amcExpiryDate": "AMC expiry",
+      "supportExpiryDate": "Support contract expiry",
+      "licenceExpiryDate": "Licence expiry",
+      "componentOf": "Component of",
+      "componentOfNone": "Not a component",
+      "componentOfSearch": "Search assets by name, tag or serial",
+      "componentOfEmpty": "No assets found",
+      "disposalMethod": "Disposal method",
+      "disposalDate": "Disposal / return date",
+      "disposalReference": "Certificate, RMA or transfer no."
+    },
+    "components": {
+      "title": "Components",
+      "partOf": "Component of",
+      "hasComponents": "Components",
+      "none": "No parent or components"
+    },
+    "safety": {
+      "none": "Not safety relevant",
+      "safetyRelated": "Safety related",
+      "safetyCritical": "Safety critical"
+    },
+    "expiry": {
+      "expired": "Expired",
+      "soon": "Expiring soon",
+      "ok": "Valid"
+    },
+    "disposal": "Disposal or return",
+    "disposalMethods": {
+      "scrapped": "Scrapped / destroyed",
+      "recycled": "Recycled (e-waste)",
+      "returned_to_vendor": "Returned to vendor",
+      "sold": "Sold",
+      "transferred": "Transferred to another plant",
+      "donated": "Donated"
+    }
+  },
+  "archived": {
+    "text": "Retired and archived on {date}. The record is kept for the audit trail and can no longer be edited.",
+    "reopen": "Reopen record",
+    "reopenTitle": "Reopen the archived record",
+    "reopenHint": "Reopening lets people edit this asset again, for example to correct a mistake. The reason is written to the audit log.",
+    "reason": "Reason"
+  },
+  "spares": {
+    "title": "Spare assets",
+    "keptFor": "Spares kept",
+    "spareFor": "Spare for",
+    "none": "No spare assets",
+    "edit": "Edit spares",
+    "add": "Add",
+    "pick": "Search for a spare asset"
+  },
+  "software": {
+    "title": "Software",
+    "empty": "No software recorded.",
+    "kind": "Kind",
+    "name": "Name",
+    "vendor": "Vendor",
+    "version": "Version",
+    "installed": "Installed",
+    "licenceExpiry": "Licence expiry",
+    "installPath": "Install path",
+    "licenseType": "Licence type",
+    "add": "Add software",
+    "edit": "Edit",
+    "delete": "Remove",
+    "deleteConfirm": "Remove \"{name}\" from this asset?",
+    "required": "Enter a name.",
+    "kinds": {
+      "os": "Operating system",
+      "application": "Application",
+      "runtime": "Runtime",
+      "firmware_module": "Firmware module",
+      "library": "Library",
+      "other": "Other"
+    }
   }
 }

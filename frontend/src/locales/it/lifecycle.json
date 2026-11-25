@@ -1,0 +1,116 @@
+{
+  "title": "Ciclo di vita",
+  "tabs": {
+    "expiring": "In scadenza",
+    "obsolescence": "Obsolescenza",
+    "vendor": "Fine vita fornitore",
+    "cost": "Costi",
+    "settings": "Avvisi"
+  },
+  "states": {
+    "expired": "Scaduto",
+    "soon": "A breve",
+    "obsolete": "Obsoleto",
+    "later": "Più avanti",
+    "unknown": "Nessun dato fornitore"
+  },
+  "types": {
+    "warranty": "Garanzia",
+    "amc": "AMC",
+    "support": "Contratto di supporto",
+    "licence": "Licenza"
+  },
+  "kinds": {
+    "purchase": "Acquisto",
+    "maintenance": "Manutenzione",
+    "upgrade": "Aggiornamento",
+    "licence": "Licenza",
+    "other": "Altro"
+  },
+  "expiring": {
+    "within": "In scadenza entro",
+    "days": "{n} giorni",
+    "empty": "Nulla scade in questo periodo.",
+    "daysLeft": "Giorni rimasti",
+    "expiryDate": "Data di scadenza",
+    "type": "Tipo",
+    "runNow": "Invia ora gli avvisi dovuti",
+    "runResult": "Avvisi: {alerts}, e-mail in coda: {emails}, asset senza contatto da avvisare: {noRecipients}",
+    "runDisabled": "Gli avvisi di scadenza sono disattivati nella scheda Avvisi.",
+    "hint": "Include le date scadute nell'ultimo anno."
+  },
+  "obsolescence": {
+    "hint": "Basata sulla data di fine supporto (o fine vita) del fornitore, abbinata per produttore e modello. Gli asset senza corrispondenza sono conteggiati come senza dati fornitore.",
+    "byYear": "Asset a fine supporto, per anno",
+    "bySite": "Per sito",
+    "byCriticality": "Per criticità",
+    "assets": "Asset",
+    "supportEnds": "Fine supporto",
+    "endOfLife": "Fine vita",
+    "model": "Modello",
+    "manufacturer": "Produttore",
+    "criticality": "Criticità",
+    "site": "Sito",
+    "allSites": "Tutti i siti",
+    "allCriticality": "Tutte le criticità",
+    "empty": "Nessun asset corrisponde ancora alla tabella del fornitore. Aggiungi o importa voci nella scheda Fine vita fornitore.",
+    "export": "Esporta CSV",
+    "source": "Fonte"
+  },
+  "vendor": {
+    "hint": "Date di fine vendita, fine supporto e fine vita del produttore. Il modello può usare * e ? come caratteri jolly (ad esempio S7-12*). Vince la voce più specifica.",
+    "add": "Aggiungi voce",
+    "edit": "Modifica voce",
+    "import": "Importa CSV",
+    "template": "Scarica modello",
+    "manufacturer": "Produttore",
+    "selectManufacturer": "Seleziona un produttore",
+    "model": "Modello",
+    "endOfSale": "Fine vendita",
+    "endOfSupport": "Fine supporto",
+    "endOfLife": "Fine vita",
+    "source": "Fonte",
+    "notes": "Note",
+    "empty": "Nessuna voce del ciclo di vita del fornitore.",
+    "deleteConfirm": "Eliminare questa voce?",
+    "importResult": "Importate: {created} nuove, {updated} aggiornate.",
+    "importErrors": "{count} riga/righe saltate: {details}",
+    "dateRequired": "Serve almeno una data.",
+    "required": "Produttore e modello sono obbligatori.",
+    "matchedFor": "Supporto del fornitore"
+  },
+  "cost": {
+    "hint": "Costo di acquisto più costi di manutenzione, aggiornamento e licenza registrati sugli asset. Le valute non vengono mai convertite.",
+    "empty": "Nessun costo registrato. Aggiungi un costo di acquisto su un asset o registra i costi nella pagina dell'asset.",
+    "total": "Totale",
+    "assetsWithCost": "{with} asset su {all} hanno un costo",
+    "bySite": "Per sito",
+    "byType": "Per tipo di asset",
+    "topAssets": "Asset più costosi",
+    "byKind": "Per tipo di costo",
+    "site": "Sito",
+    "type": "Tipo di asset",
+    "asset": "Asset",
+    "amount": "Importo"
+  },
+  "assetCost": {
+    "title": "Costo di proprietà",
+    "purchase": "Acquisto",
+    "add": "Aggiungi costo",
+    "kind": "Tipo",
+    "amount": "Importo",
+    "currency": "Valuta",
+    "date": "Data",
+    "description": "Descrizione",
+    "empty": "Nessun costo aggiuntivo registrato.",
+    "total": "Totale",
+    "required": "Importo, valuta e data sono obbligatori."
+  },
+  "settings": {
+    "hint": "Gli avvisi vanno ai responsabili e ai referenti dell'asset (abbinati agli utenti tramite e-mail) una volta per ogni anticipo e ancora una volta a data superata. Il controllo avviene ogni giorno.",
+    "enabled": "Invia avvisi di scadenza",
+    "leadDays": "Anticipi (giorni prima della scadenza, separati da virgola)",
+    "saved": "Impostazioni degli avvisi salvate.",
+    "invalid": "Inserisci numeri interi di giorni, ad esempio 90, 30, 7."
+  }
+}

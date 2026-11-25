@@ -1,0 +1,173 @@
+"""Pure rules for purchase requests / orders (no database).
+
+draft -> submitted -> approved -> ordered -> received -> closed
+                   -> rejected (end)       any open state -> cancelled
+A submitted request goes back to draft to be changed. Approval needs an approver who is not the
+requester. Ordering needs the ERP purchase order number.
+"""
+from datetime import date, timedelta
+from typing import Dict, List, Optional
+
+STATUSES = ("draft", "submitted", "approved", "rejected", "ordered", "received", "closed", "cancelled")
+OPEN = ("draft", "submitted", "approved", "ordered")
+EDITABLE = ("draft",)
+PO_FILE_STATUSES = ("approved", "ordered", "received")  # when the purchase order document may be attached
+RECEIVABLE = ("approved", "ordered", "received")  # deliveries can be booked against these
+
+TRANSITIONS: Dict[str, tuple] = {
+    "draft": ("submitted", "cancelled"),
+    "submitted": ("approved", "rejected", "draft", "cancelled"),
+    "approved": ("ordered", "cancelled"),
+    "ordered": ("received", "cancelled"),
+    "received": ("closed",),
+    "rejected": (),
+    "closed": (),
+    "cancelled": (),
+}
+DECISIONS = ("approved", "rejected")
+MAX_LINES = 50
+MAX_LEVELS = 5
+DEFAULT_CHAIN = [{"level": 1, "name": "Approval", "role_id": None}]
+
+
+def clean_chain(levels) -> List[Dict]:
+    """The approval levels of a tenant, in order. An empty list means the single default level."""
+    if levels is None:
+        levels = []
+    if not isinstance(levels, (list, tuple)):
+        raise ProcurementInputError("approval levels must be a list")
+    if len(levels) > MAX_LEVELS:
+        raise ProcurementInputError(f"at most {MAX_LEVELS} approval levels")
+    out = []
+    for index, raw in enumerate(levels, start=1):
+        name = " ".join(str((raw or {}).get("name") or "").split())
+        if not name:
+            raise ProcurementInputError(f"level {index}: give the level a name")
+        if len(name) > 80:
+            raise ProcurementInputError(f"level {index}: the name is too long")
+        out.append({"level": index, "name": name, "role_id": str(raw["role_id"]) if raw.get("role_id") else None})
+    return out
+
+
+def chain_or_default(chain) -> List[Dict]:
+    return list(chain) if chain else [dict(level) for level in DEFAULT_CHAIN]
+
+
+def next_level(chain, approved_levels) -> Optional[Dict]:
+    """The level that has to decide now, or None when every level has approved."""
+    for level in chain_or_default(chain):
+        if level["level"] not in approved_levels:
+            return level
+    return None
+
+
+def may_decide_level(level: Optional[Dict], user_id, user_role_id, is_admin_user: bool, requester_id,
+                     earlier_approvers) -> bool:
+    """Who may decide a level: a member of its role (any approver when the level has no role), never the
+    requester, and never someone who already approved an earlier level of the same request."""
+    if level is None or user_id == requester_id or user_id in earlier_approvers:
+        return False
+    if level.get("role_id"):
+        return str(user_role_id) == str(level["role_id"])
+    return bool(is_admin_user)
+
+
+class ProcurementInputError(ValueError):
+    pass
+
+
+def format_number(number: int) -> str:
+    return f"PR-{number:04d}"
+
+
+def allowed_targets(status: str, is_requester: bool, can_decide: bool) -> List[str]:
+    """What this person may move the request to."""
+    out = []
+    for target in TRANSITIONS.get(status, ()):
+        if target in DECISIONS and (not can_decide or is_requester):
+            continue  # nobody approves their own request
+        out.append(target)
+    return out
+
+
+def check_transition(status: str, target: str, is_requester: bool, can_decide: bool, po_number: Optional[str],
+                     lines: int, note: Optional[str]) -> None:
+    if target not in TRANSITIONS.get(status, ()):
+        raise ProcurementInputError(f"cannot move from {status} to {target}")
+    if target in DECISIONS:
+        if is_requester:
+            raise ProcurementInputError("the requester cannot approve or reject their own request")
+        if not can_decide:
+            raise ProcurementInputError("only an approver of the current level can decide")
+    if target == "submitted" and lines < 1:
+        raise ProcurementInputError("add at least one line before submitting")
+    if target == "rejected" and not (note or "").strip():
+        raise ProcurementInputError("give a reason for the rejection")
+    if target == "ordered" and not (po_number or "").strip():
+        raise ProcurementInputError("enter the purchase order number when ordering")
+
+
+def clean_lines(lines) -> List[Dict]:
+    if not isinstance(lines, (list, tuple)):
+        raise ProcurementInputError("lines must be a list")
+    if len(lines) > MAX_LINES:
+        raise ProcurementInputError(f"at most {MAX_LINES} lines")
+    out = []
+    for index, raw in enumerate(lines, start=1):
+        qty = raw.get("quantity")
+        if isinstance(qty, bool) or not isinstance(qty, int) or qty < 1 or qty > 100000:
+            raise ProcurementInputError(f"line {index}: the quantity must be a whole number from 1")
+        model = " ".join(str(raw.get("model") or "").split()) or None
+        description = " ".join(str(raw.get("description") or "").split()) or None
+        if not (model or description or raw.get("asset_type_id")):
+            raise ProcurementInputError(f"line {index}: give a model, a description or an asset type")
+        cost = raw.get("unit_cost")
+        if cost is not None and (isinstance(cost, bool) or not isinstance(cost, (int, float)) or cost < 0):
+            raise ProcurementInputError(f"line {index}: the unit cost must be zero or more")
+        out.append({
+            "position": index, "asset_type_id": raw.get("asset_type_id") or None,
+            "manufacturer_id": raw.get("manufacturer_id") or None, "model": model, "description": description,
+            "quantity": qty, "unit_cost": cost,
+        })
+    return out
+
+
+def _norm(text) -> str:
+    return " ".join(str(text or "").lower().split())
+
+
+def order_mismatches(line: Dict, asset: Dict, already_received: int) -> List[str]:
+    """How a delivered asset differs from the order line it is booked against. Codes:
+    type, manufacturer, model, quantity. Fields the line leaves empty are not checked."""
+    problems = []
+    if line.get("asset_type_id") and asset.get("asset_type_id") != line["asset_type_id"]:
+        problems.append("type")
+    if line.get("manufacturer_id") and asset.get("manufacturer_id") != line["manufacturer_id"]:
+        problems.append("manufacturer")
+    if line.get("model") and _norm(asset.get("model")) != _norm(line["model"]):
+        problems.append("model")
+    if already_received >= int(line.get("quantity") or 0):
+        problems.append("quantity")
+    return problems
+
+
+def total(lines) -> Optional[float]:
+    costs = [(l.get("unit_cost"), l.get("quantity")) for l in lines]
+    if not costs or any(c is None for c, _ in costs):
+        return None
+    return round(sum(float(c) * int(q) for c, q in costs), 2)
+
+
+# --- maintenance plans (kept here with the other pure scheduling rules) -----------------------
+
+MIN_INTERVAL, MAX_INTERVAL = 1, 3650
+
+
+def plan_task_due(next_due: date, lead_days: int, today: date, has_open_task: bool) -> bool:
+    """A plan creates its next task lead_days before the due date, unless one is still open."""
+    return not has_open_task and today >= next_due - timedelta(days=max(0, lead_days))
+
+
+def next_due_after(done_on: date, interval_days: int) -> date:
+    """The next due date counts from the day the work was actually done."""
+    return done_on + timedelta(days=interval_days)

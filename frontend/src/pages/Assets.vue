@@ -128,7 +128,7 @@
 
     <BaseDataTable
       :data="assetsWithIP"
-      :loading="loading"
+      :loading="listLoading"
       :columns="allColumns"
       :filters="filters"
       :globalFilterFields="['name','site.name','location.name','status.name','manufacturer.name','asset_type.name']"
@@ -378,7 +378,10 @@ const allColumns = [
 ]
 
 // Composables
-const { loading, execute } = useApi()
+const { execute } = useApi()
+// The table spinner follows the asset list only. useApi's own flag is shared by every request that uses it
+// (the sites list, for one), so it would switch the spinner off as soon as the first of them finished.
+const listLoading = ref(false)
 const { filters, globalSearch, selectedColumns, filterData, getApiParams, clearFilter: clearFilterComposable, resetFilters, sortField, sortOrder, setSort } = useFilters({
   global: { value: null, matchMode: 'contains' },
   status_id: { value: null, matchMode: 'equals' },
@@ -799,16 +802,21 @@ onMounted(async () => {
   // Initialize filters from query params before fetching
   initializeFiltersFromQuery()
   
-  await Promise.all([
-    fetchAssets(), 
-    fetchSites(), 
-    fetchAssetTypes(), 
-    fetchLocations(),
-    fetchAreas(),
-    fetchManufactures(),
-    fetchAssetStatuses()
-  ])
-  
+  // Everything starts at once and each answer fills its own part (rows, filter lists) as it arrives.
+  // The page is usable as soon as the asset list is in: the lookup lists no longer hold back the filters.
+  // (a failed request reports its own error, so it is not awaited and its rejection is dropped here)
+  fetchSites().catch(() => {})
+  fetchAssetTypes()
+  fetchLocations()
+  fetchAreas()
+  fetchManufactures()
+  fetchAssetStatuses()
+  try {
+    await fetchAssets()
+  } catch (e) {
+    // already reported by fetchAssets; the filters must still become usable so the user can retry
+  }
+
   // Dopo il caricamento iniziale, abilita i watch
   isInitializing.value = false
 })
@@ -874,10 +882,20 @@ async function exportAssets(format = 'csv') {
 }
 
 async function fetchAssets() {
+  // Ignore responses of requests that were superseded by a newer page / filter change
+  const requestId = ++fetchRequestId
+  listLoading.value = true
+  try {
+    await loadAssetList(requestId)
+  } finally {
+    // only the newest request clears the spinner; an older one finishing must not hide a newer one still running
+    if (requestId === fetchRequestId) listLoading.value = false
+  }
+}
+
+async function loadAssetList(requestId) {
   await execute(async () => {
     const params = buildFilterParams()
-    // Ignore responses of requests that were superseded by a newer page / filter change
-    const requestId = ++fetchRequestId
 
     if (trashMode.value) {
       // Trash: the endpoint returns a plain list without a total, so load it all and let
@@ -1010,11 +1028,13 @@ async function createAsset(assetData) {
     close()
     await fetchAssets()
   } catch (error) {
+    // say why when the server did (for example the chosen IP address was taken in the meantime)
+    const reason = error?.response?.data?.detail
     toast.add({
       severity: 'error',
       summary: t('common.messages.error'),
-      detail: t('assets.messages.createError'),
-      life: 3000
+      detail: typeof reason === 'string' ? `${t('assets.messages.createError')} ${reason}` : t('assets.messages.createError'),
+      life: 5000
     })
   }
 }
@@ -1025,7 +1045,8 @@ async function updateAsset(assetData) {
     close()
     await fetchAssets()
   } catch (error) {
-    toast.add({ severity: 'error', summary: t('common.messages.error'), detail: t('assets.messages.updateError'), life: 3000 })
+    const reason = error?.response?.data?.detail
+    toast.add({ severity: 'error', summary: t('common.messages.error'), detail: typeof reason === 'string' ? `${t('assets.messages.updateError')} ${reason}` : t('assets.messages.updateError'), life: 5000 })
   }
 }
 

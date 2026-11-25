@@ -1,6 +1,6 @@
 # backend/app/services/risk_scoring.py
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple
 from sqlalchemy.orm import Session
 
 
@@ -44,6 +44,10 @@ class CompositeRiskScoringEngine:
             "high_vulnerabilities": "{n} high severity vulnerabilities (+2)",
             "high_cvss_score": "High CVSS score ({score}) (+2)",
             "medium_cvss_score": "Medium CVSS score ({score}) (+1)",
+            "eol_obsolete": "Past the vendor end of support (+2)",
+            "eol_soon": "Vendor end of support within a year (+1)",
+            "eol_contract_expired": "Support / AMC contract expired (+1)",
+            "suggest_plan_replacement": "Plan a replacement or a support extension for this end-of-life asset.",
         },
         "it": {
             "remote_access_enabled": "Accesso remoto abilitato (+2)",
@@ -71,6 +75,10 @@ class CompositeRiskScoringEngine:
             "high_vulnerabilities": "{n} vulnerabilità ad alta severità (+2)",
             "high_cvss_score": "CVSS score alto ({score}) (+2)",
             "medium_cvss_score": "CVSS score medio ({score}) (+1)",
+            "eol_obsolete": "Oltre la fine del supporto del fornitore (+2)",
+            "eol_soon": "Fine del supporto del fornitore entro un anno (+1)",
+            "eol_contract_expired": "Contratto di supporto / AMC scaduto (+1)",
+            "suggest_plan_replacement": "Pianifica la sostituzione o un'estensione del supporto per questo asset a fine vita.",
         },
     }
 
@@ -306,6 +314,12 @@ class CompositeRiskScoringEngine:
         if isa62443_adjustment > 0:
             vuln_score += isa62443_adjustment
             vuln_break.extend(isa62443_break)
+
+        # End of life: no more vendor patches means unfixable vulnerabilities later
+        eol_points, eol_reasons = self._eol_adjustment(asset, db)
+        if eol_points:
+            vuln_score += eol_points
+            vuln_break.extend(translations[k] for k in eol_reasons)
         
         # TODO: connessioni a asset critici
         # --- Impatto ---
@@ -371,6 +385,8 @@ class CompositeRiskScoringEngine:
             suggestions.append(translations["suggest_reduce_connections"])
         if "business_criticality" in missing:
             suggestions.append(translations["suggest_set_criticality"])
+        if eol_points:
+            suggestions.append(translations["suggest_plan_replacement"])
         # ISA/IEC 62443 suggestions
         if isa62443_adjustment > 0:
             if compliance_status == "non_compliant":
@@ -392,6 +408,36 @@ class CompositeRiskScoringEngine:
             "suggestions": suggestions,
         }
         return breakdown
+
+    # vendor end-of-life entries per tenant, kept for a minute so a bulk recalculation reads them once
+    _vendor_cache: Dict[Any, Any] = {}
+    _VENDOR_TTL = 60.0
+
+    def _vendor_entries(self, db, tenant_id):
+        import time
+        from app.services import lifecycle_service
+
+        hit = self._vendor_cache.get(tenant_id)
+        if hit and time.monotonic() - hit[0] < self._VENDOR_TTL:
+            return hit[1]
+        entries = lifecycle_service.vendor_entries(db, tenant_id)
+        self._vendor_cache[tenant_id] = (time.monotonic(), entries)
+        return entries
+
+    def _eol_adjustment(self, asset, db) -> Tuple[int, List[str]]:
+        """Points for an asset past (or near) its vendor end of support, or whose support contract expired."""
+        from app.services import lifecycle_logic as ll
+
+        state = "unknown"
+        if db is not None and getattr(asset, "tenant_id", None):
+            try:
+                manufacturer = getattr(asset, "manufacturer", None)
+                entry = ll.match_vendor_entry(self._vendor_entries(db, asset.tenant_id),
+                                              manufacturer.name if manufacturer else None, getattr(asset, "model", None))
+                state = ll.obsolescence_state(ll.obsolescence_date(entry))
+            except Exception:
+                state = "unknown"
+        return ll.eol_risk(state, ll.support_expired(asset))
 
     def _has_direct_high_level_connection(self, asset) -> bool:
         # Placeholder: implementa logica reale se hai info sulle connessioni

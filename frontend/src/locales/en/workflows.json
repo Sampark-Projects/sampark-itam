@@ -1,0 +1,104 @@
+{
+  "kinds": {
+    "onboarding": "Onboarding",
+    "retirement": "Retirement"
+  },
+  "stepTypes": {
+    "task": "Task",
+    "approval": "Approval"
+  },
+  "states": {
+    "pending": "Pending",
+    "done": "Done",
+    "rejected": "Rejected",
+    "in_progress": "In progress",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "all": "All"
+  },
+  "fields": {
+    "securityZone": "Security zone",
+    "networkSettings": "Network settings (an interface with IP or MAC)",
+    "configBaseline": "Baseline configuration set",
+    "orderMatch": "Delivery checked against a purchase request"
+  },
+  "blockers": {
+    "document": "A document uploaded during this workflow",
+    "comment": "A comment",
+    "confirm": "The confirmation",
+    "documentOf": "A document of category \"{category}\" uploaded during this workflow"
+  },
+  "card": {
+    "title": "Lifecycle workflow",
+    "none": "No workflow in progress.",
+    "startOnboarding": "Start onboarding",
+    "startRetirement": "Start retirement",
+    "history": "Earlier workflows",
+    "startedBy": "Started by {name}",
+    "actedBy": "{name} on {date}",
+    "override": "done by an administrator outside the step role",
+    "currentStep": "Current step",
+    "waiting": "Waiting for {role}",
+    "anyone": "anyone with access",
+    "missing": "Still missing on the asset:",
+    "comment": "Comment",
+    "complete": "Complete step",
+    "approve": "Approve",
+    "reject": "Reject",
+    "rejectNeedsComment": "Write the reason in the comment box to reject.",
+    "cancel": "Cancel workflow",
+    "cancelConfirm": "Cancel this workflow? Steps already done stay as they are.",
+    "notYours": "This step is for {role}. You cannot act on it.",
+    "selfApproval": "You started this workflow, so another person has to approve this step.",
+    "finished": "{result} on {date}"
+  },
+  "tabs": {
+    "tasks": "My tasks",
+    "runs": "Workflows",
+    "setup": "Workflow setup"
+  },
+  "tasks": {
+    "hint": "Steps that are waiting for you: the step role is yours, or the step is open to anyone.",
+    "empty": "Nothing is waiting for you.",
+    "asset": "Asset",
+    "workflow": "Workflow",
+    "step": "Step",
+    "role": "Role",
+    "since": "Started",
+    "open": "Open"
+  },
+  "runs": {
+    "asset": "Asset",
+    "workflow": "Workflow",
+    "current": "Current step",
+    "status": "Status",
+    "started": "Started",
+    "empty": "No workflows.",
+    "finishedAll": "All steps done"
+  },
+  "setup": {
+    "hint": "Each kind of workflow has an ordered list of steps. A step can be a task or an approval, can be given to a role, and can require asset fields, an uploaded document, a comment or a confirmation before it can be completed. A step can also set the asset status. Changes apply to workflows started afterwards.",
+    "name": "Workflow name",
+    "selfApproval": "The person who started a workflow may also approve its approval steps",
+    "step": "Step",
+    "stepName": "Step name",
+    "description": "Description",
+    "type": "Type",
+    "role": "Role",
+    "anyRole": "Anyone with access",
+    "requiredFields": "Required asset fields",
+    "requiresDocument": "Needs an uploaded document",
+    "requiresComment": "Needs a comment",
+    "confirmStatement": "Confirmation statement (the person must tick it)",
+    "setsStatus": "Sets asset status",
+    "noStatus": "Leave unchanged",
+    "addStep": "Add step",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "remove": "Remove step",
+    "save": "Save workflow",
+    "saved": "Workflow saved.",
+    "nameRequired": "Every step needs a name.",
+    "anyDocument": "Any category"
+  }
+}

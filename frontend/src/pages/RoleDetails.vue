@@ -202,6 +202,12 @@ const sections = [
   { key: 'vulnerabilities', label: t('roles.sections.vulnerabilities'), category: 'asset_management' },
   { key: 'asset_reviews', label: t('roles.sections.asset_reviews'), category: 'asset_management' },
   { key: 'asset_dependencies', label: t('roles.sections.asset_dependencies'), category: 'asset_management' },
+  { key: 'lifecycle', label: t('roles.sections.lifecycle'), category: 'asset_management' },
+  { key: 'applications', label: t('roles.sections.applications'), category: 'asset_management' },
+  { key: 'ipam', label: t('roles.sections.ipam'), category: 'asset_management' },
+  { key: 'maintenance', label: t('roles.sections.maintenance'), category: 'asset_management' },
+  { key: 'configurations', label: t('roles.sections.configurations'), category: 'asset_management' },
+  { key: 'reports', label: t('roles.sections.reports'), category: 'asset_management' },
   
   // Nuove sezioni - Compliance
   { key: 'compliance', label: t('roles.sections.compliance'), category: 'compliance' },

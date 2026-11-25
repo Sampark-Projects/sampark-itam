@@ -1,0 +1,104 @@
+{
+  "kinds": {
+    "onboarding": "Presa in carico",
+    "retirement": "Dismissione"
+  },
+  "stepTypes": {
+    "task": "Attività",
+    "approval": "Approvazione"
+  },
+  "states": {
+    "pending": "In attesa",
+    "done": "Completato",
+    "rejected": "Rifiutato",
+    "in_progress": "In corso",
+    "completed": "Completato",
+    "cancelled": "Annullato",
+    "all": "Tutti"
+  },
+  "fields": {
+    "securityZone": "Zona di sicurezza",
+    "networkSettings": "Impostazioni di rete (interfaccia con IP o MAC)",
+    "configBaseline": "Configurazione di riferimento impostata",
+    "orderMatch": "Consegna verificata rispetto a una richiesta di acquisto"
+  },
+  "blockers": {
+    "document": "Un documento caricato durante questo flusso",
+    "comment": "Un commento",
+    "confirm": "La conferma",
+    "documentOf": "Un documento di categoria \"{category}\" caricato durante questo workflow"
+  },
+  "card": {
+    "title": "Flusso del ciclo di vita",
+    "none": "Nessun flusso in corso.",
+    "startOnboarding": "Avvia presa in carico",
+    "startRetirement": "Avvia dismissione",
+    "history": "Flussi precedenti",
+    "startedBy": "Avviato da {name}",
+    "actedBy": "{name} il {date}",
+    "override": "eseguito da un amministratore fuori dal ruolo del passaggio",
+    "currentStep": "Passaggio corrente",
+    "waiting": "In attesa di {role}",
+    "anyone": "chiunque abbia accesso",
+    "missing": "Mancano ancora sull'asset:",
+    "comment": "Commento",
+    "complete": "Completa passaggio",
+    "approve": "Approva",
+    "reject": "Rifiuta",
+    "rejectNeedsComment": "Scrivi il motivo nel commento per rifiutare.",
+    "cancel": "Annulla flusso",
+    "cancelConfirm": "Annullare questo flusso? I passaggi già completati restano invariati.",
+    "notYours": "Questo passaggio è per {role}. Non puoi eseguirlo.",
+    "selfApproval": "Hai avviato tu questo flusso, quindi un'altra persona deve approvare questo passaggio.",
+    "finished": "{result} il {date}"
+  },
+  "tabs": {
+    "tasks": "Le mie attività",
+    "runs": "Flussi",
+    "setup": "Configurazione flussi"
+  },
+  "tasks": {
+    "hint": "Passaggi in attesa di te: il ruolo del passaggio è il tuo, oppure il passaggio è aperto a tutti.",
+    "empty": "Nulla è in attesa di te.",
+    "asset": "Asset",
+    "workflow": "Flusso",
+    "step": "Passaggio",
+    "role": "Ruolo",
+    "since": "Avviato",
+    "open": "Apri"
+  },
+  "runs": {
+    "asset": "Asset",
+    "workflow": "Flusso",
+    "current": "Passaggio corrente",
+    "status": "Stato",
+    "started": "Avviato",
+    "empty": "Nessun flusso.",
+    "finishedAll": "Tutti i passaggi completati"
+  },
+  "setup": {
+    "hint": "Ogni tipo di flusso ha un elenco ordinato di passaggi. Un passaggio può essere un'attività o un'approvazione, può essere assegnato a un ruolo e può richiedere campi dell'asset, un documento caricato, un commento o una conferma prima di essere completato. Un passaggio può anche impostare lo stato dell'asset. Le modifiche valgono per i flussi avviati dopo.",
+    "name": "Nome del flusso",
+    "selfApproval": "Chi ha avviato un flusso può approvarne anche i passaggi di approvazione",
+    "step": "Passaggio",
+    "stepName": "Nome del passaggio",
+    "description": "Descrizione",
+    "type": "Tipo",
+    "role": "Ruolo",
+    "anyRole": "Chiunque abbia accesso",
+    "requiredFields": "Campi obbligatori dell'asset",
+    "requiresDocument": "Richiede un documento caricato",
+    "requiresComment": "Richiede un commento",
+    "confirmStatement": "Dichiarazione di conferma (da spuntare)",
+    "setsStatus": "Imposta lo stato dell'asset",
+    "noStatus": "Lascia invariato",
+    "addStep": "Aggiungi passaggio",
+    "moveUp": "Sposta su",
+    "moveDown": "Sposta giù",
+    "remove": "Rimuovi passaggio",
+    "save": "Salva flusso",
+    "saved": "Flusso salvato.",
+    "nameRequired": "Ogni passaggio richiede un nome.",
+    "anyDocument": "Qualsiasi categoria"
+  }
+}

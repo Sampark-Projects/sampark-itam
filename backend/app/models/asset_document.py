@@ -16,6 +16,8 @@ class AssetDocument(Base):
     name = Column(String, nullable=False)
     file_path = Column(String, nullable=False)
     description = Column(Text)
+    # manual, drawing, certificate, purchase_order, warranty, ... (see workflow_logic.DOCUMENT_CATEGORIES)
+    category = Column(String(30), nullable=True)
     uploaded_at = Column(DateTime, default=func.now())
 
     asset = relationship("Asset", back_populates="documents")

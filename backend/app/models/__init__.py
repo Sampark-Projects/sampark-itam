@@ -4,6 +4,17 @@ from .user import User
 from .site import Site
 from .area import Area
 from .asset_type import AssetType
+from .asset_tag_rule import AssetTagRule
+from .lifecycle import LifecycleAlertSettings, AssetExpiryAlertSent, VendorLifecycleEntry, AssetCostEntry
+from .lifecycle_workflow import LifecycleWorkflow, LifecycleWorkflowStep, AssetLifecycleRun, AssetLifecycleRunStep
+from .config_management import ConfigArtifact, ConfigVersion, ConfigAlertSent
+from .integrations import WebhookEndpoint, WebhookDelivery, KpiTarget, KpiSnapshot
+from .application import Application, ApplicationAsset, ApplicationIntegration, ApplicationVapt, ApplicationFinding, ApplicationAlertSettings, ApplicationAlertSent
+from .ipam import IpamVrf, IpamRole, IpamVlanGroup, IpamVlan, IpamPrefix, IpamIpRange, IpamIpAddress, IpamRir, IpamAggregate, IpamAsn, IpamAsnRange, IpamRouteTarget, IpamVrfRouteTarget, IpamServiceTemplate, IpamFhrpGroup, IpamFhrpAssignment, IpamService, IpamServiceAddress, IpamVlanTranslationPolicy, IpamVlanTranslationRule, IpamInterfaceVlan, IpamSiteAsn
+from .procurement import PurchaseOrder, PurchaseOrderLine, PurchaseApproval, PurchaseApprovalSettings, AssetSoftware
+from .change_maintenance import (
+    SparePart, MaintenanceRecord, MaintenanceRecordPart, MaintenancePlan, spare_part_assets,
+)
 from .location import Location, LocationFloorplan
 from .manufacturer import Manufacturer
 from .asset_communication import AssetCommunication

@@ -74,6 +74,7 @@ const menuSections = computed(() => {
   if (canRead('manufacturers')) inventoryItems.push({ label: t('menu.navigation.manufacturers'), icon: 'pi-cog', to: '/manufacturers' })
   if (canRead('contacts')) inventoryItems.push({ label: t('menu.navigation.contacts'), icon: 'pi-id-card', to: '/contacts' })
   if (canRead('assets')) inventoryItems.push({ label: t('menu.navigation.assets'), icon: 'pi-server', to: '/assets' })
+  if (canRead('applications')) inventoryItems.push({ label: t('menu.navigation.applications'), icon: 'pi-desktop', to: '/applications' })
 
   // Network Probes
   if (canRead('network_probes')) {
@@ -114,6 +115,9 @@ const menuSections = computed(() => {
   // Sezione Management
   const managementItems = []
   if (canRead('asset_reviews')) managementItems.push({ label: t('menu.navigation.assetReviews'), icon: 'pi-calendar', to: '/asset-reviews' })
+  if (canRead('lifecycle')) managementItems.push({ label: t('menu.navigation.lifecycle'), icon: 'pi-history', to: '/lifecycle' })
+  if (canRead('reports') || canRead('api_keys')) managementItems.push({ label: t('menu.navigation.reports'), icon: 'pi-chart-bar', to: '/reports' })
+  if (canRead('maintenance') || canRead('configurations')) managementItems.push({ label: t('menu.navigation.changes'), icon: 'pi-wrench', to: '/changes' })
   if (canRead('vulnerabilities')) managementItems.push({ label: t('menu.navigation.vulnerabilities'), icon: 'pi-exclamation-triangle', to: '/vulnerabilities' })
   if (canRead('asset_types')) managementItems.push({ label: t('menu.navigation.assettypes'), icon: 'pi-tags', to: '/asset-types' })
   if (canRead('asset_statuses')) managementItems.push({ label: t('menu.navigation.assetstatuses'), icon: 'pi-list', to: '/asset-statuses' })
@@ -123,6 +127,21 @@ const menuSections = computed(() => {
       label: t('menu.section.management'),
       items: managementItems
     })
+  }
+
+  // Sezione IPAM
+  const ipamItems = []
+  if (canRead('ipam')) {
+    ipamItems.push({ label: t('menu.navigation.ipamAggregates'), icon: 'pi-globe', to: '/ipam/aggregates' })
+    ipamItems.push({ label: t('menu.navigation.ipamPrefixes'), icon: 'pi-sitemap', to: '/ipam/prefixes' })
+    ipamItems.push({ label: t('menu.navigation.ipamAddresses'), icon: 'pi-list', to: '/ipam/ip-addresses' })
+    ipamItems.push({ label: t('menu.navigation.ipamRanges'), icon: 'pi-arrows-h', to: '/ipam/ip-ranges' })
+    ipamItems.push({ label: t('menu.navigation.ipamVlans'), icon: 'pi-share-alt', to: '/ipam/vlans' })
+    ipamItems.push({ label: t('menu.navigation.ipamVrfs'), icon: 'pi-server', to: '/ipam/vrfs' })
+    ipamItems.push({ label: t('menu.navigation.ipamAsns'), icon: 'pi-link', to: '/ipam/asns' })
+    ipamItems.push({ label: t('menu.navigation.ipamFhrp'), icon: 'pi-clone', to: '/ipam/fhrp-groups' })
+    ipamItems.push({ label: t('menu.navigation.ipamServices'), icon: 'pi-cog', to: '/ipam/services' })
+    sections.push({ label: t('menu.section.ipam'), items: ipamItems })
   }
 
   // Sezione Users rimossa - ora accessibile dal Setup

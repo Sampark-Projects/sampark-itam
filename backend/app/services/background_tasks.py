@@ -42,6 +42,14 @@ class BackgroundTaskManager:
         review_task = asyncio.create_task(cls._check_asset_reviews_loop())
         cls._tasks.append(review_task)
 
+        # Warranty / AMC / support / licence expiry alerts (once a day)
+        expiry_task = asyncio.create_task(cls._expiry_alerts_loop())
+        cls._tasks.append(expiry_task)
+
+        # Outbound webhook deliveries and retries
+        webhook_task = asyncio.create_task(cls._webhook_delivery_loop())
+        cls._tasks.append(webhook_task)
+
         # Probe maintenance: stale status + telemetry retention
         probe_task = asyncio.create_task(cls._probe_maintenance_loop())
         cls._tasks.append(probe_task)
@@ -151,6 +159,68 @@ class BackgroundTaskManager:
             
             # Wait 24 hours before next check
             await asyncio.sleep(24 * 60 * 60)  # 24 hours
+
+    @classmethod
+    async def _expiry_alerts_loop(cls):
+        """Send due warranty / AMC / support / licence expiry alerts once a day."""
+        await asyncio.sleep(90)  # let the app finish starting first
+
+        def run():
+            from app.services.lifecycle_service import run_expiry_alerts_all_tenants
+            from app.services.config_service import run_stale_alerts_all_tenants
+            from app.services.application_alert_service import run_application_alerts_all_tenants
+            db = SessionLocal()
+            try:
+                from app.services.lifecycle_service import refresh_risk_scores_all_tenants
+                from app.services.maintenance_service import run_maintenance_plans_all_tenants
+                from app.services import kpi_snapshot_service
+                # warranty / support expiry first, then overdue configuration backups, then the maintenance
+                # plans (next tasks and overdue alerts), then risk scores (end-of-life dates pass silently)
+                return {
+                    "expiry": run_expiry_alerts_all_tenants(db),
+                    "config": run_stale_alerts_all_tenants(db),
+                    "applications": run_application_alerts_all_tenants(db),
+                    "maintenance": run_maintenance_plans_all_tenants(db),
+                    "risk": refresh_risk_scores_all_tenants(db),
+                    "kpi_snapshots": kpi_snapshot_service.take_snapshots_all_tenants(db),
+                }
+            finally:
+                db.close()
+
+        while cls._running:
+            try:
+                result = await asyncio.to_thread(run)
+                logger.info(f"Expiry alert run finished: {result}")
+            except Exception as e:
+                logger.error(f"Error in expiry alert loop: {e}", exc_info=True)
+            await asyncio.sleep(24 * 60 * 60)
+
+    @classmethod
+    async def _webhook_delivery_loop(cls):
+        """Send queued webhook events every 30 seconds; old finished deliveries are pruned about hourly."""
+        await asyncio.sleep(45)
+
+        def run(prune):
+            from app.services import webhook_service
+            db = SessionLocal()
+            try:
+                result = webhook_service.deliver_pending(db)
+                if prune:
+                    webhook_service.prune(db)
+                return result
+            finally:
+                db.close()
+
+        ticks = 0
+        while cls._running:
+            try:
+                result = await asyncio.to_thread(run, ticks % 120 == 0)
+                if any(result.values()):
+                    logger.info(f"Webhook deliveries: {result}")
+            except Exception as e:
+                logger.error(f"Error in webhook delivery loop: {e}", exc_info=True)
+            ticks += 1
+            await asyncio.sleep(30)
 
     @classmethod
     async def _probe_maintenance_loop(cls):

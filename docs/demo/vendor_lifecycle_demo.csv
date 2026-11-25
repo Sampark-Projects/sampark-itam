@@ -1,0 +1,4 @@
+manufacturer,model,end_of_sale,end_of_support,end_of_life,source,notes
+Siemens,SIMATIC S7-300*,2020-10-01,2025-09-30,2030-09-30,Demo data,Already past end of support - shows as obsolete
+Rockwell Automation,ControlLogix 1756-L7*,2026-06-30,2027-06-30,2031-06-30,Demo data,Support ends within a year - shows as "soon"
+Schneider Electric,Modicon M580*,2029-01-01,2034-01-01,2039-01-01,Demo data,Long life - shows as "later"

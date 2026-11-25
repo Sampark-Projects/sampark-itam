@@ -138,6 +138,66 @@ NEW_SECTIONS = {
             4: "Amministrazione completa"
         }
     },
+    "lifecycle": {
+        "description": "OT lifecycle: expiry alerts, vendor end of life, obsolescence, cost, onboarding and retirement workflows",
+        "levels": {
+            0: "No access",
+            1: "View expiry, obsolescence, cost and workflow runs",
+            2: "Add costs and vendor entries, start and act on workflow steps",
+            3: "Delete entries, change alert settings and workflow definitions, override step roles",
+            4: "Full administration"
+        }
+    },
+    "maintenance": {
+        "description": "Maintenance records and spare parts",
+        "levels": {
+            0: "No access",
+            1: "View maintenance and spare parts",
+            2: "Plan and complete maintenance, edit spare parts",
+            3: "Delete records and spare parts",
+            4: "Full administration"
+        }
+    },
+    "configurations": {
+        "description": "Versioned programs, configurations and firmware with baselines",
+        "levels": {
+            0: "No access",
+            1: "View items, versions and comparisons, download files",
+            2: "Add items, upload versions, set baselines",
+            3: "Delete items and versions",
+            4: "Full administration"
+        }
+    },
+    "reports": {
+        "description": "Site dashboard, KPI targets and audit report",
+        "levels": {
+            0: "No access",
+            1: "View the site dashboard",
+            2: "Download the audit report",
+            3: "Set KPI targets",
+            4: "Full administration"
+        }
+    },
+    "applications": {
+        "description": "Application register: owners, URLs, hosting, software, security and VAPT records",
+        "levels": {
+            0: "No access",
+            1: "View applications",
+            2: "Create and edit applications",
+            3: "Delete applications",
+            4: "Full administration"
+        }
+    },
+    "ipam": {
+        "description": "IP address management: prefixes, IP addresses, IP ranges, VLANs and VRFs",
+        "levels": {
+            0: "No access",
+            1: "View IPAM data",
+            2: "Create and edit IPAM data",
+            3: "Delete IPAM data",
+            4: "Full administration"
+        }
+    },
     "network_probes": {
         "description": "Gestione sonde di rete e dispositivi scoperti",
         "levels": {
@@ -186,6 +246,12 @@ ADMIN_DEFAULT_PERMISSIONS = {
     "api_keys": 3,
     "evidence": 3,
     "network_probes": 3,
+    "lifecycle": 3,
+    "maintenance": 3,
+    "configurations": 3,
+    "reports": 3,
+    "applications": 3,
+    "ipam": 3,
 }
 
 # Permessi di default per ruolo editor
@@ -220,6 +286,12 @@ EDITOR_DEFAULT_PERMISSIONS = {
     "api_keys": 0,  # Non può gestire API keys
     "evidence": 2,  # Può gestire evidence
     "network_probes": 1,
+    "lifecycle": 2,
+    "maintenance": 2,
+    "configurations": 2,
+    "reports": 2,
+    "applications": 2,
+    "ipam": 2,
 }
 
 # Permessi di default per ruolo viewer (solo lettura)
@@ -254,4 +326,10 @@ VIEWER_DEFAULT_PERMISSIONS = {
     "api_keys": 0,
     "evidence": 1,
     "network_probes": 1,
+    "lifecycle": 1,
+    "maintenance": 1,
+    "configurations": 1,
+    "reports": 1,
+    "applications": 1,
+    "ipam": 1,
 }

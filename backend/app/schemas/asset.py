@@ -1,7 +1,7 @@
 # backend/schemas/asset.py
 
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Optional, Dict, Any
+from pydantic import BaseModel, Field, ConfigDict, field_validator
+from typing import List, Optional, Dict, Any, Literal
 from datetime import datetime, date
 import uuid
 from app.schemas.schema_mixins import AssetRiskFieldsMixin
@@ -44,7 +44,64 @@ class AssetSummary(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class AssetBase(AssetRiskFieldsMixin, BaseModel):
+class AssetLifecycleFields(BaseModel):
+    """OT lifecycle data (requirements gap plan, phase 1). Every field is optional."""
+
+    # Classification
+    safety_relevance: Optional[Literal["none", "safety_related", "safety_critical"]] = Field(
+        None, description="Safety relevance: none, safety_related or safety_critical"
+    )
+    # Procurement
+    requisition_number: Optional[str] = Field(None, max_length=100, description="Purchase requisition number")
+    purchase_order_number: Optional[str] = Field(None, max_length=100, description="Purchase order (PO) number")
+    purchase_date: Optional[date] = None
+    purchase_cost: Optional[float] = Field(None, ge=0, description="Purchase cost")
+    cost_currency: Optional[str] = Field(None, pattern=r"^[A-Z]{3}$", description="ISO 4217 currency code, e.g. INR")
+    expected_delivery_date: Optional[date] = None
+    received_date: Optional[date] = None
+    # Commissioning and acceptance
+    commissioned_date: Optional[date] = None
+    acceptance_date: Optional[date] = None
+    acceptance_signed_by: Optional[str] = Field(None, max_length=255, description="Who signed the acceptance")
+    # Warranty, AMC, support and licence
+    warranty_expiry_date: Optional[date] = None
+    amc_expiry_date: Optional[date] = None
+    support_expiry_date: Optional[date] = None
+    licence_expiry_date: Optional[date] = None
+    # Ownership
+    plant_owner: Optional[str] = Field(None, max_length=255, description="Plant owner")
+    amc_partner: Optional[str] = Field(None, max_length=255, description="Vendor / AMC partner")
+    # Disposal or return
+    disposal_method: Optional[Literal["scrapped", "recycled", "returned_to_vendor", "sold", "transferred", "donated"]] = Field(
+        None, description="How the asset left: scrapped, recycled, returned_to_vendor, sold, transferred or donated"
+    )
+    disposal_date: Optional[date] = None
+    disposal_reference: Optional[str] = Field(None, max_length=100, description="Certificate, RMA or transfer number")
+    # Parent-child
+    parent_asset_id: Optional[uuid.UUID] = Field(None, description="Asset this one is a component of")
+
+    @field_validator("cost_currency", mode="before")
+    @classmethod
+    def _currency_upper(cls, v):
+        # clean first (trim, upper-case, blank = not set); the 3-letter pattern is then enforced
+        if isinstance(v, str):
+            v = v.strip().upper()
+            return v or None
+        return v
+
+    @field_validator(
+        "requisition_number", "purchase_order_number", "acceptance_signed_by",
+        "plant_owner", "amc_partner", "disposal_reference", "disposal_method", mode="before",
+    )
+    @classmethod
+    def _blank_to_none(cls, v):
+        # an empty form field means "not set"
+        if isinstance(v, str) and not v.strip():
+            return None
+        return v.strip() if isinstance(v, str) else v
+
+
+class AssetBase(AssetRiskFieldsMixin, AssetLifecycleFields):
     id: Optional[uuid.UUID]
     tenant_id: Optional[uuid.UUID]
     site_id: Optional[uuid.UUID]
@@ -101,10 +158,13 @@ class AssetBase(AssetRiskFieldsMixin, BaseModel):
     photos: List[AssetPhoto] = []
     contacts: List[Contact] = []
 
+    # set when a retirement workflow completed; the record is then read-only
+    archived_at: Optional[datetime] = None
+
     model_config = ConfigDict(from_attributes=True)
 
 
-class AssetUpdate(AssetRiskFieldsMixin, BaseModel):
+class AssetUpdate(AssetRiskFieldsMixin, AssetLifecycleFields):
     name: Optional[str] = Field(None, max_length=255, description="Asset name")
     tag: Optional[str] = Field(None, max_length=100, description="Asset tag")
     serial_number: Optional[str] = Field(None, max_length=100, description="Serial number")
@@ -123,6 +183,8 @@ class AssetUpdate(AssetRiskFieldsMixin, BaseModel):
     business_criticality: Optional[str] = Field(None, max_length=50, description="Business criticality")
     protocols: Optional[List[str]] = None
     interfaces: Optional[List[AssetInterfaceUpdate]] = None
+    # a free address of the IPAM module, added to the asset as a new interface
+    ipam_ip_address_id: Optional[uuid.UUID] = None
 
     site_id: Optional[uuid.UUID] = None
     asset_type_id: Optional[uuid.UUID] = None
@@ -142,7 +204,7 @@ class AssetUpdate(AssetRiskFieldsMixin, BaseModel):
     review_interval_months: Optional[int] = None
 
 
-class AssetCreate(AssetRiskFieldsMixin, BaseModel):
+class AssetCreate(AssetRiskFieldsMixin, AssetLifecycleFields):
     name: str = Field(..., max_length=255, description="Asset name")
     tag: Optional[str] = Field(None, max_length=100, description="Asset tag")
     serial_number: Optional[str] = Field(None, max_length=100, description="Serial number")
@@ -159,6 +221,8 @@ class AssetCreate(AssetRiskFieldsMixin, BaseModel):
     business_criticality: Optional[str] = Field(None, max_length=50, description="Business criticality")
     protocols: Optional[List[str]] = []
     interfaces: Optional[List[AssetInterfaceCreate]] = None
+    # a free address of the IPAM module: the asset gets an interface with it and it becomes its primary IP
+    ipam_ip_address_id: Optional[uuid.UUID] = None
     site_id: uuid.UUID
     asset_type_id: Optional[uuid.UUID] = None
     location_id: Optional[uuid.UUID] = None
@@ -178,6 +242,7 @@ class AssetCreate(AssetRiskFieldsMixin, BaseModel):
 
 class AssetRead(AssetBase):
     location_id: Optional[uuid.UUID]
+    parent: Optional[AssetSummary] = None
     contacts: List[Contact] = []
     protocols: Optional[List[str]] = []
 

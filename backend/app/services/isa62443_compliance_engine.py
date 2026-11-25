@@ -461,6 +461,58 @@ class ISA62443ComplianceEngine:
         )
 
     @staticmethod
+    def calculate_zone_compliance_statuses(db: Session, zones: List[SecurityZone]) -> Dict[uuid.UUID, str]:
+        """calculate_zone_compliance_status for many zones at once: the requirements, the assessments and the legacy
+        compliance records are read in three queries in total instead of several per zone. Same rules, same result.
+        Used by the dashboard."""
+        result: Dict[uuid.UUID, str] = {}
+        todo = [z for z in zones if z.security_level_target]
+        for zone in zones:
+            if not zone.security_level_target:
+                result[zone.id] = "not_assessed"
+        if not todo:
+            return result
+
+        requirements = ISA62443ComplianceEngine._zone_requirements(db)
+        zone_ids = [z.id for z in todo]
+        tenant_ids = {z.tenant_id for z in todo}
+        assessments_by_zone: Dict[uuid.UUID, List[SRAssessment]] = {}
+        for a in db.query(SRAssessment).filter(
+            SRAssessment.object_type == "zone", SRAssessment.object_id.in_(zone_ids), SRAssessment.tenant_id.in_(tenant_ids)
+        ).all():
+            assessments_by_zone.setdefault((a.object_id, a.tenant_id), []).append(a)
+        legacy_by_zone: Dict[uuid.UUID, dict] = {}
+        for rec in db.query(SecurityRequirementCompliance).filter(
+            SecurityRequirementCompliance.zone_id.in_(zone_ids), SecurityRequirementCompliance.tenant_id.in_(tenant_ids)
+        ).all():
+            legacy_by_zone.setdefault((rec.zone_id, rec.tenant_id), {})[rec.requirement_id] = rec
+
+        for zone in todo:
+            target = zone.security_level_target
+            assessments = assessments_by_zone.get((zone.id, zone.tenant_id), [])
+            compliance_map = None
+            if assessments:
+                try:
+                    compliance_map = ISA62443ComplianceEngine._compliance_map_from_assessments(assessments, requirements, target)
+                except Exception as e:  # same fallback as _zone_compliance_map
+                    logger.debug(f"SRAssessment not available for zone, using legacy: {e}")
+            if compliance_map is None:
+                compliance_map = legacy_by_zone.get((zone.id, zone.tenant_id), {})
+
+            applicable = applicable_requirements_for_target(requirements, target)
+            coverage = assessment_coverage_ratio(applicable, compliance_map)
+
+            sl_a = None
+            if requirements:
+                legacy, by_re = parse_assessment_records(assessments)
+                if by_re:
+                    sl_a = highest_achieved_sl(target, requirements, {}, legacy=legacy, by_re=by_re)
+                else:
+                    sl_a = highest_achieved_sl(target, requirements, legacy or compliance_map)
+            result[zone.id] = derive_compliance_status(target, sl_a, coverage, len(compliance_map) > 0)
+        return result
+
+    @staticmethod
     def calculate_zone_security_level_capability(
         db: Session,
         zone: SecurityZone,

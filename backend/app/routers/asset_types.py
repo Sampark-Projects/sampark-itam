@@ -1,7 +1,7 @@
 import uuid
-from typing import List
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, status, Request
+from fastapi import APIRouter, Depends, Query, status, Request
 from sqlalchemy.orm import Session
 
 from app.errors.exceptions import ErrorCodeException
@@ -42,9 +42,30 @@ def create_asset_type(
 
 @router.get("", response_model=List[AssetTypeSchema])
 def list_asset_types(
-    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+    search: Optional[str] = Query(None, max_length=100, description="text in the name or description"),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    return crud_asset_types.get_asset_types(db, current_user.tenant_id)
+    return crud_asset_types.get_asset_types(db, current_user.tenant_id, skip=skip, limit=limit, search=search)
+
+
+@router.get("/paged")
+def list_asset_types_paged(
+    search: Optional[str] = Query(None, max_length=100, description="text in the name or description"),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(15, ge=1, le=500),
+    sort_by: Optional[str] = Query(None, description="name, description, purdue_level or created_at"),
+    sort_order: str = Query("asc", pattern="^(asc|desc)$"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """One page of the asset types and the total, like the asset list: {data, total, skip, limit}."""
+    rows, total = crud_asset_types.get_asset_types_page(
+        db, current_user.tenant_id, skip=skip, limit=limit, search=search, sort_by=sort_by, sort_order=sort_order
+    )
+    return {"data": [AssetTypeSchema.model_validate(r) for r in rows], "total": total, "skip": skip, "limit": limit}
 
 
 @router.get("/{asset_type_id}", response_model=AssetTypeSchema)

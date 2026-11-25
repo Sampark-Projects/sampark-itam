@@ -1,8 +1,11 @@
 {
-"navigation": {
+  "navigation": {
     "dashboard": "Dashboard",
     "assets": "Dispositivi",
     "assetReviews": "Review Asset",
+    "lifecycle": "Ciclo di vita",
+    "changes": "Manutenzione e configurazione",
+    "reports": "Report e integrazioni",
     "securityZones": "Security Zones",
     "conduits": "Conduits",
     "compliance": "Compliance ISA/IEC 62443",
@@ -28,12 +31,23 @@
     "setup": "Setup",
     "settings": "Impostazioni",
     "logout": "Esci",
-    "utility": "Utility"
-    },
-"section": {
+    "utility": "Utility",
+    "applications": "Applicazioni",
+    "ipamAggregates": "Aggregati e RIR",
+    "ipamAsns": "ASN",
+    "ipamPrefixes": "Prefissi",
+    "ipamAddresses": "Indirizzi IP",
+    "ipamRanges": "Intervalli IP",
+    "ipamVlans": "VLAN",
+    "ipamVrfs": "VRF e ruoli",
+    "ipamFhrp": "Gruppi FHRP",
+    "ipamServices": "Servizi"
+  },
+  "section": {
     "management": "Gestione",
+    "ipam": "IPAM",
     "registry": "Inventario",
     "utility": "Utility",
     "isa62443": "Industrial ISA/IEC"
-    }
+  }
 }
